@@ -137,17 +137,23 @@ async function getProductVariantsByHandle(handle) {
 async function getAvailableAtLocation(inventoryItemId, locationId) {
   const q = `
     query Inv($inventoryItemId: ID!, $locationId: ID!) {
-      inventoryLevel(inventoryItemId: $inventoryItemId, locationId: $locationId) {
-        quantities(names: ["available"]) { name quantity }
+      inventoryItem(id: $inventoryItemId) {
+        inventoryLevel(locationId: $locationId) {
+          quantities(names: ["available"]) { name quantity }
+        }
       }
     }
   `;
+
   const data = await shopifyGraphQL(q, { inventoryItemId, locationId });
-  const level = data.inventoryLevel;
-  if (!level) return 0; // not stocked at this location
+
+  const level = data.inventoryItem?.inventoryLevel;
+  if (!level) return 0; // not stocked at this location (or no inventory level)
+
   const avail = level.quantities.find(x => x.name === "available")?.quantity ?? 0;
   return Number(avail) || 0;
 }
+
 
 function findVariantForSize(variants, size) {
   // Assumes there is an option named "Size" with values XXS..XXL
