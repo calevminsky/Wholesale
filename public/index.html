@@ -1,0 +1,157 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Wholesale CSV Import</title>
+    <style>
+      body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; max-width: 900px; }
+      .row { display: flex; gap: 12px; margin-bottom: 10px; align-items: center; }
+      .box { border: 1px solid #ddd; padding: 12px; border-radius: 10px; }
+      button { padding: 6px 10px; }
+      input[type="text"], input[type="number"] { padding: 6px; width: 420px; }
+      .loc { display:flex; gap:10px; align-items:center; padding:6px 0; border-bottom: 1px solid #f2f2f2;}
+      .loc:last-child{border-bottom:none;}
+      pre { background:#111; color:#0f0; padding:12px; border-radius:10px; overflow:auto; }
+    </style>
+  </head>
+  <body>
+    <h1>Wholesale CSV Import → Draft → Order (Location Allocation)</h1>
+
+    <div class="box">
+      <div class="row">
+        <label><b>Company Location ID (B2B)</b></label>
+        <input id="companyLocationId" type="text" placeholder='gid://shopify/CompanyLocation/1234567890' />
+      </div>
+
+      <div class="row">
+        <label><b>Reserve hours</b></label>
+        <input id="reserveHours" type="number" value="48" min="0" />
+        <small>(0 disables draft reservation)</small>
+      </div>
+
+      <div class="row">
+        <label><b>CSV file</b></label>
+        <input id="file" type="file" accept=".csv" />
+      </div>
+    </div>
+
+    <h2>Pick locations and set drain order</h2>
+    <div class="box" id="locationsBox">Loading locations…</div>
+
+    <div class="row">
+      <button id="runBtn">Create Order</button>
+    </div>
+
+    <h2>Result</h2>
+    <pre id="out"></pre>
+
+    <script>
+      let locations = []; // {id,name,selected}
+      const out = document.getElementById("out");
+      const box = document.getElementById("locationsBox");
+
+      function renderLocations() {
+        const selected = locations.filter(l => l.selected);
+        const unselected = locations.filter(l => !l.selected);
+
+        box.innerHTML = `
+          <div><b>Selected (drain order top → bottom)</b></div>
+          ${selected.map((l, idx) => `
+            <div class="loc">
+              <input type="checkbox" ${l.selected ? "checked" : ""} data-id="${l.id}" class="toggle" />
+              <div style="width:280px">${l.name}</div>
+              <button data-id="${l.id}" data-dir="up" class="move">↑</button>
+              <button data-id="${l.id}" data-dir="down" class="move">↓</button>
+            </div>
+          `).join("")}
+          <div style="margin-top:12px"><b>Unselected</b></div>
+          ${unselected.map(l => `
+            <div class="loc">
+              <input type="checkbox" data-id="${l.id}" class="toggle" />
+              <div style="width:280px">${l.name}</div>
+            </div>
+          `).join("")}
+        `;
+
+        box.querySelectorAll(".toggle").forEach(cb => {
+          cb.addEventListener("change", e => {
+            const id = e.target.getAttribute("data-id");
+            const loc = locations.find(x => x.id === id);
+            loc.selected = e.target.checked;
+            // keep selected items in their relative order
+            renderLocations();
+          });
+        });
+
+        box.querySelectorAll(".move").forEach(btn => {
+          btn.addEventListener("click", e => {
+            const id = e.target.getAttribute("data-id");
+            const dir = e.target.getAttribute("data-dir");
+            const selectedIds = locations.filter(l => l.selected).map(l => l.id);
+            const idx = selectedIds.indexOf(id);
+            if (idx === -1) return;
+
+            const swapWith = dir === "up" ? idx - 1 : idx + 1;
+            if (swapWith < 0 || swapWith >= selectedIds.length) return;
+
+            const a = selectedIds[idx], b = selectedIds[swapWith];
+            // reorder within the master list by swapping their positions among selecteds
+            const selectedLocs = locations.filter(l => l.selected);
+            const unselectedLocs = locations.filter(l => !l.selected);
+            const newSelectedIds = [...selectedIds];
+            newSelectedIds[idx] = b;
+            newSelectedIds[swapWith] = a;
+
+            const newSelected = newSelectedIds.map(id2 => selectedLocs.find(x => x.id === id2));
+            locations = [...newSelected, ...unselectedLocs];
+            renderLocations();
+          });
+        });
+      }
+
+      async function loadLocations() {
+        const res = await fetch("/api/locations");
+        const json = await res.json();
+        if (json.error) throw new Error(json.error);
+
+        // Preselect your common ones in a sane default order
+        const preferred = ["Warehouse", "Bogota", "Cedarhurst", "Teaneck Store", "Toms River"];
+        const map = new Map(json.locations.map(l => [l.name, l]));
+        const selected = [];
+        for (const name of preferred) if (map.has(name)) selected.push({...map.get(name), selected:true});
+        const rest = json.locations
+          .filter(l => !preferred.includes(l.name))
+          .map(l => ({...l, selected:false}));
+
+        locations = [...selected, ...rest];
+        renderLocations();
+      }
+
+      document.getElementById("runBtn").addEventListener("click", async () => {
+        out.textContent = "Running…";
+
+        const file = document.getElementById("file").files[0];
+        const companyLocationId = document.getElementById("companyLocationId").value.trim();
+        const reserveHours = document.getElementById("reserveHours").value;
+
+        if (!file) return out.textContent = "Choose a CSV file.";
+        if (!companyLocationId) return out.textContent = "Paste the B2B Company Location ID.";
+
+        const selectedIds = locations.filter(l => l.selected).map(l => l.id);
+        if (selectedIds.length === 0) return out.textContent = "Select at least one location.";
+
+        const form = new FormData();
+        form.append("file", file);
+        form.append("companyLocationId", companyLocationId);
+        form.append("reserveHours", reserveHours);
+        form.append("locationIdsJson", JSON.stringify(selectedIds));
+
+        const res = await fetch("/api/import", { method: "POST", body: form });
+        const json = await res.json();
+        out.textContent = JSON.stringify(json, null, 2);
+      });
+
+      loadLocations().catch(e => box.textContent = e.message);
+    </script>
+  </body>
+</html>
