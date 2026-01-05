@@ -1,6 +1,8 @@
 import express from "express";
 import multer from "multer";
-import { parse } from "csv-parse/sync";
+import { parse as parseCsv } from "csv-parse/sync";
+import XLSX from "xlsx";
+import path from "path";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -8,23 +10,42 @@ const upload = multer({ storage: multer.memoryStorage() });
 app.use(express.json());
 app.use(express.static("public"));
 
-const SHOP = process.env.SHOPIFY_SHOP;
+const SHOP = process.env.SHOPIFY_SHOP; // must be *.myshopify.com
 const VERSION = process.env.SHOPIFY_API_VERSION || "2025-01";
 
+// Option A: long-lived Admin token (custom app in store admin)
+const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN;
+
+// Option B: client credentials (new dev dashboard style)
 const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
 
-if (!SHOP || !CLIENT_ID || !CLIENT_SECRET) {
-  console.error("Missing SHOPIFY_SHOP, SHOPIFY_CLIENT_ID, or SHOPIFY_CLIENT_SECRET env vars.");
+if (!SHOP) {
+  console.error("Missing SHOPIFY_SHOP env var (must be your *.myshopify.com domain).");
   process.exit(1);
 }
+
+if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
+  console.error(
+    "Missing auth env vars. Provide either SHOPIFY_ADMIN_TOKEN OR (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET)."
+  );
+  process.exit(1);
+}
+
+const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+const AUTO_TAGS = ["Wholesale"]; // <-- requested autotag
+
+// ----------------- Auth: access token -----------------
 
 let cachedAccessToken = null;
 let tokenExpiresAtMs = 0;
 
-async function getAdminAccessToken() {
+async function getAccessToken() {
+  // If you provided a permanent Admin token, just use it.
+  if (ADMIN_TOKEN) return ADMIN_TOKEN;
+
+  // Otherwise mint a token via client credentials and cache it.
   const now = Date.now();
-  // refresh 5 minutes early
   if (cachedAccessToken && now < tokenExpiresAtMs - 5 * 60_000) return cachedAccessToken;
 
   const url = `https://${SHOP}/admin/oauth/access_token`;
@@ -45,18 +66,16 @@ async function getAdminAccessToken() {
   }
 
   cachedAccessToken = json.access_token;
-  // expires_in is seconds (typically 86399)
   const expiresInSec = Number(json.expires_in || 86400);
   tokenExpiresAtMs = Date.now() + expiresInSec * 1000;
 
   return cachedAccessToken;
 }
 
-
-const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+// ----------------- Shopify GraphQL helper -----------------
 
 async function shopifyGraphQL(query, variables = {}) {
-  const token = await getAdminAccessToken();
+  const token = await getAccessToken();
 
   const res = await fetch(`https://${SHOP}/admin/api/${VERSION}/graphql.json`, {
     method: "POST",
@@ -72,6 +91,7 @@ async function shopifyGraphQL(query, variables = {}) {
   return json.data;
 }
 
+// ----------------- Shopify queries/mutations -----------------
 
 async function getAllLocations() {
   const q = `
@@ -129,11 +149,13 @@ async function getAvailableAtLocation(inventoryItemId, locationId) {
   return Number(avail) || 0;
 }
 
-function findVariantIdForSize(variants, size) {
-  // Assumes there is an option named "Size"
-  return variants.find(v =>
-    v.selectedOptions.some(o => o.name.toLowerCase() === "size" && o.value === size)
-  ) || null;
+function findVariantForSize(variants, size) {
+  // Assumes there is an option named "Size" with values XXS..XXL
+  return (
+    variants.find(v =>
+      v.selectedOptions.some(o => o.name.toLowerCase() === "size" && o.value === size)
+    ) || null
+  );
 }
 
 // Allocation: split across locations in given priority order
@@ -151,10 +173,11 @@ async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsIn
   return { allocations, dropped: remaining };
 }
 
-async function draftOrderCreate({ purchasingEntity, lineItems, reserveHours }) {
-  const reserveUntilIso = reserveHours
-    ? new Date(Date.now() + reserveHours * 3600_000).toISOString()
-    : null;
+async function draftOrderCreate({ lineItems, reserveHours }) {
+  const reserveUntilIso =
+    reserveHours && Number(reserveHours) > 0
+      ? new Date(Date.now() + Number(reserveHours) * 3600_000).toISOString()
+      : null;
 
   const mutation = `
     mutation CreateDraft($input: DraftOrderInput!) {
@@ -165,24 +188,17 @@ async function draftOrderCreate({ purchasingEntity, lineItems, reserveHours }) {
     }
   `;
 
-  // purchasingEntity: for B2B, include purchasingEntity or customer depending on your setup.
-  // We'll accept either:
-  // - purchasingEntity: { companyLocationId: "gid://shopify/CompanyLocation/..." }
-  // - OR customerId: "gid://shopify/Customer/..."
   const input = {
-    ...purchasingEntity,
+    tags: AUTO_TAGS, // <-- auto-tag "Wholesale" (carries to order) :contentReference[oaicite:1]{index=1}
     lineItems: lineItems.map(li => ({
       variantId: li.variantId,
       quantity: li.quantity,
-      // Set wholesale price override
+      // Price override per unit (wholesale price)
       originalUnitPrice: li.unitPrice
     }))
   };
 
-  if (reserveUntilIso) {
-    // Field is supported in DraftOrderInput per docs (reserve inventory on draft)
-    input.reserveInventoryUntil = reserveUntilIso;
-  }
+  if (reserveUntilIso) input.reserveInventoryUntil = reserveUntilIso;
 
   const data = await shopifyGraphQL(mutation, { input });
   const errs = data.draftOrderCreate.userErrors || [];
@@ -218,7 +234,6 @@ async function getFulfillmentOrdersForOrder(orderId) {
             lineItems(first: 250) {
               nodes {
                 id
-                totalQuantity
                 remainingQuantity
                 lineItem { variant { id } }
               }
@@ -252,12 +267,12 @@ async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLin
   return data.fulfillmentOrderMove;
 }
 
-// Core: enforce allocation by moving FO line items
+// Enforce allocation by moving FO line items
 async function enforceFulfillmentLocations(orderId, allocationPlan) {
   // allocationPlan: Map<variantId, Array<{locationId, qty}>>
   const fos = await getFulfillmentOrdersForOrder(orderId);
 
-  // Build quick lookup: variantId -> [{foId, foLineItemId, remainingQty}]
+  // variantId -> [{ fulfillmentOrderId, fulfillmentOrderLineItemId, remainingQuantity, assignedLocationId }]
   const variantToFOLines = new Map();
   for (const fo of fos) {
     for (const li of fo.lineItems.nodes) {
@@ -274,22 +289,18 @@ async function enforceFulfillmentLocations(orderId, allocationPlan) {
     }
   }
 
-  // For each variant, move quantities to target locations as needed
   for (const [variantId, desiredAllocations] of allocationPlan.entries()) {
-    let lines = variantToFOLines.get(variantId) || [];
-    // We will move from wherever Shopify initially assigned into the desired location buckets.
+    const lines = variantToFOLines.get(variantId) || [];
 
     for (const want of desiredAllocations) {
       let need = want.qty;
       if (need <= 0) continue;
 
-      // Ensure we have enough remaining across FO lines
-      // We'll satisfy need by moving chunks from existing lines to want.locationId.
       for (const line of lines) {
         if (need <= 0) break;
         if (line.remainingQuantity <= 0) continue;
 
-        // If already in desired location, consume from it without moving
+        // Already assigned to desired location → just consume capacity
         if (line.assignedLocationId === want.locationId) {
           const take = Math.min(line.remainingQuantity, need);
           line.remainingQuantity -= take;
@@ -297,7 +308,7 @@ async function enforceFulfillmentLocations(orderId, allocationPlan) {
           continue;
         }
 
-        // Otherwise move a portion to desired location
+        // Move quantity to desired location
         const moveQty = Math.min(line.remainingQuantity, need);
 
         await fulfillmentOrderMove({
@@ -308,27 +319,46 @@ async function enforceFulfillmentLocations(orderId, allocationPlan) {
 
         line.remainingQuantity -= moveQty;
         need -= moveQty;
-
-        // After moving, Shopify creates/updates fulfillment orders; for simplicity in MVP,
-        // we do not re-fetch FOs each time. In practice, you can re-fetch after all moves
-        // to display final state.
       }
 
       if (need > 0) {
-        // This shouldn't happen because we built draft quantities from availability,
-        // but we keep a guard.
-        console.warn(`Could not fully assign variant ${variantId} to location ${want.locationId}. Need left: ${need}`);
+        console.warn(
+          `Warning: Could not fully assign variant ${variantId} to location ${want.locationId}. Need left: ${need}`
+        );
       }
     }
   }
 }
 
-// --- API endpoints ---
+// ----------------- Upload parsing (CSV + XLSX) -----------------
+
+function parseUpload(file) {
+  const ext = path.extname(file.originalname || "").toLowerCase();
+
+  if (ext === ".csv") {
+    const text = file.buffer.toString("utf8");
+    return parseCsv(text, {
+      columns: true,
+      skip_empty_lines: true,
+      trim: true
+    });
+  }
+
+  if (ext === ".xlsx") {
+    const workbook = XLSX.read(file.buffer, { type: "buffer" });
+    const sheetName = workbook.SheetNames[0];
+    const sheet = workbook.Sheets[sheetName];
+    return XLSX.utils.sheet_to_json(sheet, { defval: "" });
+  }
+
+  throw new Error("Unsupported file type. Upload CSV or XLSX.");
+}
+
+// ----------------- Routes -----------------
 
 app.get("/api/locations", async (_req, res) => {
   try {
     const locations = await getAllLocations();
-    // Filter to your known ones if you want; we return all for flexibility
     res.json({ locations });
   } catch (e) {
     res.status(500).json({ error: String(e) });
@@ -337,52 +367,55 @@ app.get("/api/locations", async (_req, res) => {
 
 app.post("/api/import", upload.single("file"), async (req, res) => {
   try {
-    const {
-      // One of these must be provided:
-      companyLocationId, // gid://shopify/CompanyLocation/...
-      customerId,        // gid://shopify/Customer/...
-      reserveHours = "48",
-      // ordered list of location IDs to pull from
-      locationIdsJson
-    } = req.body;
+    const { reserveHours = "48", locationIdsJson } = req.body;
 
     const locationIdsInOrder = JSON.parse(locationIdsJson || "[]");
     if (!Array.isArray(locationIdsInOrder) || locationIdsInOrder.length === 0) {
       return res.status(400).json({ error: "Select at least one location." });
     }
     if (!req.file?.buffer) {
-      return res.status(400).json({ error: "Missing CSV file." });
-    }
-    if (!companyLocationId && !customerId) {
-      return res.status(400).json({ error: "Provide companyLocationId (B2B) or customerId." });
+      return res.status(400).json({ error: "Missing CSV/XLSX file." });
     }
 
-    const csvText = req.file.buffer.toString("utf8");
-    const records = parse(csvText, { columns: true, skip_empty_lines: true, trim: true });
+    const records = parseUpload(req.file);
 
-    // Build requested items list: [{handle, unitPrice, size->qty}]
+    // Validate expected headers
+    // Required: product_handle, unit_price, plus size columns
     const requested = [];
     for (const row of records) {
-      const handle = row.product_handle;
+      const handle = (row.product_handle || "").toString().trim();
       if (!handle) continue;
-      const unitPrice = Number(row.unit_price);
+
+      const unitPrice = Number((row.unit_price ?? "").toString().trim());
       if (!Number.isFinite(unitPrice)) {
         return res.status(400).json({ error: `Invalid unit_price for handle ${handle}` });
       }
+
       const sizeQty = {};
-      for (const s of SIZES) sizeQty[s] = Number(row[s] || 0) || 0;
-      requested.push({ handle, unitPrice, sizeQty, productTitle: row.product_title || "" });
+      for (const s of SIZES) {
+        const raw = row[s];
+        const n = Number((raw ?? "").toString().trim() || 0);
+        sizeQty[s] = Number.isFinite(n) ? n : 0;
+      }
+
+      requested.push({
+        handle,
+        unitPrice,
+        sizeQty,
+        productTitle: (row.product_title || "").toString().trim()
+      });
     }
 
-    // Allocation results
     const allocationPlan = new Map(); // variantId -> [{locationId, qty}]
-    const draftLineItems = [];        // [{variantId, quantity, unitPrice}]
+    const draftLineItems = []; // [{variantId, quantity, unitPrice}]
+
     const report = {
+      tagApplied: AUTO_TAGS,
       requestedUnits: 0,
       allocatedUnits: 0,
       droppedUnits: 0,
-      droppedByHandle: [],
-      missingHandles: []
+      missingHandles: [],
+      lines: [] // per handle+size breakdown
     };
 
     for (const item of requested) {
@@ -395,12 +428,20 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       for (const size of SIZES) {
         const qty = item.sizeQty[size];
         if (!qty || qty <= 0) continue;
+
         report.requestedUnits += qty;
 
-        const variant = findVariantIdForSize(product.variants.nodes, size);
+        const variant = findVariantForSize(product.variants.nodes, size);
         if (!variant) {
           report.droppedUnits += qty;
-          report.droppedByHandle.push({ handle: item.handle, size, requested: qty, allocated: 0, dropped: qty, reason: "No variant for size" });
+          report.lines.push({
+            handle: item.handle,
+            size,
+            requested: qty,
+            allocated: 0,
+            dropped: qty,
+            reason: "No variant for size"
+          });
           continue;
         }
 
@@ -411,38 +452,49 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
         });
 
         const allocatedQty = allocations.reduce((sum, a) => sum + a.qty, 0);
+
         if (allocatedQty > 0) {
-          draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: String(item.unitPrice) });
-          allocationPlan.set(variant.id, allocations);
+          // Combine quantities for same variant (if repeated in file)
+          const existing = draftLineItems.find(li => li.variantId === variant.id && li.unitPrice === String(item.unitPrice));
+          if (existing) existing.quantity += allocatedQty;
+          else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: String(item.unitPrice) });
+
+          // Merge allocation plan per variantId
+          const prev = allocationPlan.get(variant.id) || [];
+          const merged = [...prev];
+
+          for (const a of allocations) {
+            const m = merged.find(x => x.locationId === a.locationId);
+            if (m) m.qty += a.qty;
+            else merged.push({ locationId: a.locationId, qty: a.qty });
+          }
+
+          allocationPlan.set(variant.id, merged);
           report.allocatedUnits += allocatedQty;
         }
-        if (dropped > 0) {
-          report.droppedUnits += dropped;
-        }
 
-        report.droppedByHandle.push({
+        if (dropped > 0) report.droppedUnits += dropped;
+
+        report.lines.push({
           handle: item.handle,
           size,
           requested: qty,
           allocated: allocatedQty,
-          dropped: dropped,
+          dropped,
           reason: dropped > 0 ? "Insufficient stock in selected locations" : ""
         });
       }
     }
 
     if (draftLineItems.length === 0) {
-      return res.status(400).json({ error: "Nothing fulfillable from selected locations. No order created.", report });
+      return res.status(400).json({
+        error: "Nothing fulfillable from selected locations. No order created.",
+        report
+      });
     }
 
-    // Purchasing entity payload
-    const purchasingEntity = companyLocationId
-      ? { purchasingEntity: { companyLocationId } }
-      : { customerId };
-
-    // 1) Create draft (optionally reserve inventory)
+    // 1) Create draft (tagged Wholesale)
     const draft = await draftOrderCreate({
-      purchasingEntity,
       lineItems: draftLineItems,
       reserveHours: Number(reserveHours)
     });
@@ -455,6 +507,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     res.json({
       ok: true,
+      tags: AUTO_TAGS,
       draftOrderId: draft.id,
       orderId: order.id,
       orderName: order.name,
