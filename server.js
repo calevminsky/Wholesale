@@ -35,6 +35,9 @@ if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 const AUTO_TAGS = ["Wholesale"];
 
+// Speed: cache product lookups across requests (safe + huge speed win)
+const productCache = new Map(); // handle -> productByHandle result or null
+
 // ----------------- Auth: access token -----------------
 
 let cachedAccessToken = null;
@@ -163,26 +166,30 @@ async function getAvailableAtLocation(inventoryItemId, locationId) {
 }
 
 function findVariantForSize(variants, size) {
+  // Robust: match any option whose name includes "size" (case-insensitive)
+  const sizeLower = String(size).toLowerCase();
   return (
     variants.find(v =>
-      v.selectedOptions.some(o => o.name.toLowerCase() === "size" && o.value === size)
+      v.selectedOptions.some(o => String(o.name).toLowerCase().includes("size") && String(o.value).toLowerCase() === sizeLower)
     ) || null
   );
 }
 
 // ---------- Allocation (best-effort, partial allowed) ----------
 
+// Key: `${inventoryItemId}::${locationId}` -> remaining available during THIS run
 function makeAvailKey(inventoryItemId, locationId) {
   return `${inventoryItemId}::${locationId}`;
 }
 
-// NOTE: we now ALSO record what we saw as "available" per location for debugging.
+// Allocation: split across locations in given priority order, KEEP PARTIALS.
+// Uses remainingAvailMap to decrement availability in-memory for the run.
 async function allocateVariantQty({
   inventoryItemId,
   requestedQty,
   locationIdsInOrder,
   remainingAvailMap,
-  availabilityDebug // object to fill: { [locationId]: availAtStartOrFirstSeen }
+  availabilityDebug
 }) {
   let remaining = requestedQty;
   const allocations = [];
@@ -195,8 +202,7 @@ async function allocateVariantQty({
     if (!remainingAvailMap.has(key)) {
       const avail = await getAvailableAtLocation(inventoryItemId, locId);
       remainingAvailMap.set(key, avail);
-      // record first-seen availability for this item/location
-      availabilityDebug[locId] = avail;
+      if (availabilityDebug) availabilityDebug[locId] = Math.max(0, avail); // report safety
     }
 
     const availNow = remainingAvailMap.get(key) || 0;
@@ -248,7 +254,7 @@ async function draftOrderCreate({ lineItems, reserveHours }) {
   return data.draftOrderCreate.draftOrder;
 }
 
-// Complete as unpaid
+// Complete draft as unpaid
 async function draftOrderComplete(draftOrderId) {
   const mutation = `
     mutation CompleteDraft($id: ID!, $paymentPending: Boolean!) {
@@ -315,17 +321,11 @@ async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLin
   return data.fulfillmentOrderMove;
 }
 
-/**
- * ENFORCEMENT THAT WORKS:
- * - After each move, re-fetch fulfillment orders for the order.
- * - That avoids stale FO line-item IDs and ensures the split actually shows up.
- */
+// Enforce allocation by moving FO line items; re-fetch after moves (handles Shopify splitting FOs)
 async function enforceFulfillmentLocations(orderId, allocationPlan) {
   const moveLog = [];
 
-  // For each variant: ensure quantities end up at desired locations
   for (const [variantId, desiredAllocations] of allocationPlan.entries()) {
-    // Build desired list e.g. [{locId, qty}, ...]
     for (const want of desiredAllocations) {
       let need = want.qty;
       if (need <= 0) continue;
@@ -333,33 +333,29 @@ async function enforceFulfillmentLocations(orderId, allocationPlan) {
       while (need > 0) {
         const fos = await getFulfillmentOrdersForOrder(orderId);
 
-        // Find any FO line for this variant that still has remaining qty NOT at the desired location
         let source = null;
 
         for (const fo of fos) {
           const foLocId = fo.assignedLocation?.location?.id;
+
           for (const li of fo.lineItems.nodes) {
             const vId = li.lineItem?.variant?.id;
             if (vId !== variantId) continue;
             if ((li.remainingQuantity || 0) <= 0) continue;
 
-            // Prefer a line already at the desired location (then just decrement need without moving)
+            // If already at desired location, just consume need (no move)
             if (foLocId === want.locationId) {
               const take = Math.min(li.remainingQuantity, need);
               need -= take;
-              // Reduce "remaining" only logically; Shopify already has it at correct location
-              // So nothing to move.
               source = null;
               break;
             }
 
-            // Otherwise choose this as source to move from
             source = {
               fulfillmentOrderId: fo.id,
               fulfillmentOrderLineItemId: li.id,
               remainingQuantity: li.remainingQuantity,
-              fromLocation: fo.assignedLocation?.location?.name,
-              fromLocationId: foLocId
+              fromLocation: fo.assignedLocation?.location?.name || "Unknown"
             };
             break;
           }
@@ -368,11 +364,7 @@ async function enforceFulfillmentLocations(orderId, allocationPlan) {
         }
 
         if (need <= 0) break;
-
-        if (!source) {
-          // Nothing left to move; break to avoid infinite loop
-          break;
-        }
+        if (!source) break;
 
         const moveQty = Math.min(source.remainingQuantity, need);
 
@@ -448,6 +440,242 @@ function parseUpload(file) {
   throw new Error("Unsupported file type. Upload CSV or XLSX.");
 }
 
+// ----------------- Report XLSX builder (1 sheet per used location) -----------------
+
+function safeSheetName(name) {
+  return String(name).replace(/[\[\]\*\/\\\?\:]/g, " ").slice(0, 31) || "Sheet";
+}
+
+/**
+ * Builds XLSX where:
+ * - One sheet per location actually used in allocations
+ * - Rows = Product Title (primary), with Handle as a second column
+ * - Columns = XXS..XXL, values = fulfillable qty FROM THAT LOCATION
+ */
+function buildLocationWorkbook({ locationIdToName, availabilitySeen, productMetaByHandle }) {
+  const sizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+
+  // locationId -> handle -> size -> qty
+  const locMap = new Map();
+
+  for (const entry of availabilitySeen) {
+    const handle = entry.handle;
+    const size = entry.size;
+
+    for (const a of entry.allocations || []) {
+      const locId = a.locationId;
+      const qty = Number(a.qty || 0);
+      if (!qty) continue;
+
+      if (!locMap.has(locId)) locMap.set(locId, new Map());
+      const handleMap = locMap.get(locId);
+
+      if (!handleMap.has(handle)) {
+        const sizeMap = new Map();
+        for (const s of sizes) sizeMap.set(s, 0);
+        handleMap.set(handle, sizeMap);
+      }
+
+      const sizeMap = handleMap.get(handle);
+      sizeMap.set(size, (sizeMap.get(size) || 0) + qty);
+    }
+  }
+
+  const wb = XLSX.utils.book_new();
+
+  for (const [locId, handleMap] of locMap.entries()) {
+    const locName = locationIdToName[locId] || locId;
+
+    // Header: Title + Handle
+    const header = ["Product Title", "Handle", ...sizes, "Total"];
+    const rows = [header];
+
+    // Build rows; sort by title then handle
+    const handles = Array.from(handleMap.keys());
+    handles.sort((a, b) => {
+      const ta = (productMetaByHandle[a]?.title || "").toLowerCase();
+      const tb = (productMetaByHandle[b]?.title || "").toLowerCase();
+      if (ta < tb) return -1;
+      if (ta > tb) return 1;
+      return a.localeCompare(b);
+    });
+
+    for (const handle of handles) {
+      const sizeMap = handleMap.get(handle);
+      const title = productMetaByHandle[handle]?.title || "";
+
+      const row = [title, handle];
+      let total = 0;
+
+      for (const s of sizes) {
+        const v = Number(sizeMap.get(s) || 0);
+        row.push(v);
+        total += v;
+      }
+      row.push(total);
+      rows.push(row);
+    }
+
+    // Totals row
+    const totalsRow = ["TOTAL", "", ...sizes.map(() => 0), 0];
+    for (let r = 1; r < rows.length; r++) {
+      for (let c = 2; c < 2 + sizes.length; c++) totalsRow[c] += rows[r][c];
+      totalsRow[2 + sizes.length] += rows[r][2 + sizes.length];
+    }
+    rows.push([]);
+    rows.push(totalsRow);
+
+    const ws = XLSX.utils.aoa_to_sheet(rows);
+    XLSX.utils.book_append_sheet(wb, ws, safeSheetName(locName));
+  }
+
+  // If nothing allocated anywhere, still return a workbook with one sheet explaining it
+  if (wb.SheetNames.length === 0) {
+    const ws = XLSX.utils.aoa_to_sheet([["No fulfillable units in selected locations."]]);
+    XLSX.utils.book_append_sheet(wb, ws, "Report");
+  }
+
+  return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+}
+
+// ----------------- Shared allocator used by Preview / Import / Report -----------------
+
+async function runAllocationOnly(req) {
+  const { locationIdsJson } = req.body;
+
+  const locationIdsInOrder = JSON.parse(locationIdsJson || "[]");
+  if (!Array.isArray(locationIdsInOrder) || locationIdsInOrder.length === 0) {
+    throw new Error("Select at least one location.");
+  }
+  if (!req.file?.buffer) throw new Error("Missing CSV/XLSX file.");
+
+  const locations = await getAllLocations();
+  const locationIdToName = Object.fromEntries(locations.map(l => [l.id, l.name]));
+
+  const records = parseUpload(req.file);
+
+  const requested = [];
+  for (const row of records) {
+    const handle = (row.product_handle || "").toString().trim();
+    if (!handle) continue;
+
+    const unitPrice = Number((row.unit_price ?? "").toString().trim());
+    if (!Number.isFinite(unitPrice)) throw new Error(`Invalid unit_price for handle ${handle}`);
+
+    const sizeQty = {};
+    for (const s of SIZES) {
+      const n = Number((row[s] ?? "").toString().trim() || 0);
+      sizeQty[s] = Number.isFinite(n) ? n : 0;
+    }
+
+    requested.push({ handle, unitPrice, sizeQty });
+  }
+
+  const remainingAvailMap = new Map();
+  const allocationPlan = new Map(); // variantId -> [{locationId, qty}]
+  const draftLineItems = []; // [{variantId, quantity, unitPrice}]
+  const productMetaByHandle = {}; // handle -> {title}
+
+  const report = {
+    tagApplied: AUTO_TAGS,
+    requestedUnits: 0,
+    allocatedUnits: 0,
+    droppedUnits: 0,
+    missingHandles: [],
+    availabilitySeen: [],
+    lines: []
+  };
+
+  for (const item of requested) {
+    let product = productCache.get(item.handle);
+    if (product === undefined) {
+      product = await getProductVariantsByHandle(item.handle);
+      productCache.set(item.handle, product || null);
+    }
+
+    if (!product) {
+      report.missingHandles.push(item.handle);
+      continue;
+    }
+
+    productMetaByHandle[item.handle] = { title: product.title };
+
+    for (const size of SIZES) {
+      const qty = item.sizeQty[size];
+      if (!qty || qty <= 0) continue;
+
+      report.requestedUnits += qty;
+
+      const variant = findVariantForSize(product.variants.nodes, size);
+      if (!variant) {
+        report.droppedUnits += qty;
+        report.lines.push({
+          handle: item.handle,
+          size,
+          requested: qty,
+          allocated: 0,
+          dropped: qty,
+          reason: "No variant for size"
+        });
+        continue;
+      }
+
+      const availabilityDebug = {};
+      const { allocations, dropped } = await allocateVariantQty({
+        inventoryItemId: variant.inventoryItem.id,
+        requestedQty: qty,
+        locationIdsInOrder,
+        remainingAvailMap,
+        availabilityDebug
+      });
+
+      report.availabilitySeen.push({
+        handle: item.handle,
+        size,
+        inventoryItemId: variant.inventoryItem.id,
+        availabilityByLocationId: availabilityDebug,
+        allocations
+      });
+
+      const allocatedQty = allocations.reduce((sum, a) => sum + a.qty, 0);
+
+      if (allocatedQty > 0) {
+        const priceStr = String(item.unitPrice);
+
+        const existing = draftLineItems.find(
+          li => li.variantId === variant.id && li.unitPrice === priceStr
+        );
+        if (existing) existing.quantity += allocatedQty;
+        else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
+
+        const prev = allocationPlan.get(variant.id) || [];
+        const merged = [...prev];
+        for (const a of allocations) {
+          const m = merged.find(x => x.locationId === a.locationId);
+          if (m) m.qty += a.qty;
+          else merged.push({ locationId: a.locationId, qty: a.qty });
+        }
+        allocationPlan.set(variant.id, merged);
+
+        report.allocatedUnits += allocatedQty;
+      }
+
+      if (dropped > 0) report.droppedUnits += dropped;
+
+      report.lines.push({
+        handle: item.handle,
+        size,
+        requested: qty,
+        allocated: allocatedQty,
+        dropped,
+        reason: dropped > 0 ? "Insufficient stock in selected locations" : ""
+      });
+    }
+  }
+
+  return { report, allocationPlan, draftLineItems, locationIdToName, productMetaByHandle, locationIdsInOrder };
+}
+
 // ----------------- Routes -----------------
 
 app.get("/api/locations", async (_req, res) => {
@@ -459,137 +687,49 @@ app.get("/api/locations", async (_req, res) => {
   }
 });
 
+// Preview only (no draft/order created)
+app.post("/api/preview", upload.single("file"), async (req, res) => {
+  try {
+    const result = await runAllocationOnly(req);
+    res.json({ ok: true, mode: "preview", ...result });
+  } catch (e) {
+    res.status(500).json({ error: String(e) });
+  }
+});
+
+// XLSX report (one sheet per used location)
+app.post("/api/report.xlsx", upload.single("file"), async (req, res) => {
+  try {
+    const result = await runAllocationOnly(req);
+    const xlsxBuffer = buildLocationWorkbook({
+      locationIdToName: result.locationIdToName,
+      availabilitySeen: result.report.availabilitySeen,
+      productMetaByHandle: result.productMetaByHandle
+    });
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    );
+    res.setHeader("Content-Disposition", `attachment; filename="fulfillment_report.xlsx"`);
+    res.send(xlsxBuffer);
+  } catch (e) {
+    res.status(500).json({ error: String(e) });
+  }
+});
+
+// Import (draft -> complete unpaid -> move fulfillment)
 app.post("/api/import", upload.single("file"), async (req, res) => {
   try {
-    const { reserveHours = "48", locationIdsJson } = req.body;
+    const { reserveHours = "48" } = req.body;
 
-    const locationIdsInOrder = JSON.parse(locationIdsJson || "[]");
-    if (!Array.isArray(locationIdsInOrder) || locationIdsInOrder.length === 0) {
-      return res.status(400).json({ error: "Select at least one location." });
-    }
-    if (!req.file?.buffer) {
-      return res.status(400).json({ error: "Missing CSV/XLSX file." });
-    }
-
-    const records = parseUpload(req.file);
-
-    const requested = [];
-    for (const row of records) {
-      const handle = (row.product_handle || "").toString().trim();
-      if (!handle) continue;
-
-      const unitPrice = Number((row.unit_price ?? "").toString().trim());
-      if (!Number.isFinite(unitPrice)) {
-        return res.status(400).json({ error: `Invalid unit_price for handle ${handle}` });
-      }
-
-      const sizeQty = {};
-      for (const s of SIZES) {
-        const raw = row[s];
-        const n = Number((raw ?? "").toString().trim() || 0);
-        sizeQty[s] = Number.isFinite(n) ? n : 0;
-      }
-
-      requested.push({
-        handle,
-        unitPrice,
-        sizeQty,
-        productTitle: (row.product_title || "").toString().trim()
-      });
-    }
-
-    const remainingAvailMap = new Map();
-    const allocationPlan = new Map(); // variantId -> [{locationId, qty}]
-    const draftLineItems = []; // [{variantId, quantity, unitPrice}]
-
-    const report = {
-      tagApplied: AUTO_TAGS,
-      requestedUnits: 0,
-      allocatedUnits: 0,
-      droppedUnits: 0,
-      missingHandles: [],
-      // IMPORTANT: include what the API said was available for each handle+size at each selected location
-      availabilitySeen: [], // [{handle,size,inventoryItemId, availabilityByLocationId:{...}, allocations:[...]}]
-      lines: []
-    };
-
-    for (const item of requested) {
-      const product = await getProductVariantsByHandle(item.handle);
-      if (!product) {
-        report.missingHandles.push(item.handle);
-        continue;
-      }
-
-      for (const size of SIZES) {
-        const qty = item.sizeQty[size];
-        if (!qty || qty <= 0) continue;
-
-        report.requestedUnits += qty;
-
-        const variant = findVariantForSize(product.variants.nodes, size);
-        if (!variant) {
-          report.droppedUnits += qty;
-          report.lines.push({
-            handle: item.handle,
-            size,
-            requested: qty,
-            allocated: 0,
-            dropped: qty,
-            reason: "No variant for size"
-          });
-          continue;
-        }
-
-        const availabilityDebug = {};
-
-        const { allocations, dropped } = await allocateVariantQty({
-          inventoryItemId: variant.inventoryItem.id,
-          requestedQty: qty,
-          locationIdsInOrder,
-          remainingAvailMap,
-          availabilityDebug
-        });
-
-        report.availabilitySeen.push({
-          handle: item.handle,
-          size,
-          inventoryItemId: variant.inventoryItem.id,
-          availabilityByLocationId: availabilityDebug,
-          allocations
-        });
-
-        const allocatedQty = allocations.reduce((sum, a) => sum + a.qty, 0);
-
-        if (allocatedQty > 0) {
-          const priceStr = String(item.unitPrice);
-          const existing = draftLineItems.find(li => li.variantId === variant.id && li.unitPrice === priceStr);
-          if (existing) existing.quantity += allocatedQty;
-          else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
-
-          const prev = allocationPlan.get(variant.id) || [];
-          const merged = [...prev];
-          for (const a of allocations) {
-            const m = merged.find(x => x.locationId === a.locationId);
-            if (m) m.qty += a.qty;
-            else merged.push({ locationId: a.locationId, qty: a.qty });
-          }
-          allocationPlan.set(variant.id, merged);
-
-          report.allocatedUnits += allocatedQty;
-        }
-
-        if (dropped > 0) report.droppedUnits += dropped;
-
-        report.lines.push({
-          handle: item.handle,
-          size,
-          requested: qty,
-          allocated: allocatedQty,
-          dropped,
-          reason: dropped > 0 ? "Insufficient stock in selected locations" : ""
-        });
-      }
-    }
+    const {
+      report,
+      allocationPlan,
+      draftLineItems,
+      locationIdToName,
+      productMetaByHandle
+    } = await runAllocationOnly(req);
 
     if (draftLineItems.length === 0) {
       return res.status(400).json({
@@ -598,16 +738,19 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       });
     }
 
+    // Create draft (tagged Wholesale) with priceOverride
     const draft = await draftOrderCreate({
       lineItems: draftLineItems,
       reserveHours: Number(reserveHours)
     });
 
+    // Complete => real order (UNPAID)
     const order = await draftOrderComplete(draft.id);
 
-    // IMPORTANT: do the moves and return a move log
+    // Enforce fulfillment locations
     const moveLog = await enforceFulfillmentLocations(order.id, allocationPlan);
 
+    // Final fulfillment snapshot
     const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
 
     res.json({
@@ -618,7 +761,9 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       orderName: order.name,
       moveLog,
       report,
-      finalFulfillment
+      finalFulfillment,
+      locationIdToName,
+      productMetaByHandle
     });
   } catch (e) {
     res.status(500).json({ error: String(e) });
