@@ -4,6 +4,7 @@ import multer from "multer";
 import { parse as parseCsv } from "csv-parse/sync";
 import XLSX from "xlsx";
 import path from "path";
+import crypto from "crypto";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -37,6 +38,38 @@ const AUTO_TAGS = ["Wholesale"];
 
 // Speed: cache product lookups across requests (safe + huge speed win)
 const productCache = new Map(); // handle -> productByHandle result or null
+
+// ----------------- Run store (so reports match runs) -----------------
+
+const runStore = new Map(); // runId -> { createdAt, locationIdToName, availabilitySeen, productMetaByHandle, locationIdsInOrder }
+const RUN_TTL_MS = 30 * 60 * 1000;
+
+function newRunId() {
+  return crypto.randomBytes(12).toString("hex");
+}
+
+function saveRun(payload) {
+  const runId = newRunId();
+  runStore.set(runId, { createdAt: Date.now(), ...payload });
+  return runId;
+}
+
+function getRun(runId) {
+  const r = runStore.get(runId);
+  if (!r) return null;
+  if (Date.now() - r.createdAt > RUN_TTL_MS) {
+    runStore.delete(runId);
+    return null;
+  }
+  return r;
+}
+
+setInterval(() => {
+  const now = Date.now();
+  for (const [id, r] of runStore.entries()) {
+    if (now - r.createdAt > RUN_TTL_MS) runStore.delete(id);
+  }
+}, 5 * 60 * 1000);
 
 // ----------------- Auth: access token -----------------
 
@@ -166,24 +199,24 @@ async function getAvailableAtLocation(inventoryItemId, locationId) {
 }
 
 function findVariantForSize(variants, size) {
-  // Robust: match any option whose name includes "size" (case-insensitive)
   const sizeLower = String(size).toLowerCase();
   return (
     variants.find(v =>
-      v.selectedOptions.some(o => String(o.name).toLowerCase().includes("size") && String(o.value).toLowerCase() === sizeLower)
+      v.selectedOptions.some(
+        o =>
+          String(o.name).toLowerCase().includes("size") &&
+          String(o.value).toLowerCase() === sizeLower
+      )
     ) || null
   );
 }
 
 // ---------- Allocation (best-effort, partial allowed) ----------
 
-// Key: `${inventoryItemId}::${locationId}` -> remaining available during THIS run
 function makeAvailKey(inventoryItemId, locationId) {
   return `${inventoryItemId}::${locationId}`;
 }
 
-// Allocation: split across locations in given priority order, KEEP PARTIALS.
-// Uses remainingAvailMap to decrement availability in-memory for the run.
 async function allocateVariantQty({
   inventoryItemId,
   requestedQty,
@@ -202,7 +235,7 @@ async function allocateVariantQty({
     if (!remainingAvailMap.has(key)) {
       const avail = await getAvailableAtLocation(inventoryItemId, locId);
       remainingAvailMap.set(key, avail);
-      if (availabilityDebug) availabilityDebug[locId] = Math.max(0, avail); // report safety
+      if (availabilityDebug) availabilityDebug[locId] = Math.max(0, avail);
     }
 
     const availNow = remainingAvailMap.get(key) || 0;
@@ -321,7 +354,7 @@ async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLin
   return data.fulfillmentOrderMove;
 }
 
-// Enforce allocation by moving FO line items; re-fetch after moves (handles Shopify splitting FOs)
+// Enforce allocation by moving FO line items; re-fetch after moves
 async function enforceFulfillmentLocations(orderId, allocationPlan) {
   const moveLog = [];
 
@@ -343,7 +376,7 @@ async function enforceFulfillmentLocations(orderId, allocationPlan) {
             if (vId !== variantId) continue;
             if ((li.remainingQuantity || 0) <= 0) continue;
 
-            // If already at desired location, just consume need (no move)
+            // Already at desired location: consume need
             if (foLocId === want.locationId) {
               const take = Math.min(li.remainingQuantity, need);
               need -= take;
@@ -440,19 +473,25 @@ function parseUpload(file) {
   throw new Error("Unsupported file type. Upload CSV or XLSX.");
 }
 
-// ----------------- Report XLSX builder (1 sheet per used location) -----------------
+// ----------------- Report XLSX builder (1 sheet per selected location) -----------------
 
 function safeSheetName(name) {
-  return String(name).replace(/[\[\]\*\/\\\?\:]/g, " ").slice(0, 31) || "Sheet";
+  return String(name).replace(/[\[\]\*\/\\\?\:]/g, " ").trim() || "Sheet";
 }
 
-/**
- * Builds XLSX where:
- * - One sheet per location actually used in allocations
- * - Rows = Product Title (primary), with Handle as a second column
- * - Columns = XXS..XXL, values = fulfillable qty FROM THAT LOCATION
- */
-function buildLocationWorkbook({ locationIdToName, availabilitySeen, productMetaByHandle }) {
+function makeUniqueSheetName(wb, baseName) {
+  let n = safeSheetName(baseName).slice(0, 31);
+  if (!wb.SheetNames.includes(n)) return n;
+
+  for (let i = 2; i < 100; i++) {
+    const suffix = ` (${i})`;
+    const trimmed = safeSheetName(baseName).slice(0, 31 - suffix.length) + suffix;
+    if (!wb.SheetNames.includes(trimmed)) return trimmed;
+  }
+  return safeSheetName(baseName).slice(0, 31);
+}
+
+function buildLocationWorkbook({ locationIdToName, availabilitySeen, productMetaByHandle, selectedLocationIds }) {
   const sizes = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 
   // locationId -> handle -> size -> qty
@@ -483,53 +522,59 @@ function buildLocationWorkbook({ locationIdToName, availabilitySeen, productMeta
 
   const wb = XLSX.utils.book_new();
 
-  for (const [locId, handleMap] of locMap.entries()) {
+  const locIds = Array.isArray(selectedLocationIds) && selectedLocationIds.length
+    ? selectedLocationIds
+    : Array.from(locMap.keys());
+
+  for (const locId of locIds) {
     const locName = locationIdToName[locId] || locId;
 
-    // Header: Title + Handle
     const header = ["Product Title", "Handle", ...sizes, "Total"];
     const rows = [header];
 
-    // Build rows; sort by title then handle
+    const handleMap = locMap.get(locId) || new Map();
     const handles = Array.from(handleMap.keys());
-    handles.sort((a, b) => {
-      const ta = (productMetaByHandle[a]?.title || "").toLowerCase();
-      const tb = (productMetaByHandle[b]?.title || "").toLowerCase();
-      if (ta < tb) return -1;
-      if (ta > tb) return 1;
-      return a.localeCompare(b);
-    });
 
-    for (const handle of handles) {
-      const sizeMap = handleMap.get(handle);
-      const title = productMetaByHandle[handle]?.title || "";
+    if (handles.length === 0) {
+      rows.push([`(No fulfillable units allocated to ${locName})`, "", ...sizes.map(() => 0), 0]);
+    } else {
+      handles.sort((a, b) => {
+        const ta = (productMetaByHandle[a]?.title || "").toLowerCase();
+        const tb = (productMetaByHandle[b]?.title || "").toLowerCase();
+        if (ta < tb) return -1;
+        if (ta > tb) return 1;
+        return a.localeCompare(b);
+      });
 
-      const row = [title, handle];
-      let total = 0;
+      for (const handle of handles) {
+        const sizeMap = handleMap.get(handle);
+        const title = productMetaByHandle[handle]?.title || "";
 
-      for (const s of sizes) {
-        const v = Number(sizeMap.get(s) || 0);
-        row.push(v);
-        total += v;
+        const row = [title, handle];
+        let total = 0;
+
+        for (const s of sizes) {
+          const v = Number(sizeMap.get(s) || 0);
+          row.push(v);
+          total += v;
+        }
+        row.push(total);
+        rows.push(row);
       }
-      row.push(total);
-      rows.push(row);
-    }
 
-    // Totals row
-    const totalsRow = ["TOTAL", "", ...sizes.map(() => 0), 0];
-    for (let r = 1; r < rows.length; r++) {
-      for (let c = 2; c < 2 + sizes.length; c++) totalsRow[c] += rows[r][c];
-      totalsRow[2 + sizes.length] += rows[r][2 + sizes.length];
+      const totalsRow = ["TOTAL", "", ...sizes.map(() => 0), 0];
+      for (let r = 1; r < rows.length; r++) {
+        for (let c = 2; c < 2 + sizes.length; c++) totalsRow[c] += rows[r][c];
+        totalsRow[2 + sizes.length] += rows[r][2 + sizes.length];
+      }
+      rows.push([]);
+      rows.push(totalsRow);
     }
-    rows.push([]);
-    rows.push(totalsRow);
 
     const ws = XLSX.utils.aoa_to_sheet(rows);
-    XLSX.utils.book_append_sheet(wb, ws, safeSheetName(locName));
+    XLSX.utils.book_append_sheet(wb, ws, makeUniqueSheetName(wb, locName));
   }
 
-  // If nothing allocated anywhere, still return a workbook with one sheet explaining it
   if (wb.SheetNames.length === 0) {
     const ws = XLSX.utils.aoa_to_sheet([["No fulfillable units in selected locations."]]);
     XLSX.utils.book_append_sheet(wb, ws, "Report");
@@ -538,7 +583,7 @@ function buildLocationWorkbook({ locationIdToName, availabilitySeen, productMeta
   return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
 }
 
-// ----------------- Shared allocator used by Preview / Import / Report -----------------
+// ----------------- Shared allocator used by Preview / Import -----------------
 
 async function runAllocationOnly(req) {
   const { locationIdsJson } = req.body;
@@ -572,9 +617,9 @@ async function runAllocationOnly(req) {
   }
 
   const remainingAvailMap = new Map();
-  const allocationPlan = new Map(); // variantId -> [{locationId, qty}]
-  const draftLineItems = []; // [{variantId, quantity, unitPrice}]
-  const productMetaByHandle = {}; // handle -> {title}
+  const allocationPlan = new Map();
+  const draftLineItems = [];
+  const productMetaByHandle = {};
 
   const report = {
     tagApplied: AUTO_TAGS,
@@ -642,9 +687,7 @@ async function runAllocationOnly(req) {
       if (allocatedQty > 0) {
         const priceStr = String(item.unitPrice);
 
-        const existing = draftLineItems.find(
-          li => li.variantId === variant.id && li.unitPrice === priceStr
-        );
+        const existing = draftLineItems.find(li => li.variantId === variant.id && li.unitPrice === priceStr);
         if (existing) existing.quantity += allocatedQty;
         else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
 
@@ -687,24 +730,40 @@ app.get("/api/locations", async (_req, res) => {
   }
 });
 
-// Preview only (no draft/order created)
+// Preview only (no draft/order created). Saves run and returns runId for report download.
 app.post("/api/preview", upload.single("file"), async (req, res) => {
   try {
     const result = await runAllocationOnly(req);
-    res.json({ ok: true, mode: "preview", ...result });
+
+    const runId = saveRun({
+      locationIdToName: result.locationIdToName,
+      availabilitySeen: result.report.availabilitySeen,
+      productMetaByHandle: result.productMetaByHandle,
+      locationIdsInOrder: result.locationIdsInOrder
+    });
+
+    res.json({ ok: true, mode: "preview", runId, ...result });
   } catch (e) {
     res.status(500).json({ error: String(e) });
   }
 });
 
-// XLSX report (one sheet per used location)
-app.post("/api/report.xlsx", upload.single("file"), async (req, res) => {
+// Report download by runId (no recompute, always matches preview/import)
+app.get("/api/report.xlsx", async (req, res) => {
   try {
-    const result = await runAllocationOnly(req);
+    const runId = String(req.query.runId || "");
+    const run = getRun(runId);
+    if (!run) {
+      return res.status(400).json({
+        error: "Invalid or expired runId. Run Preview or Create Order again, then download."
+      });
+    }
+
     const xlsxBuffer = buildLocationWorkbook({
-      locationIdToName: result.locationIdToName,
-      availabilitySeen: result.report.availabilitySeen,
-      productMetaByHandle: result.productMetaByHandle
+      locationIdToName: run.locationIdToName,
+      availabilitySeen: run.availabilitySeen,
+      productMetaByHandle: run.productMetaByHandle,
+      selectedLocationIds: run.locationIdsInOrder
     });
 
     res.setHeader(
@@ -718,44 +777,44 @@ app.post("/api/report.xlsx", upload.single("file"), async (req, res) => {
   }
 });
 
-// Import (draft -> complete unpaid -> move fulfillment)
+// Import (draft -> complete unpaid -> move fulfillment). Saves runId too.
 app.post("/api/import", upload.single("file"), async (req, res) => {
   try {
-    const { reserveHours = "48" } = req.body;
+    const { reserveHours = "48", locationIdsJson } = req.body;
 
-    const {
-      report,
-      allocationPlan,
-      draftLineItems,
+    const result = await runAllocationOnly(req);
+    const { report, allocationPlan, draftLineItems, locationIdToName, productMetaByHandle } = result;
+
+    const runId = saveRun({
       locationIdToName,
-      productMetaByHandle
-    } = await runAllocationOnly(req);
+      availabilitySeen: report.availabilitySeen,
+      productMetaByHandle,
+      locationIdsInOrder: JSON.parse(locationIdsJson || "[]")
+    });
 
     if (draftLineItems.length === 0) {
       return res.status(400).json({
         error: "Nothing fulfillable from selected locations. No order created.",
+        runId,
         report
       });
     }
 
-    // Create draft (tagged Wholesale) with priceOverride
     const draft = await draftOrderCreate({
       lineItems: draftLineItems,
       reserveHours: Number(reserveHours)
     });
 
-    // Complete => real order (UNPAID)
     const order = await draftOrderComplete(draft.id);
 
-    // Enforce fulfillment locations
     const moveLog = await enforceFulfillmentLocations(order.id, allocationPlan);
 
-    // Final fulfillment snapshot
     const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
 
     res.json({
       ok: true,
       tags: AUTO_TAGS,
+      runId,
       draftOrderId: draft.id,
       orderId: order.id,
       orderName: order.name,
