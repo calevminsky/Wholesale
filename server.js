@@ -1,3 +1,4 @@
+// server.js
 import express from "express";
 import multer from "multer";
 import { parse as parseCsv } from "csv-parse/sync";
@@ -13,10 +14,10 @@ app.use(express.static("public"));
 const SHOP = process.env.SHOPIFY_SHOP; // must be *.myshopify.com
 const VERSION = process.env.SHOPIFY_API_VERSION || "2025-01";
 
-// Option A: long-lived Admin token (custom app in store admin)
+// Option A: long-lived Admin token (custom app created inside Shopify admin)
 const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN;
 
-// Option B: client credentials (new dev dashboard style)
+// Option B: client credentials (Dev Dashboard style) => mint 24h token
 const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
 
@@ -24,7 +25,6 @@ if (!SHOP) {
   console.error("Missing SHOPIFY_SHOP env var (must be your *.myshopify.com domain).");
   process.exit(1);
 }
-
 if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
   console.error(
     "Missing auth env vars. Provide either SHOPIFY_ADMIN_TOKEN OR (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET)."
@@ -33,7 +33,7 @@ if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
 }
 
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
-const AUTO_TAGS = ["Wholesale"]; // <-- requested autotag
+const AUTO_TAGS = ["Wholesale"];
 
 // ----------------- Auth: access token -----------------
 
@@ -134,6 +134,7 @@ async function getProductVariantsByHandle(handle) {
   return data.productByHandle;
 }
 
+// IMPORTANT: Shopify changed top-level inventoryLevel query. Query via inventoryItem.inventoryLevel(locationId)
 async function getAvailableAtLocation(inventoryItemId, locationId) {
   const q = `
     query Inv($inventoryItemId: ID!, $locationId: ID!) {
@@ -144,16 +145,13 @@ async function getAvailableAtLocation(inventoryItemId, locationId) {
       }
     }
   `;
-
   const data = await shopifyGraphQL(q, { inventoryItemId, locationId });
 
   const level = data.inventoryItem?.inventoryLevel;
-  if (!level) return 0; // not stocked at this location (or no inventory level)
-
+  if (!level) return 0; // not stocked at this location (or no level)
   const avail = level.quantities.find(x => x.name === "available")?.quantity ?? 0;
   return Number(avail) || 0;
 }
-
 
 function findVariantForSize(variants, size) {
   // Assumes there is an option named "Size" with values XXS..XXL
@@ -164,18 +162,41 @@ function findVariantForSize(variants, size) {
   );
 }
 
-// Allocation: split across locations in given priority order
-async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsInOrder }) {
+// ---------- Allocation (best-effort, partial allowed) ----------
+
+// Key: `${inventoryItemId}::${locationId}` -> remaining available during THIS import run
+function makeAvailKey(inventoryItemId, locationId) {
+  return `${inventoryItemId}::${locationId}`;
+}
+
+// Allocation: split across locations in given priority order, and KEEP PARTIALS
+// Uses remainingAvailMap to decrement availability in-memory so multiple lines don't "reuse" the same stock
+async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsInOrder, remainingAvailMap }) {
   let remaining = requestedQty;
   const allocations = []; // [{locationId, qty}]
+
   for (const locId of locationIdsInOrder) {
     if (remaining <= 0) break;
-    const avail = await getAvailableAtLocation(inventoryItemId, locId);
-    if (avail <= 0) continue;
-    const take = Math.min(avail, remaining);
-    if (take > 0) allocations.push({ locationId: locId, qty: take });
-    remaining -= take;
+
+    const key = makeAvailKey(inventoryItemId, locId);
+
+    // Load once per (item,location) per import run
+    if (!remainingAvailMap.has(key)) {
+      const avail = await getAvailableAtLocation(inventoryItemId, locId);
+      remainingAvailMap.set(key, avail);
+    }
+
+    const availNow = remainingAvailMap.get(key) || 0;
+    if (availNow <= 0) continue;
+
+    const take = Math.min(availNow, remaining);
+    if (take > 0) {
+      allocations.push({ locationId: locId, qty: take });
+      remainingAvailMap.set(key, availNow - take); // decrement availability for this run
+      remaining -= take;
+    }
   }
+
   return { allocations, dropped: remaining };
 }
 
@@ -195,7 +216,7 @@ async function draftOrderCreate({ lineItems, reserveHours }) {
   `;
 
   const input = {
-    tags: AUTO_TAGS, // <-- auto-tag "Wholesale" (carries to order) :contentReference[oaicite:1]{index=1}
+    tags: AUTO_TAGS,
     lineItems: lineItems.map(li => ({
       variantId: li.variantId,
       quantity: li.quantity,
@@ -212,16 +233,17 @@ async function draftOrderCreate({ lineItems, reserveHours }) {
   return data.draftOrderCreate.draftOrder;
 }
 
+// IMPORTANT: Complete draft as UNPAID / payment pending
 async function draftOrderComplete(draftOrderId) {
   const mutation = `
-    mutation CompleteDraft($id: ID!) {
-      draftOrderComplete(id: $id) {
+    mutation CompleteDraft($id: ID!, $paymentPending: Boolean!) {
+      draftOrderComplete(id: $id, paymentPending: $paymentPending) {
         draftOrder { id order { id name } }
         userErrors { field message }
       }
     }
   `;
-  const data = await shopifyGraphQL(mutation, { id: draftOrderId });
+  const data = await shopifyGraphQL(mutation, { id: draftOrderId, paymentPending: true });
   const errs = data.draftOrderComplete.userErrors || [];
   if (errs.length) throw new Error(`draftOrderComplete errors: ${JSON.stringify(errs, null, 2)}`);
   return data.draftOrderComplete.draftOrder.order;
@@ -385,8 +407,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     const records = parseUpload(req.file);
 
-    // Validate expected headers
-    // Required: product_handle, unit_price, plus size columns
+    // Normalize input rows
     const requested = [];
     for (const row of records) {
       const handle = (row.product_handle || "").toString().trim();
@@ -411,6 +432,9 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
         productTitle: (row.product_title || "").toString().trim()
       });
     }
+
+    // This map ensures partial split allocations work correctly across the whole import run
+    const remainingAvailMap = new Map();
 
     const allocationPlan = new Map(); // variantId -> [{locationId, qty}]
     const draftLineItems = []; // [{variantId, quantity, unitPrice}]
@@ -454,28 +478,30 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
         const { allocations, dropped } = await allocateVariantQty({
           inventoryItemId: variant.inventoryItem.id,
           requestedQty: qty,
-          locationIdsInOrder
+          locationIdsInOrder,
+          remainingAvailMap
         });
 
         const allocatedQty = allocations.reduce((sum, a) => sum + a.qty, 0);
 
+        // IMPORTANT: keep partial allocations (allocatedQty can be < requested)
         if (allocatedQty > 0) {
-          // Combine quantities for same variant (if repeated in file)
-          const existing = draftLineItems.find(li => li.variantId === variant.id && li.unitPrice === String(item.unitPrice));
+          // Combine quantities for same variant + same unit price (in case repeated)
+          const priceStr = String(item.unitPrice);
+          const existing = draftLineItems.find(li => li.variantId === variant.id && li.unitPrice === priceStr);
           if (existing) existing.quantity += allocatedQty;
-          else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: String(item.unitPrice) });
+          else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
 
-          // Merge allocation plan per variantId
+          // Merge allocations per variantId (location totals)
           const prev = allocationPlan.get(variant.id) || [];
           const merged = [...prev];
-
           for (const a of allocations) {
             const m = merged.find(x => x.locationId === a.locationId);
             if (m) m.qty += a.qty;
             else merged.push({ locationId: a.locationId, qty: a.qty });
           }
-
           allocationPlan.set(variant.id, merged);
+
           report.allocatedUnits += allocatedQty;
         }
 
@@ -505,7 +531,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       reserveHours: Number(reserveHours)
     });
 
-    // 2) Complete draft => real order
+    // 2) Complete draft => real order (UNPAID / payment pending)
     const order = await draftOrderComplete(draft.id);
 
     // 3) Enforce fulfillment location assignments to match allocation plan
