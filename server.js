@@ -9,29 +9,69 @@ app.use(express.json());
 app.use(express.static("public"));
 
 const SHOP = process.env.SHOPIFY_SHOP;
-const TOKEN = process.env.SHOPIFY_ADMIN_TOKEN;
 const VERSION = process.env.SHOPIFY_API_VERSION || "2025-01";
 
-if (!SHOP || !TOKEN) {
-  console.error("Missing SHOPIFY_SHOP or SHOPIFY_ADMIN_TOKEN env vars.");
+const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
+const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
+
+if (!SHOP || !CLIENT_ID || !CLIENT_SECRET) {
+  console.error("Missing SHOPIFY_SHOP, SHOPIFY_CLIENT_ID, or SHOPIFY_CLIENT_SECRET env vars.");
   process.exit(1);
 }
+
+let cachedAccessToken = null;
+let tokenExpiresAtMs = 0;
+
+async function getAdminAccessToken() {
+  const now = Date.now();
+  // refresh 5 minutes early
+  if (cachedAccessToken && now < tokenExpiresAtMs - 5 * 60_000) return cachedAccessToken;
+
+  const url = `https://${SHOP}/admin/oauth/access_token`;
+  const body = new URLSearchParams();
+  body.set("grant_type", "client_credentials");
+  body.set("client_id", CLIENT_ID);
+  body.set("client_secret", CLIENT_SECRET);
+
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "Content-Type": "application/x-www-form-urlencoded" },
+    body
+  });
+
+  const json = await res.json();
+  if (!res.ok || !json.access_token) {
+    throw new Error(`Token exchange failed: ${res.status} ${JSON.stringify(json)}`);
+  }
+
+  cachedAccessToken = json.access_token;
+  // expires_in is seconds (typically 86399)
+  const expiresInSec = Number(json.expires_in || 86400);
+  tokenExpiresAtMs = Date.now() + expiresInSec * 1000;
+
+  return cachedAccessToken;
+}
+
 
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 
 async function shopifyGraphQL(query, variables = {}) {
+  const token = await getAdminAccessToken();
+
   const res = await fetch(`https://${SHOP}/admin/api/${VERSION}/graphql.json`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-Shopify-Access-Token": TOKEN
+      "X-Shopify-Access-Token": token
     },
     body: JSON.stringify({ query, variables })
   });
+
   const json = await res.json();
   if (json.errors) throw new Error(JSON.stringify(json.errors, null, 2));
   return json.data;
 }
+
 
 async function getAllLocations() {
   const q = `
