@@ -91,6 +91,18 @@ async function shopifyGraphQL(query, variables = {}) {
   return json.data;
 }
 
+// ----------------- Currency code (for priceOverride) -----------------
+
+let cachedCurrencyCode = null;
+
+async function getShopCurrencyCode() {
+  if (cachedCurrencyCode) return cachedCurrencyCode;
+  const q = `query { shop { currencyCode } }`;
+  const data = await shopifyGraphQL(q, {});
+  cachedCurrencyCode = data.shop.currencyCode;
+  return cachedCurrencyCode;
+}
+
 // ----------------- Shopify queries/mutations -----------------
 
 async function getAllLocations() {
@@ -134,7 +146,7 @@ async function getProductVariantsByHandle(handle) {
   return data.productByHandle;
 }
 
-// IMPORTANT: Shopify changed top-level inventoryLevel query. Query via inventoryItem.inventoryLevel(locationId)
+// Shopify: query inventory via inventoryItem.inventoryLevel(locationId)
 async function getAvailableAtLocation(inventoryItemId, locationId) {
   const q = `
     query Inv($inventoryItemId: ID!, $locationId: ID!) {
@@ -169,8 +181,8 @@ function makeAvailKey(inventoryItemId, locationId) {
   return `${inventoryItemId}::${locationId}`;
 }
 
-// Allocation: split across locations in given priority order, and KEEP PARTIALS
-// Uses remainingAvailMap to decrement availability in-memory so multiple lines don't "reuse" the same stock
+// Allocation: split across locations in given priority order, and KEEP PARTIALS.
+// Uses remainingAvailMap to decrement availability in-memory so multiple lines don't "reuse" the same stock.
 async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsInOrder, remainingAvailMap }) {
   let remaining = requestedQty;
   const allocations = []; // [{locationId, qty}]
@@ -200,11 +212,14 @@ async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsIn
   return { allocations, dropped: remaining };
 }
 
+// IMPORTANT: priceOverride is what reliably sets per-unit price on draft line items w/ variantId.
 async function draftOrderCreate({ lineItems, reserveHours }) {
   const reserveUntilIso =
     reserveHours && Number(reserveHours) > 0
       ? new Date(Date.now() + Number(reserveHours) * 3600_000).toISOString()
       : null;
+
+  const currencyCode = await getShopCurrencyCode();
 
   const mutation = `
     mutation CreateDraft($input: DraftOrderInput!) {
@@ -220,8 +235,10 @@ async function draftOrderCreate({ lineItems, reserveHours }) {
     lineItems: lineItems.map(li => ({
       variantId: li.variantId,
       quantity: li.quantity,
-      // Price override per unit (wholesale price)
-      originalUnitPrice: li.unitPrice
+      priceOverride: {
+        amount: String(li.unitPrice),
+        currencyCode
+      }
     }))
   };
 
@@ -358,6 +375,31 @@ async function enforceFulfillmentLocations(orderId, allocationPlan) {
   }
 }
 
+// Return the final FO split so you can verify in the response
+async function summarizeFulfillmentByLocation(orderId) {
+  const fos = await getFulfillmentOrdersForOrder(orderId);
+
+  const summary = {};
+  const detail = fos.map(fo => {
+    const locName = fo.assignedLocation?.location?.name || "Unknown";
+    const qty = fo.lineItems.nodes.reduce((s, li) => s + (li.remainingQuantity || 0), 0);
+    summary[locName] = (summary[locName] || 0) + qty;
+
+    return {
+      fulfillmentOrderId: fo.id,
+      location: locName,
+      status: fo.status,
+      lines: fo.lineItems.nodes.map(li => ({
+        fulfillmentOrderLineItemId: li.id,
+        variantId: li.lineItem?.variant?.id || null,
+        remainingQuantity: li.remainingQuantity
+      }))
+    };
+  });
+
+  return { summary, fulfillmentOrders: detail };
+}
+
 // ----------------- Upload parsing (CSV + XLSX) -----------------
 
 function parseUpload(file) {
@@ -433,7 +475,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       });
     }
 
-    // This map ensures partial split allocations work correctly across the whole import run
+    // Ensures partial split allocations work correctly across the whole import run
     const remainingAvailMap = new Map();
 
     const allocationPlan = new Map(); // variantId -> [{locationId, qty}]
@@ -484,7 +526,6 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
         const allocatedQty = allocations.reduce((sum, a) => sum + a.qty, 0);
 
-        // IMPORTANT: keep partial allocations (allocatedQty can be < requested)
         if (allocatedQty > 0) {
           // Combine quantities for same variant + same unit price (in case repeated)
           const priceStr = String(item.unitPrice);
@@ -525,7 +566,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       });
     }
 
-    // 1) Create draft (tagged Wholesale)
+    // 1) Create draft (tagged Wholesale) with priceOverride
     const draft = await draftOrderCreate({
       lineItems: draftLineItems,
       reserveHours: Number(reserveHours)
@@ -537,13 +578,17 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
     // 3) Enforce fulfillment location assignments to match allocation plan
     await enforceFulfillmentLocations(order.id, allocationPlan);
 
+    // 4) Re-fetch + summarize final fulfillment split so you can validate it
+    const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
+
     res.json({
       ok: true,
       tags: AUTO_TAGS,
       draftOrderId: draft.id,
       orderId: order.id,
       orderName: order.name,
-      report
+      report,
+      finalFulfillment
     });
   } catch (e) {
     res.status(500).json({ error: String(e) });
