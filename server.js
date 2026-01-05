@@ -41,10 +41,8 @@ let cachedAccessToken = null;
 let tokenExpiresAtMs = 0;
 
 async function getAccessToken() {
-  // If you provided a permanent Admin token, just use it.
   if (ADMIN_TOKEN) return ADMIN_TOKEN;
 
-  // Otherwise mint a token via client credentials and cache it.
   const now = Date.now();
   if (cachedAccessToken && now < tokenExpiresAtMs - 5 * 60_000) return cachedAccessToken;
 
@@ -68,7 +66,6 @@ async function getAccessToken() {
   cachedAccessToken = json.access_token;
   const expiresInSec = Number(json.expires_in || 86400);
   tokenExpiresAtMs = Date.now() + expiresInSec * 1000;
-
   return cachedAccessToken;
 }
 
@@ -146,7 +143,7 @@ async function getProductVariantsByHandle(handle) {
   return data.productByHandle;
 }
 
-// Shopify: query inventory via inventoryItem.inventoryLevel(locationId)
+// Shopify: inventory via inventoryItem.inventoryLevel(locationId)
 async function getAvailableAtLocation(inventoryItemId, locationId) {
   const q = `
     query Inv($inventoryItemId: ID!, $locationId: ID!) {
@@ -160,13 +157,12 @@ async function getAvailableAtLocation(inventoryItemId, locationId) {
   const data = await shopifyGraphQL(q, { inventoryItemId, locationId });
 
   const level = data.inventoryItem?.inventoryLevel;
-  if (!level) return 0; // not stocked at this location (or no level)
+  if (!level) return 0;
   const avail = level.quantities.find(x => x.name === "available")?.quantity ?? 0;
   return Number(avail) || 0;
 }
 
 function findVariantForSize(variants, size) {
-  // Assumes there is an option named "Size" with values XXS..XXL
   return (
     variants.find(v =>
       v.selectedOptions.some(o => o.name.toLowerCase() === "size" && o.value === size)
@@ -176,26 +172,31 @@ function findVariantForSize(variants, size) {
 
 // ---------- Allocation (best-effort, partial allowed) ----------
 
-// Key: `${inventoryItemId}::${locationId}` -> remaining available during THIS import run
 function makeAvailKey(inventoryItemId, locationId) {
   return `${inventoryItemId}::${locationId}`;
 }
 
-// Allocation: split across locations in given priority order, and KEEP PARTIALS.
-// Uses remainingAvailMap to decrement availability in-memory so multiple lines don't "reuse" the same stock.
-async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsInOrder, remainingAvailMap }) {
+// NOTE: we now ALSO record what we saw as "available" per location for debugging.
+async function allocateVariantQty({
+  inventoryItemId,
+  requestedQty,
+  locationIdsInOrder,
+  remainingAvailMap,
+  availabilityDebug // object to fill: { [locationId]: availAtStartOrFirstSeen }
+}) {
   let remaining = requestedQty;
-  const allocations = []; // [{locationId, qty}]
+  const allocations = [];
 
   for (const locId of locationIdsInOrder) {
     if (remaining <= 0) break;
 
     const key = makeAvailKey(inventoryItemId, locId);
 
-    // Load once per (item,location) per import run
     if (!remainingAvailMap.has(key)) {
       const avail = await getAvailableAtLocation(inventoryItemId, locId);
       remainingAvailMap.set(key, avail);
+      // record first-seen availability for this item/location
+      availabilityDebug[locId] = avail;
     }
 
     const availNow = remainingAvailMap.get(key) || 0;
@@ -204,7 +205,7 @@ async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsIn
     const take = Math.min(availNow, remaining);
     if (take > 0) {
       allocations.push({ locationId: locId, qty: take });
-      remainingAvailMap.set(key, availNow - take); // decrement availability for this run
+      remainingAvailMap.set(key, availNow - take);
       remaining -= take;
     }
   }
@@ -212,7 +213,7 @@ async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsIn
   return { allocations, dropped: remaining };
 }
 
-// IMPORTANT: priceOverride is what reliably sets per-unit price on draft line items w/ variantId.
+// Draft create with Wholesale tag + priceOverride
 async function draftOrderCreate({ lineItems, reserveHours }) {
   const reserveUntilIso =
     reserveHours && Number(reserveHours) > 0
@@ -235,10 +236,7 @@ async function draftOrderCreate({ lineItems, reserveHours }) {
     lineItems: lineItems.map(li => ({
       variantId: li.variantId,
       quantity: li.quantity,
-      priceOverride: {
-        amount: String(li.unitPrice),
-        currencyCode
-      }
+      priceOverride: { amount: String(li.unitPrice), currencyCode }
     }))
   };
 
@@ -250,7 +248,7 @@ async function draftOrderCreate({ lineItems, reserveHours }) {
   return data.draftOrderCreate.draftOrder;
 }
 
-// IMPORTANT: Complete draft as UNPAID / payment pending
+// Complete as unpaid
 async function draftOrderComplete(draftOrderId) {
   const mutation = `
     mutation CompleteDraft($id: ID!, $paymentPending: Boolean!) {
@@ -270,7 +268,6 @@ async function getFulfillmentOrdersForOrder(orderId) {
   const q = `
     query OrderFOs($id: ID!) {
       order(id: $id) {
-        id
         fulfillmentOrders(first: 50) {
           nodes {
             id
@@ -295,87 +292,113 @@ async function getFulfillmentOrdersForOrder(orderId) {
 async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLineItems }) {
   const m = `
     mutation MoveFO($id: ID!, $newLocationId: ID!, $items: [FulfillmentOrderLineItemInput!]!) {
-      fulfillmentOrderMove(id: $id, newLocationId: $newLocationId, fulfillmentOrderLineItems: $items) {
-        movedFulfillmentOrder { id }
-        originalFulfillmentOrder { id }
+      fulfillmentOrderMove(
+        id: $id,
+        newLocationId: $newLocationId,
+        fulfillmentOrderLineItems: $items
+      ) {
+        movedFulfillmentOrder { id status assignedLocation { location { id name } } }
+        originalFulfillmentOrder { id status assignedLocation { location { id name } } }
         userErrors { field message }
       }
     }
   `;
+
   const data = await shopifyGraphQL(m, {
     id: fulfillmentOrderId,
     newLocationId,
     items: moveLineItems
   });
+
   const errs = data.fulfillmentOrderMove.userErrors || [];
   if (errs.length) throw new Error(`fulfillmentOrderMove errors: ${JSON.stringify(errs, null, 2)}`);
   return data.fulfillmentOrderMove;
 }
 
-// Enforce allocation by moving FO line items
+/**
+ * ENFORCEMENT THAT WORKS:
+ * - After each move, re-fetch fulfillment orders for the order.
+ * - That avoids stale FO line-item IDs and ensures the split actually shows up.
+ */
 async function enforceFulfillmentLocations(orderId, allocationPlan) {
-  // allocationPlan: Map<variantId, Array<{locationId, qty}>>
-  const fos = await getFulfillmentOrdersForOrder(orderId);
+  const moveLog = [];
 
-  // variantId -> [{ fulfillmentOrderId, fulfillmentOrderLineItemId, remainingQuantity, assignedLocationId }]
-  const variantToFOLines = new Map();
-  for (const fo of fos) {
-    for (const li of fo.lineItems.nodes) {
-      const variantId = li.lineItem?.variant?.id;
-      if (!variantId) continue;
-      const arr = variantToFOLines.get(variantId) || [];
-      arr.push({
-        fulfillmentOrderId: fo.id,
-        fulfillmentOrderLineItemId: li.id,
-        remainingQuantity: li.remainingQuantity,
-        assignedLocationId: fo.assignedLocation.location.id
-      });
-      variantToFOLines.set(variantId, arr);
-    }
-  }
-
+  // For each variant: ensure quantities end up at desired locations
   for (const [variantId, desiredAllocations] of allocationPlan.entries()) {
-    const lines = variantToFOLines.get(variantId) || [];
-
+    // Build desired list e.g. [{locId, qty}, ...]
     for (const want of desiredAllocations) {
       let need = want.qty;
       if (need <= 0) continue;
 
-      for (const line of lines) {
-        if (need <= 0) break;
-        if (line.remainingQuantity <= 0) continue;
+      while (need > 0) {
+        const fos = await getFulfillmentOrdersForOrder(orderId);
 
-        // Already assigned to desired location → just consume capacity
-        if (line.assignedLocationId === want.locationId) {
-          const take = Math.min(line.remainingQuantity, need);
-          line.remainingQuantity -= take;
-          need -= take;
-          continue;
+        // Find any FO line for this variant that still has remaining qty NOT at the desired location
+        let source = null;
+
+        for (const fo of fos) {
+          const foLocId = fo.assignedLocation?.location?.id;
+          for (const li of fo.lineItems.nodes) {
+            const vId = li.lineItem?.variant?.id;
+            if (vId !== variantId) continue;
+            if ((li.remainingQuantity || 0) <= 0) continue;
+
+            // Prefer a line already at the desired location (then just decrement need without moving)
+            if (foLocId === want.locationId) {
+              const take = Math.min(li.remainingQuantity, need);
+              need -= take;
+              // Reduce "remaining" only logically; Shopify already has it at correct location
+              // So nothing to move.
+              source = null;
+              break;
+            }
+
+            // Otherwise choose this as source to move from
+            source = {
+              fulfillmentOrderId: fo.id,
+              fulfillmentOrderLineItemId: li.id,
+              remainingQuantity: li.remainingQuantity,
+              fromLocation: fo.assignedLocation?.location?.name,
+              fromLocationId: foLocId
+            };
+            break;
+          }
+          if (need <= 0) break;
+          if (source) break;
         }
 
-        // Move quantity to desired location
-        const moveQty = Math.min(line.remainingQuantity, need);
+        if (need <= 0) break;
 
-        await fulfillmentOrderMove({
-          fulfillmentOrderId: line.fulfillmentOrderId,
+        if (!source) {
+          // Nothing left to move; break to avoid infinite loop
+          break;
+        }
+
+        const moveQty = Math.min(source.remainingQuantity, need);
+
+        const result = await fulfillmentOrderMove({
+          fulfillmentOrderId: source.fulfillmentOrderId,
           newLocationId: want.locationId,
-          moveLineItems: [{ id: line.fulfillmentOrderLineItemId, quantity: moveQty }]
+          moveLineItems: [{ id: source.fulfillmentOrderLineItemId, quantity: moveQty }]
         });
 
-        line.remainingQuantity -= moveQty;
-        need -= moveQty;
-      }
+        moveLog.push({
+          variantId,
+          movedQty: moveQty,
+          from: source.fromLocation,
+          toLocationId: want.locationId,
+          movedFulfillmentOrder: result.movedFulfillmentOrder?.id || null,
+          originalFulfillmentOrder: result.originalFulfillmentOrder?.id || null
+        });
 
-      if (need > 0) {
-        console.warn(
-          `Warning: Could not fully assign variant ${variantId} to location ${want.locationId}. Need left: ${need}`
-        );
+        need -= moveQty;
       }
     }
   }
+
+  return moveLog;
 }
 
-// Return the final FO split so you can verify in the response
 async function summarizeFulfillmentByLocation(orderId) {
   const fos = await getFulfillmentOrdersForOrder(orderId);
 
@@ -388,6 +411,7 @@ async function summarizeFulfillmentByLocation(orderId) {
     return {
       fulfillmentOrderId: fo.id,
       location: locName,
+      locationId: fo.assignedLocation?.location?.id || null,
       status: fo.status,
       lines: fo.lineItems.nodes.map(li => ({
         fulfillmentOrderLineItemId: li.id,
@@ -449,7 +473,6 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     const records = parseUpload(req.file);
 
-    // Normalize input rows
     const requested = [];
     for (const row of records) {
       const handle = (row.product_handle || "").toString().trim();
@@ -475,9 +498,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       });
     }
 
-    // Ensures partial split allocations work correctly across the whole import run
     const remainingAvailMap = new Map();
-
     const allocationPlan = new Map(); // variantId -> [{locationId, qty}]
     const draftLineItems = []; // [{variantId, quantity, unitPrice}]
 
@@ -487,7 +508,9 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       allocatedUnits: 0,
       droppedUnits: 0,
       missingHandles: [],
-      lines: [] // per handle+size breakdown
+      // IMPORTANT: include what the API said was available for each handle+size at each selected location
+      availabilitySeen: [], // [{handle,size,inventoryItemId, availabilityByLocationId:{...}, allocations:[...]}]
+      lines: []
     };
 
     for (const item of requested) {
@@ -517,23 +540,32 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
           continue;
         }
 
+        const availabilityDebug = {};
+
         const { allocations, dropped } = await allocateVariantQty({
           inventoryItemId: variant.inventoryItem.id,
           requestedQty: qty,
           locationIdsInOrder,
-          remainingAvailMap
+          remainingAvailMap,
+          availabilityDebug
+        });
+
+        report.availabilitySeen.push({
+          handle: item.handle,
+          size,
+          inventoryItemId: variant.inventoryItem.id,
+          availabilityByLocationId: availabilityDebug,
+          allocations
         });
 
         const allocatedQty = allocations.reduce((sum, a) => sum + a.qty, 0);
 
         if (allocatedQty > 0) {
-          // Combine quantities for same variant + same unit price (in case repeated)
           const priceStr = String(item.unitPrice);
           const existing = draftLineItems.find(li => li.variantId === variant.id && li.unitPrice === priceStr);
           if (existing) existing.quantity += allocatedQty;
           else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
 
-          // Merge allocations per variantId (location totals)
           const prev = allocationPlan.get(variant.id) || [];
           const merged = [...prev];
           for (const a of allocations) {
@@ -566,19 +598,16 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       });
     }
 
-    // 1) Create draft (tagged Wholesale) with priceOverride
     const draft = await draftOrderCreate({
       lineItems: draftLineItems,
       reserveHours: Number(reserveHours)
     });
 
-    // 2) Complete draft => real order (UNPAID / payment pending)
     const order = await draftOrderComplete(draft.id);
 
-    // 3) Enforce fulfillment location assignments to match allocation plan
-    await enforceFulfillmentLocations(order.id, allocationPlan);
+    // IMPORTANT: do the moves and return a move log
+    const moveLog = await enforceFulfillmentLocations(order.id, allocationPlan);
 
-    // 4) Re-fetch + summarize final fulfillment split so you can validate it
     const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
 
     res.json({
@@ -587,6 +616,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       draftOrderId: draft.id,
       orderId: order.id,
       orderName: order.name,
+      moveLog,
       report,
       finalFulfillment
     });
