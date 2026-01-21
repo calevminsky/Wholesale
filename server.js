@@ -18,7 +18,7 @@ const VERSION = process.env.SHOPIFY_API_VERSION || "2025-01";
 // Option A: long-lived Admin token (custom app created inside Shopify admin)
 const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN;
 
-// Option B: client credentials (Dev Dashboard style) => mint 24h token
+// Option B: client credentials => mint token
 const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
 const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
 
@@ -36,7 +36,7 @@ if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 const AUTO_TAGS = ["Wholesale"];
 
-// Speed: cache product lookups across requests (safe + huge speed win)
+// Cache product lookups across requests
 const productCache = new Map(); // handle -> productByHandle result or null
 
 // ----------------- Run store (so reports match runs) -----------------
@@ -179,7 +179,6 @@ async function getProductVariantsByHandle(handle) {
   return data.productByHandle;
 }
 
-// Shopify: inventory via inventoryItem.inventoryLevel(locationId)
 async function getAvailableAtLocation(inventoryItemId, locationId) {
   const q = `
     query Inv($inventoryItemId: ID!, $locationId: ID!) {
@@ -191,7 +190,6 @@ async function getAvailableAtLocation(inventoryItemId, locationId) {
     }
   `;
   const data = await shopifyGraphQL(q, { inventoryItemId, locationId });
-
   const level = data.inventoryItem?.inventoryLevel;
   if (!level) return 0;
   const avail = level.quantities.find(x => x.name === "available")?.quantity ?? 0;
@@ -235,10 +233,11 @@ async function allocateVariantQty({
     if (!remainingAvailMap.has(key)) {
       const avail = await getAvailableAtLocation(inventoryItemId, locId);
       remainingAvailMap.set(key, avail);
-      if (availabilityDebug) availabilityDebug[locId] = Math.max(0, avail);
     }
 
     const availNow = remainingAvailMap.get(key) || 0;
+    if (availabilityDebug) availabilityDebug[locId] = Math.max(0, availNow);
+
     if (availNow <= 0) continue;
 
     const take = Math.min(availNow, remaining);
@@ -252,7 +251,7 @@ async function allocateVariantQty({
   return { allocations, dropped: remaining };
 }
 
-// Draft create with Wholesale tag + priceOverride
+// Draft create with Wholesale tag + priceOverride + optional reserveInventoryUntil
 async function draftOrderCreate({ lineItems, reserveHours }) {
   const reserveUntilIso =
     reserveHours && Number(reserveHours) > 0
@@ -316,7 +315,11 @@ async function getFulfillmentOrdersForOrder(orderId) {
               nodes {
                 id
                 remainingQuantity
-                lineItem { variant { id } }
+                lineItem {
+                  id
+                  quantity
+                  variant { id inventoryItem { id } }
+                }
               }
             }
           }
@@ -354,74 +357,349 @@ async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLin
   return data.fulfillmentOrderMove;
 }
 
-// Enforce allocation by moving FO line items; re-fetch after moves
-async function enforceFulfillmentLocations(orderId, allocationPlan) {
-  const moveLog = [];
+// ----------------- Order edit (remove unfulfillable units) -----------------
 
-  for (const [variantId, desiredAllocations] of allocationPlan.entries()) {
-    for (const want of desiredAllocations) {
-      let need = want.qty;
-      if (need <= 0) continue;
+async function orderEditBegin(orderId) {
+  const m = `
+    mutation Begin($id: ID!) {
+      orderEditBegin(id: $id) {
+        calculatedOrder { id }
+        userErrors { field message }
+      }
+    }
+  `;
+  const data = await shopifyGraphQL(m, { id: orderId });
+  const errs = data.orderEditBegin.userErrors || [];
+  if (errs.length) throw new Error(`orderEditBegin errors: ${JSON.stringify(errs, null, 2)}`);
+  return data.orderEditBegin.calculatedOrder.id;
+}
 
-      while (need > 0) {
-        const fos = await getFulfillmentOrdersForOrder(orderId);
+async function orderEditSetQuantity(calculatedOrderId, lineItemId, quantity, restock = false) {
+  const m = `
+    mutation SetQty($id: ID!, $lineItemId: ID!, $quantity: Int!, $restock: Boolean) {
+      orderEditSetQuantity(id: $id, lineItemId: $lineItemId, quantity: $quantity, restock: $restock) {
+        calculatedOrder { id }
+        userErrors { field message }
+      }
+    }
+  `;
+  const data = await shopifyGraphQL(m, {
+    id: calculatedOrderId,
+    lineItemId,
+    quantity,
+    restock
+  });
+  const errs = data.orderEditSetQuantity.userErrors || [];
+  if (errs.length) throw new Error(`orderEditSetQuantity errors: ${JSON.stringify(errs, null, 2)}`);
+}
 
-        let source = null;
+async function orderEditCommit(calculatedOrderId, staffNote) {
+  const m = `
+    mutation Commit($id: ID!, $notifyCustomer: Boolean!, $staffNote: String) {
+      orderEditCommit(id: $id, notifyCustomer: $notifyCustomer, staffNote: $staffNote) {
+        order { id }
+        userErrors { field message }
+      }
+    }
+  `;
+  const data = await shopifyGraphQL(m, { id: calculatedOrderId, notifyCustomer: false, staffNote });
+  const errs = data.orderEditCommit.userErrors || [];
+  if (errs.length) throw new Error(`orderEditCommit errors: ${JSON.stringify(errs, null, 2)}`);
+  return data.orderEditCommit.order?.id || null;
+}
 
-        for (const fo of fos) {
-          const foLocId = fo.assignedLocation?.location?.id;
+function buildOrderLineItemIndexFromFOs(fos) {
+  // variantId -> [{ lineItemId, quantity, inventoryItemId }]
+  const map = new Map();
 
-          for (const li of fo.lineItems.nodes) {
-            const vId = li.lineItem?.variant?.id;
-            if (vId !== variantId) continue;
-            if ((li.remainingQuantity || 0) <= 0) continue;
+  for (const fo of fos) {
+    for (const node of fo.lineItems.nodes) {
+      const li = node.lineItem;
+      const variantId = li?.variant?.id || null;
+      const inventoryItemId = li?.variant?.inventoryItem?.id || null;
+      const lineItemId = li?.id || null;
+      const qty = Number(li?.quantity || 0);
 
-            // Already at desired location: consume need
-            if (foLocId === want.locationId) {
-              const take = Math.min(li.remainingQuantity, need);
-              need -= take;
-              source = null;
-              break;
-            }
+      if (!variantId || !lineItemId || qty <= 0) continue;
 
-            source = {
-              fulfillmentOrderId: fo.id,
-              fulfillmentOrderLineItemId: li.id,
-              remainingQuantity: li.remainingQuantity,
-              fromLocation: fo.assignedLocation?.location?.name || "Unknown"
-            };
-            break;
-          }
-          if (need <= 0) break;
-          if (source) break;
-        }
-
-        if (need <= 0) break;
-        if (!source) break;
-
-        const moveQty = Math.min(source.remainingQuantity, need);
-
-        const result = await fulfillmentOrderMove({
-          fulfillmentOrderId: source.fulfillmentOrderId,
-          newLocationId: want.locationId,
-          moveLineItems: [{ id: source.fulfillmentOrderLineItemId, quantity: moveQty }]
-        });
-
-        moveLog.push({
-          variantId,
-          movedQty: moveQty,
-          from: source.fromLocation,
-          toLocationId: want.locationId,
-          movedFulfillmentOrder: result.movedFulfillmentOrder?.id || null,
-          originalFulfillmentOrder: result.originalFulfillmentOrder?.id || null
-        });
-
-        need -= moveQty;
+      if (!map.has(variantId)) map.set(variantId, []);
+      // de-dupe (same order line item appears in multiple FO lines? usually not, but be safe)
+      const arr = map.get(variantId);
+      if (!arr.some(x => x.lineItemId === lineItemId)) {
+        arr.push({ lineItemId, quantity: qty, inventoryItemId });
       }
     }
   }
 
-  return moveLog;
+  return map;
+}
+
+async function reduceOrderIfOverCap({
+  orderId,
+  allocationPlan,
+  allowedLocationIds,
+  staffNotePrefix = "Wholesale importer auto-adjust"
+}) {
+  // returns { removedByVariant: Map(variantId -> removedQty), shortfalls: [...] }
+  const fos = await getFulfillmentOrdersForOrder(orderId);
+  const orderLineItemsByVariant = buildOrderLineItemIndexFromFOs(fos);
+
+  const removedByVariant = new Map();
+  const shortfalls = [];
+
+  // Build live caps: inventoryItemId::locId -> available
+  const capMap = new Map();
+
+  async function getCap(inventoryItemId, locId) {
+    const key = `${inventoryItemId}::${locId}`;
+    if (capMap.has(key)) return capMap.get(key);
+    const avail = await getAvailableAtLocation(inventoryItemId, locId);
+    const v = Math.max(0, Number(avail) || 0);
+    capMap.set(key, v);
+    return v;
+  }
+
+  // We will reduce per variant if total ordered > sum(available) across allowed locations
+  for (const [variantId, plan] of allocationPlan.entries()) {
+    const inventoryItemId = plan.inventoryItemId;
+
+    const orderLines = orderLineItemsByVariant.get(variantId) || [];
+    const ordered = orderLines.reduce((s, x) => s + x.quantity, 0);
+    if (!ordered) continue;
+
+    let totalCap = 0;
+    for (const locId of allowedLocationIds) {
+      totalCap += await getCap(inventoryItemId, locId);
+    }
+
+    const over = Math.max(0, ordered - totalCap);
+    if (over <= 0) continue;
+
+    // Reduce quantities across that variant’s order line items until we remove 'over'
+    let remainingToRemove = over;
+
+    // Sort largest-first so we remove cleanly
+    const lines = [...orderLines].sort((a, b) => b.quantity - a.quantity);
+
+    const calculatedOrderId = await orderEditBegin(orderId);
+
+    for (const line of lines) {
+      if (remainingToRemove <= 0) break;
+
+      const newQty = Math.max(0, line.quantity - remainingToRemove);
+      const removedHere = line.quantity - newQty;
+
+      if (removedHere > 0) {
+        // restock=false: we are not “restocking”, we are reducing the order because inventory is not available.
+        await orderEditSetQuantity(calculatedOrderId, line.lineItemId, newQty, false);
+        remainingToRemove -= removedHere;
+        removedByVariant.set(variantId, (removedByVariant.get(variantId) || 0) + removedHere);
+      }
+    }
+
+    await orderEditCommit(
+      calculatedOrderId,
+      `${staffNotePrefix}: removed ${over - remainingToRemove}/${over} units (variant ${variantId}) due to insufficient Available in allowed locations`
+    );
+
+    if (remainingToRemove > 0) {
+      shortfalls.push({
+        variantId,
+        ordered,
+        totalCap,
+        attemptedRemove: over,
+        removed: over - remainingToRemove,
+        stillOverBy: remainingToRemove
+      });
+    }
+  }
+
+  return { removedByVariant, shortfalls };
+}
+
+// ----------------- Rebalance fulfillment (delta-based + available cap) -----------------
+
+function buildCurrentAllocationFromFOs(fos) {
+  // variantId -> locationId -> [ { fulfillmentOrderId, fulfillmentOrderLineItemId, qty } ]
+  const byVariant = new Map();
+
+  for (const fo of fos) {
+    const locId = fo.assignedLocation?.location?.id || null;
+    if (!locId) continue;
+
+    for (const n of fo.lineItems.nodes) {
+      const variantId = n.lineItem?.variant?.id || null;
+      const qty = Number(n.remainingQuantity || 0);
+      if (!variantId || qty <= 0) continue;
+
+      if (!byVariant.has(variantId)) byVariant.set(variantId, new Map());
+      const byLoc = byVariant.get(variantId);
+
+      if (!byLoc.has(locId)) byLoc.set(locId, []);
+      byLoc.get(locId).push({
+        fulfillmentOrderId: fo.id,
+        fulfillmentOrderLineItemId: n.id,
+        qty
+      });
+    }
+  }
+
+  return byVariant;
+}
+
+async function enforceFulfillmentLocationsRebalance({
+  orderId,
+  allocationPlan,
+  allowedLocationIds,
+  drainOrderLocationIds
+}) {
+  const moveLog = [];
+  const blocked = [];
+
+  // live destination capacity (Available) tracker for this run
+  const destRemain = new Map(); // inventoryItemId::locationId -> remaining allowed qty
+
+  async function getDestRemain(inventoryItemId, locationId) {
+    const key = `${inventoryItemId}::${locationId}`;
+    if (destRemain.has(key)) return destRemain.get(key);
+    const avail = await getAvailableAtLocation(inventoryItemId, locationId);
+    const safe = Math.max(0, Number(avail) || 0);
+    destRemain.set(key, safe);
+    return safe;
+  }
+
+  function consumeDestRemain(inventoryItemId, locationId, qty) {
+    const key = `${inventoryItemId}::${locationId}`;
+    const cur = destRemain.get(key) ?? 0;
+    destRemain.set(key, Math.max(0, cur - qty));
+  }
+
+  const fos = await getFulfillmentOrdersForOrder(orderId);
+  const currentByVariant = buildCurrentAllocationFromFOs(fos);
+
+  const allowedSet = new Set(allowedLocationIds);
+  const drainIndex = new Map(drainOrderLocationIds.map((id, idx) => [id, idx]));
+
+  for (const [variantId, plan] of allocationPlan.entries()) {
+    const inventoryItemId = plan.inventoryItemId;
+
+    // Desired: only allowed locations, in the amounts from plan
+    const desiredByLoc = new Map();
+    for (const a of plan.allocations || []) {
+      if (!allowedSet.has(a.locationId)) continue;
+      desiredByLoc.set(a.locationId, (desiredByLoc.get(a.locationId) || 0) + Number(a.qty || 0));
+    }
+
+    // Current: whatever Shopify did (allowed + disallowed)
+    const curLocLines = currentByVariant.get(variantId) || new Map();
+    const currentByLoc = new Map();
+    for (const [locId, lines] of curLocLines.entries()) {
+      const total = lines.reduce((s, x) => s + x.qty, 0);
+      currentByLoc.set(locId, total);
+    }
+
+    // Build needs (allowed) and excesses (anywhere)
+    const needs = [];    // { locId, qty }
+    const excesses = []; // { locId, qty }
+
+    // Needs: allowed locations where desired > current
+    for (const [locId, desiredQty] of desiredByLoc.entries()) {
+      const currentQty = currentByLoc.get(locId) || 0;
+      const delta = desiredQty - currentQty;
+      if (delta > 0) needs.push({ locId, qty: delta });
+    }
+
+    // Excess: locations (including disallowed) where current > desired(0 if not desired/allowed)
+    for (const [locId, currentQty] of currentByLoc.entries()) {
+      const desiredQty = desiredByLoc.get(locId) || 0; // if loc not in desired, desiredQty=0
+      const delta = currentQty - desiredQty;
+      if (delta > 0) excesses.push({ locId, qty: delta });
+    }
+
+    needs.sort((a, b) => (drainIndex.get(a.locId) ?? 9999) - (drainIndex.get(b.locId) ?? 9999));
+
+    // Execute moves: fill needs from excesses
+    for (const need of needs) {
+      let remainingNeed = need.qty;
+
+      while (remainingNeed > 0) {
+        // destination must be allowed
+        if (!allowedSet.has(need.locId)) break;
+
+        // destination cap by Available (live)
+        const destCap = await getDestRemain(inventoryItemId, need.locId);
+        if (destCap <= 0) {
+          blocked.push({
+            variantId,
+            toLocationId: need.locId,
+            blockedQty: remainingNeed,
+            reason: "Destination Available cap reached"
+          });
+          break;
+        }
+
+        // Find a source with remaining excess
+        const src = excesses.find(x => x.qty > 0);
+        if (!src) {
+          blocked.push({
+            variantId,
+            toLocationId: need.locId,
+            blockedQty: remainingNeed,
+            reason: "No source excess remaining"
+          });
+          break;
+        }
+
+        // Find an actual FO line item at the source location to move from
+        const srcLines = (curLocLines.get(src.locId) || []).filter(x => x.qty > 0);
+        if (srcLines.length === 0) {
+          src.qty = 0;
+          continue;
+        }
+
+        const line = srcLines[0];
+        const moveQty = Math.min(line.qty, src.qty, remainingNeed, destCap);
+
+        if (moveQty <= 0) break;
+
+        try {
+          const result = await fulfillmentOrderMove({
+            fulfillmentOrderId: line.fulfillmentOrderId,
+            newLocationId: need.locId,
+            moveLineItems: [{ id: line.fulfillmentOrderLineItemId, quantity: moveQty }]
+          });
+
+          moveLog.push({
+            variantId,
+            movedQty: moveQty,
+            fromLocationId: src.locId,
+            toLocationId: need.locId,
+            movedFulfillmentOrder: result.movedFulfillmentOrder?.id || null,
+            originalFulfillmentOrder: result.originalFulfillmentOrder?.id || null
+          });
+
+          // local accounting updates
+          line.qty -= moveQty;
+          src.qty -= moveQty;
+          remainingNeed -= moveQty;
+          consumeDestRemain(inventoryItemId, need.locId, moveQty);
+        } catch (e) {
+          // If Shopify rejects move (ex: destination doesn’t stock item, progress reported, etc.)
+          blocked.push({
+            variantId,
+            fromLocationId: src.locId,
+            toLocationId: need.locId,
+            attemptedQty: moveQty,
+            reason: String(e)
+          });
+          // Don’t loop forever on same failing src; mark it unusable and continue
+          src.qty = 0;
+        }
+      }
+    }
+  }
+
+  return { moveLog, blocked };
 }
 
 async function summarizeFulfillmentByLocation(orderId) {
@@ -441,6 +719,7 @@ async function summarizeFulfillmentByLocation(orderId) {
       lines: fo.lineItems.nodes.map(li => ({
         fulfillmentOrderLineItemId: li.id,
         variantId: li.lineItem?.variant?.id || null,
+        inventoryItemId: li.lineItem?.variant?.inventoryItem?.id || null,
         remainingQuantity: li.remainingQuantity
       }))
     };
@@ -617,7 +896,7 @@ async function runAllocationOnly(req) {
   }
 
   const remainingAvailMap = new Map();
-  const allocationPlan = new Map();
+  const allocationPlan = new Map(); // variantId -> { inventoryItemId, allocations:[{locationId, qty}] }
   const draftLineItems = [];
   const productMetaByHandle = {};
 
@@ -691,14 +970,20 @@ async function runAllocationOnly(req) {
         if (existing) existing.quantity += allocatedQty;
         else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
 
-        const prev = allocationPlan.get(variant.id) || [];
-        const merged = [...prev];
+        // merge allocations into plan
+        const prev = allocationPlan.get(variant.id);
+        const mergedAllocs = prev ? [...prev.allocations] : [];
+
         for (const a of allocations) {
-          const m = merged.find(x => x.locationId === a.locationId);
+          const m = mergedAllocs.find(x => x.locationId === a.locationId);
           if (m) m.qty += a.qty;
-          else merged.push({ locationId: a.locationId, qty: a.qty });
+          else mergedAllocs.push({ locationId: a.locationId, qty: a.qty });
         }
-        allocationPlan.set(variant.id, merged);
+
+        allocationPlan.set(variant.id, {
+          inventoryItemId: variant.inventoryItem.id,
+          allocations: mergedAllocs
+        });
 
         report.allocatedUnits += allocatedQty;
       }
@@ -777,13 +1062,13 @@ app.get("/api/report.xlsx", async (req, res) => {
   }
 });
 
-// Import (draft -> complete unpaid -> move fulfillment). Saves runId too.
+// Import (draft -> complete unpaid -> SAFETY REDUCE -> DELTA REBALANCE). Saves runId too.
 app.post("/api/import", upload.single("file"), async (req, res) => {
   try {
     const { reserveHours = "48", locationIdsJson } = req.body;
 
     const result = await runAllocationOnly(req);
-    const { report, allocationPlan, draftLineItems, locationIdToName, productMetaByHandle } = result;
+    const { report, allocationPlan, draftLineItems, locationIdToName, productMetaByHandle, locationIdsInOrder } = result;
 
     const runId = saveRun({
       locationIdToName,
@@ -807,7 +1092,23 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     const order = await draftOrderComplete(draft.id);
 
-    const moveLog = await enforceFulfillmentLocations(order.id, allocationPlan);
+    const allowedLocationIds = locationIdsInOrder;
+
+    // GUARDRAIL #3: If inventory changed and order is now over-cap (Available across allowed locations), remove extras.
+    const reduceResult = await reduceOrderIfOverCap({
+      orderId: order.id,
+      allocationPlan,
+      allowedLocationIds,
+      staffNotePrefix: "Wholesale importer"
+    });
+
+    // After edits, re-run delta rebalance (GUARDRAIL #1) with hard available caps (GUARDRAIL #2)
+    const rebalance = await enforceFulfillmentLocationsRebalance({
+      orderId: order.id,
+      allocationPlan,
+      allowedLocationIds,
+      drainOrderLocationIds: locationIdsInOrder
+    });
 
     const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
 
@@ -818,7 +1119,9 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       draftOrderId: draft.id,
       orderId: order.id,
       orderName: order.name,
-      moveLog,
+      reduceResult,
+      moveLog: rebalance.moveLog,
+      blockedMoves: rebalance.blocked,
       report,
       finalFulfillment,
       locationIdToName,
