@@ -427,29 +427,39 @@ async function orderEditCommit(calculatedOrderId, staffNote) {
 async function getCalculatedLineItemIdMap(calculatedOrderId) {
   const q = `
     query Calc($id: ID!) {
-      calculatedOrder(id: $id) {
-        id
-        lineItems(first: 250) {
-          nodes {
-            id
-            quantity
-            originalLineItem { id }
+      node(id: $id) {
+        ... on CalculatedOrder {
+          id
+          lineItems(first: 250) {
+            nodes {
+              id
+              quantity
+              originalLineItem { id }
+            }
           }
         }
       }
     }
   `;
+
   const data = await shopifyGraphQL(q, { id: calculatedOrderId });
 
-  const nodes = data.calculatedOrder?.lineItems?.nodes || [];
-  const map = new Map();
+  const calc = data.node;
+  if (!calc || !calc.lineItems) {
+    throw new Error(`Could not load CalculatedOrder via node(id). id=${calculatedOrderId}`);
+  }
+
+  const nodes = calc.lineItems.nodes || [];
+  const map = new Map(); // originalLineItemId -> calculatedLineItemId
 
   for (const n of nodes) {
     const orig = n.originalLineItem?.id;
     if (orig && n.id) map.set(orig, n.id);
   }
+
   return map;
 }
+
 
 function buildOrderLineItemIndexFromFOs(fos) {
   // variantId -> [{ lineItemId, quantity, inventoryItemId }]
