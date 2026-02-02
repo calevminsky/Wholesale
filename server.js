@@ -434,7 +434,7 @@ async function getCalculatedLineItemIdMap(calculatedOrderId) {
             nodes {
               id
               quantity
-              originalLineItem { id }
+              lineItem { id }
             }
           }
         }
@@ -453,7 +453,7 @@ async function getCalculatedLineItemIdMap(calculatedOrderId) {
   const map = new Map(); // originalLineItemId -> calculatedLineItemId
 
   for (const n of nodes) {
-    const orig = n.originalLineItem?.id;
+    const orig = n.lineItem?.id;
     if (orig && n.id) map.set(orig, n.id);
   }
 
