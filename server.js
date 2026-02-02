@@ -384,8 +384,18 @@ async function orderEditBegin(orderId) {
 }
 
 /**
- * IMPORTANT: lineItemId here MUST be a CalculatedLineItem ID, not the original order line item id.
+ * CalculatedLineItem IDs share the same numeric ID as the original LineItem.
+ * Shopify just swaps the GID type prefix — no extra query needed.
+ *
+ *   gid://shopify/LineItem/1234  →  gid://shopify/CalculatedLineItem/1234
  */
+function toCalculatedLineItemId(originalLineItemId) {
+  return originalLineItemId.replace(
+    "gid://shopify/LineItem/",
+    "gid://shopify/CalculatedLineItem/"
+  );
+}
+
 async function orderEditSetQuantity(calculatedOrderId, calculatedLineItemId, quantity, restock = false) {
   const m = `
     mutation SetQty($id: ID!, $lineItemId: ID!, $quantity: Int!, $restock: Boolean) {
@@ -420,47 +430,6 @@ async function orderEditCommit(calculatedOrderId, staffNote) {
   return data.orderEditCommit.order?.id || null;
 }
 
-/**
- * Map original order line items to calculated line items inside the calculated order.
- * Returns Map(originalLineItemId -> calculatedLineItemId)
- */
-async function getCalculatedLineItemIdMap(calculatedOrderId) {
-  const q = `
-    query Calc($id: ID!) {
-      node(id: $id) {
-        ... on CalculatedOrder {
-          id
-          lineItems(first: 250) {
-            nodes {
-              id
-              quantity
-              lineItem { id }
-            }
-          }
-        }
-      }
-    }
-  `;
-
-  const data = await shopifyGraphQL(q, { id: calculatedOrderId });
-
-  const calc = data.node;
-  if (!calc || !calc.lineItems) {
-    throw new Error(`Could not load CalculatedOrder via node(id). id=${calculatedOrderId}`);
-  }
-
-  const nodes = calc.lineItems.nodes || [];
-  const map = new Map(); // originalLineItemId -> calculatedLineItemId
-
-  for (const n of nodes) {
-    const orig = n.lineItem?.id;
-    if (orig && n.id) map.set(orig, n.id);
-  }
-
-  return map;
-}
-
-
 function buildOrderLineItemIndexFromFOs(fos) {
   // variantId -> [{ lineItemId, quantity, inventoryItemId }]
   const map = new Map();
@@ -489,7 +458,7 @@ function buildOrderLineItemIndexFromFOs(fos) {
 /**
  * One begin/commit edit for the whole order.
  * Removes "over cap" units where cap = SUM(available across allowed locations) per inventory item.
- * Uses calculated line item ids (required).
+ * Uses toCalculatedLineItemId() for GID prefix swap — no extra query needed.
  */
 async function reduceOrderIfOverCapOneCommit({
   orderId,
@@ -564,10 +533,10 @@ async function reduceOrderIfOverCapOneCommit({
   }
 
   const calculatedOrderId = await orderEditBegin(orderId);
-  const idMap = await getCalculatedLineItemIdMap(calculatedOrderId);
 
   for (const r of removals) {
-    const calculatedLineItemId = idMap.get(r.originalLineItemId);
+    const calculatedLineItemId = toCalculatedLineItemId(r.originalLineItemId);
+
     if (!calculatedLineItemId) {
       throw new Error(
         `Could not map original line item to calculated line item. originalLineItemId=${r.originalLineItemId}`
@@ -1228,7 +1197,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     const allowedLocationIds = locationIdsInOrder;
 
-    // Remove over-cap units with one order edit commit (uses calculated line item ids)
+    // Remove over-cap units with one order edit commit (uses toCalculatedLineItemId GID swap)
     const reduceResult = await reduceOrderIfOverCapOneCommit({
       orderId: order.id,
       allocationPlan,
