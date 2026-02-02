@@ -331,6 +331,15 @@ async function getFulfillmentOrdersForOrder(orderId) {
   return data.order.fulfillmentOrders.nodes;
 }
 
+async function waitForFulfillmentOrders(orderId, maxRetries = 20, delayMs = 500) {
+  for (let i = 0; i < maxRetries; i++) {
+    const fos = await getFulfillmentOrdersForOrder(orderId);
+    if (fos.length > 0) return fos;
+    await new Promise(r => setTimeout(r, delayMs));
+  }
+  throw new Error(`Fulfillment orders not created after ${Math.round((maxRetries * delayMs) / 1000)}s`);
+}
+
 async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLineItems }) {
   const m = `
     mutation MoveFO($id: ID!, $newLocationId: ID!, $items: [FulfillmentOrderLineItemInput!]!) {
@@ -374,7 +383,10 @@ async function orderEditBegin(orderId) {
   return data.orderEditBegin.calculatedOrder.id;
 }
 
-async function orderEditSetQuantity(calculatedOrderId, lineItemId, quantity, restock = false) {
+/**
+ * IMPORTANT: lineItemId here MUST be a CalculatedLineItem ID, not the original order line item id.
+ */
+async function orderEditSetQuantity(calculatedOrderId, calculatedLineItemId, quantity, restock = false) {
   const m = `
     mutation SetQty($id: ID!, $lineItemId: ID!, $quantity: Int!, $restock: Boolean) {
       orderEditSetQuantity(id: $id, lineItemId: $lineItemId, quantity: $quantity, restock: $restock) {
@@ -385,7 +397,7 @@ async function orderEditSetQuantity(calculatedOrderId, lineItemId, quantity, res
   `;
   const data = await shopifyGraphQL(m, {
     id: calculatedOrderId,
-    lineItemId,
+    lineItemId: calculatedLineItemId,
     quantity,
     restock
   });
@@ -408,6 +420,37 @@ async function orderEditCommit(calculatedOrderId, staffNote) {
   return data.orderEditCommit.order?.id || null;
 }
 
+/**
+ * Map original order line items to calculated line items inside the calculated order.
+ * Returns Map(originalLineItemId -> calculatedLineItemId)
+ */
+async function getCalculatedLineItemIdMap(calculatedOrderId) {
+  const q = `
+    query Calc($id: ID!) {
+      calculatedOrder(id: $id) {
+        id
+        lineItems(first: 250) {
+          nodes {
+            id
+            quantity
+            originalLineItem { id }
+          }
+        }
+      }
+    }
+  `;
+  const data = await shopifyGraphQL(q, { id: calculatedOrderId });
+
+  const nodes = data.calculatedOrder?.lineItems?.nodes || [];
+  const map = new Map();
+
+  for (const n of nodes) {
+    const orig = n.originalLineItem?.id;
+    if (orig && n.id) map.set(orig, n.id);
+  }
+  return map;
+}
+
 function buildOrderLineItemIndexFromFOs(fos) {
   // variantId -> [{ lineItemId, quantity, inventoryItemId }]
   const map = new Map();
@@ -423,7 +466,6 @@ function buildOrderLineItemIndexFromFOs(fos) {
       if (!variantId || !lineItemId || qty <= 0) continue;
 
       if (!map.has(variantId)) map.set(variantId, []);
-      // de-dupe (same order line item appears in multiple FO lines? usually not, but be safe)
       const arr = map.get(variantId);
       if (!arr.some(x => x.lineItemId === lineItemId)) {
         arr.push({ lineItemId, quantity: qty, inventoryItemId });
@@ -434,22 +476,22 @@ function buildOrderLineItemIndexFromFOs(fos) {
   return map;
 }
 
-async function reduceOrderIfOverCap({
+/**
+ * One begin/commit edit for the whole order.
+ * Removes "over cap" units where cap = SUM(available across allowed locations) per inventory item.
+ * Uses calculated line item ids (required).
+ */
+async function reduceOrderIfOverCapOneCommit({
   orderId,
   allocationPlan,
   allowedLocationIds,
-  staffNotePrefix = "Wholesale importer auto-adjust"
+  staffNotePrefix = "Wholesale importer"
 }) {
-  // returns { removedByVariant: Map(variantId -> removedQty), shortfalls: [...] }
   const fos = await getFulfillmentOrdersForOrder(orderId);
   const orderLineItemsByVariant = buildOrderLineItemIndexFromFOs(fos);
 
-  const removedByVariant = new Map();
-  const shortfalls = [];
-
-  // Build live caps: inventoryItemId::locId -> available
+  // Cache live caps: inventoryItemId::locId -> available
   const capMap = new Map();
-
   async function getCap(inventoryItemId, locId) {
     const key = `${inventoryItemId}::${locId}`;
     if (capMap.has(key)) return capMap.get(key);
@@ -459,29 +501,23 @@ async function reduceOrderIfOverCap({
     return v;
   }
 
-  // We will reduce per variant if total ordered > sum(available) across allowed locations
+  const removals = []; // { variantId, originalLineItemId, fromQty, toQty, removed }
+  const shortfalls = [];
+
   for (const [variantId, plan] of allocationPlan.entries()) {
     const inventoryItemId = plan.inventoryItemId;
-
     const orderLines = orderLineItemsByVariant.get(variantId) || [];
     const ordered = orderLines.reduce((s, x) => s + x.quantity, 0);
     if (!ordered) continue;
 
     let totalCap = 0;
-    for (const locId of allowedLocationIds) {
-      totalCap += await getCap(inventoryItemId, locId);
-    }
+    for (const locId of allowedLocationIds) totalCap += await getCap(inventoryItemId, locId);
 
     const over = Math.max(0, ordered - totalCap);
     if (over <= 0) continue;
 
-    // Reduce quantities across that variant’s order line items until we remove 'over'
     let remainingToRemove = over;
-
-    // Sort largest-first so we remove cleanly
     const lines = [...orderLines].sort((a, b) => b.quantity - a.quantity);
-
-    const calculatedOrderId = await orderEditBegin(orderId);
 
     for (const line of lines) {
       if (remainingToRemove <= 0) break;
@@ -490,17 +526,16 @@ async function reduceOrderIfOverCap({
       const removedHere = line.quantity - newQty;
 
       if (removedHere > 0) {
-        // restock=false: we are not “restocking”, we are reducing the order because inventory is not available.
-        await orderEditSetQuantity(calculatedOrderId, line.lineItemId, newQty, false);
+        removals.push({
+          variantId,
+          originalLineItemId: line.lineItemId,
+          fromQty: line.quantity,
+          toQty: newQty,
+          removed: removedHere
+        });
         remainingToRemove -= removedHere;
-        removedByVariant.set(variantId, (removedByVariant.get(variantId) || 0) + removedHere);
       }
     }
-
-    await orderEditCommit(
-      calculatedOrderId,
-      `${staffNotePrefix}: removed ${over - remainingToRemove}/${over} units (variant ${variantId}) due to insufficient Available in allowed locations`
-    );
 
     if (remainingToRemove > 0) {
       shortfalls.push({
@@ -508,16 +543,88 @@ async function reduceOrderIfOverCap({
         ordered,
         totalCap,
         attemptedRemove: over,
-        removed: over - remainingToRemove,
+        plannedRemove: over - remainingToRemove,
         stillOverBy: remainingToRemove
       });
     }
   }
 
-  return { removedByVariant, shortfalls };
+  if (removals.length === 0) {
+    return { didEdit: false, removals: [], shortfalls: [] };
+  }
+
+  const calculatedOrderId = await orderEditBegin(orderId);
+  const idMap = await getCalculatedLineItemIdMap(calculatedOrderId);
+
+  for (const r of removals) {
+    const calculatedLineItemId = idMap.get(r.originalLineItemId);
+    if (!calculatedLineItemId) {
+      throw new Error(
+        `Could not map original line item to calculated line item. originalLineItemId=${r.originalLineItemId}`
+      );
+    }
+    await orderEditSetQuantity(calculatedOrderId, calculatedLineItemId, r.toQty, false);
+  }
+
+  const totalRemoved = removals.reduce((s, r) => s + r.removed, 0);
+  await orderEditCommit(
+    calculatedOrderId,
+    `${staffNotePrefix}: removed ${totalRemoved} unit(s) across ${removals.length} line(s) due to insufficient Available in allowed locations`
+  );
+
+  return { didEdit: true, removals, shortfalls };
 }
 
-// ----------------- Rebalance fulfillment (delta-based + available cap) -----------------
+// ----------------- Build desired allocations AFTER edits -----------------
+
+async function buildDesiredPlanFromCurrentOrder({
+  fos,
+  allocationPlan,
+  allowedLocationIdsInDrainOrder
+}) {
+  const lineIdx = buildOrderLineItemIndexFromFOs(fos);
+
+  // Cap cache per run
+  const capMap = new Map();
+  async function getCap(inventoryItemId, locId) {
+    const key = `${inventoryItemId}::${locId}`;
+    if (capMap.has(key)) return capMap.get(key);
+    const avail = await getAvailableAtLocation(inventoryItemId, locId);
+    const v = Math.max(0, Number(avail) || 0);
+    capMap.set(key, v);
+    return v;
+  }
+
+  const desiredPlan = new Map(); // variantId -> { inventoryItemId, allocations, orderedNow, unfulfillable }
+
+  for (const [variantId, plan] of allocationPlan.entries()) {
+    const inventoryItemId = plan.inventoryItemId;
+    const orderLines = lineIdx.get(variantId) || [];
+    const orderedNow = orderLines.reduce((s, x) => s + x.quantity, 0);
+    if (!orderedNow) continue;
+
+    let remaining = orderedNow;
+    const allocations = [];
+
+    for (const locId of allowedLocationIdsInDrainOrder) {
+      if (remaining <= 0) break;
+      const cap = await getCap(inventoryItemId, locId);
+      if (cap <= 0) continue;
+
+      const take = Math.min(cap, remaining);
+      if (take > 0) {
+        allocations.push({ locationId: locId, qty: take });
+        remaining -= take;
+      }
+    }
+
+    desiredPlan.set(variantId, { inventoryItemId, allocations, orderedNow, unfulfillable: remaining });
+  }
+
+  return desiredPlan;
+}
+
+// ----------------- Rebalance fulfillment (delta-based + monotonic available cap) -----------------
 
 function buildCurrentAllocationFromFOs(fos) {
   // variantId -> locationId -> [ { fulfillmentOrderId, fulfillmentOrderLineItemId, qty } ]
@@ -549,23 +656,37 @@ function buildCurrentAllocationFromFOs(fos) {
 
 async function enforceFulfillmentLocationsRebalance({
   orderId,
-  allocationPlan,
-  allowedLocationIds,
-  drainOrderLocationIds
+  desiredPlan,              // Map(variantId -> { inventoryItemId, allocations:[...] })
+  allowedLocationIds,       // allowed set
+  drainOrderLocationIds     // ordering preference
 }) {
   const moveLog = [];
   const blocked = [];
 
-  // live destination capacity (Available) tracker for this run
-  const destRemain = new Map(); // inventoryItemId::locationId -> remaining allowed qty
+  const allowedSet = new Set(allowedLocationIds);
+  const drainIndex = new Map(drainOrderLocationIds.map((id, idx) => [id, idx]));
 
-  async function getDestRemain(inventoryItemId, locationId) {
+  // Monotonic destination cap tracker (per inventoryItemId+locationId)
+  const destRemain = new Map(); // key -> remaining qty we allow to move INTO that destination
+
+  async function initOrGetDestRemain(inventoryItemId, locationId) {
     const key = `${inventoryItemId}::${locationId}`;
     if (destRemain.has(key)) return destRemain.get(key);
-    const avail = await getAvailableAtLocation(inventoryItemId, locationId);
-    const safe = Math.max(0, Number(avail) || 0);
-    destRemain.set(key, safe);
-    return safe;
+    const live = Math.max(0, Number(await getAvailableAtLocation(inventoryItemId, locationId)) || 0);
+    destRemain.set(key, live);
+    return live;
+  }
+
+  // IMPORTANT: refresh must be monotonic decreasing (never increases within run)
+  async function refreshDestRemainMonotonic(inventoryItemId, locationId) {
+    const key = `${inventoryItemId}::${locationId}`;
+    const live = Math.max(0, Number(await getAvailableAtLocation(inventoryItemId, locationId)) || 0);
+
+    const local = destRemain.has(key) ? destRemain.get(key) : live;
+    const merged = Math.min(local, live);
+
+    destRemain.set(key, merged);
+    return merged;
   }
 
   function consumeDestRemain(inventoryItemId, locationId, qty) {
@@ -574,16 +695,14 @@ async function enforceFulfillmentLocationsRebalance({
     destRemain.set(key, Math.max(0, cur - qty));
   }
 
+  // Always start with fresh FOs for this order
   const fos = await getFulfillmentOrdersForOrder(orderId);
   const currentByVariant = buildCurrentAllocationFromFOs(fos);
 
-  const allowedSet = new Set(allowedLocationIds);
-  const drainIndex = new Map(drainOrderLocationIds.map((id, idx) => [id, idx]));
-
-  for (const [variantId, plan] of allocationPlan.entries()) {
+  for (const [variantId, plan] of desiredPlan.entries()) {
     const inventoryItemId = plan.inventoryItemId;
 
-    // Desired: only allowed locations, in the amounts from plan
+    // Desired: only allowed locations, in amounts from desiredPlan
     const desiredByLoc = new Map();
     for (const a of plan.allocations || []) {
       if (!allowedSet.has(a.locationId)) continue;
@@ -592,42 +711,44 @@ async function enforceFulfillmentLocationsRebalance({
 
     // Current: whatever Shopify did (allowed + disallowed)
     const curLocLines = currentByVariant.get(variantId) || new Map();
+
     const currentByLoc = new Map();
     for (const [locId, lines] of curLocLines.entries()) {
       const total = lines.reduce((s, x) => s + x.qty, 0);
       currentByLoc.set(locId, total);
     }
 
-    // Build needs (allowed) and excesses (anywhere)
-    const needs = [];    // { locId, qty }
-    const excesses = []; // { locId, qty }
-
     // Needs: allowed locations where desired > current
+    const needs = [];
     for (const [locId, desiredQty] of desiredByLoc.entries()) {
       const currentQty = currentByLoc.get(locId) || 0;
       const delta = desiredQty - currentQty;
       if (delta > 0) needs.push({ locId, qty: delta });
     }
 
-    // Excess: locations (including disallowed) where current > desired(0 if not desired/allowed)
+    // Excess: any locations where current > desired(0 if not desired)
+    const excesses = [];
     for (const [locId, currentQty] of currentByLoc.entries()) {
-      const desiredQty = desiredByLoc.get(locId) || 0; // if loc not in desired, desiredQty=0
+      const desiredQty = desiredByLoc.get(locId) || 0;
       const delta = currentQty - desiredQty;
-      if (delta > 0) excesses.push({ locId, qty: delta });
+      if (delta > 0) excesses.push({ locId, qty: delta, disallowed: !allowedSet.has(locId) });
     }
 
+    // Prefer satisfying needs in drain order
     needs.sort((a, b) => (drainIndex.get(a.locId) ?? 9999) - (drainIndex.get(b.locId) ?? 9999));
+    // Prefer taking from disallowed sources first, then allowed
+    excesses.sort((a, b) => Number(b.disallowed) - Number(a.disallowed));
 
-    // Execute moves: fill needs from excesses
+    // Prime destination caps for all desired destinations
+    for (const need of needs) await initOrGetDestRemain(inventoryItemId, need.locId);
+
     for (const need of needs) {
       let remainingNeed = need.qty;
 
       while (remainingNeed > 0) {
-        // destination must be allowed
         if (!allowedSet.has(need.locId)) break;
 
-        // destination cap by Available (live)
-        const destCap = await getDestRemain(inventoryItemId, need.locId);
+        const destCap = await refreshDestRemainMonotonic(inventoryItemId, need.locId);
         if (destCap <= 0) {
           blocked.push({
             variantId,
@@ -638,7 +759,6 @@ async function enforceFulfillmentLocationsRebalance({
           break;
         }
 
-        // Find a source with remaining excess
         const src = excesses.find(x => x.qty > 0);
         if (!src) {
           blocked.push({
@@ -650,7 +770,6 @@ async function enforceFulfillmentLocationsRebalance({
           break;
         }
 
-        // Find an actual FO line item at the source location to move from
         const srcLines = (curLocLines.get(src.locId) || []).filter(x => x.qty > 0);
         if (srcLines.length === 0) {
           src.qty = 0;
@@ -659,7 +778,6 @@ async function enforceFulfillmentLocationsRebalance({
 
         const line = srcLines[0];
         const moveQty = Math.min(line.qty, src.qty, remainingNeed, destCap);
-
         if (moveQty <= 0) break;
 
         try {
@@ -678,13 +796,11 @@ async function enforceFulfillmentLocationsRebalance({
             originalFulfillmentOrder: result.originalFulfillmentOrder?.id || null
           });
 
-          // local accounting updates
           line.qty -= moveQty;
           src.qty -= moveQty;
           remainingNeed -= moveQty;
           consumeDestRemain(inventoryItemId, need.locId, moveQty);
         } catch (e) {
-          // If Shopify rejects move (ex: destination doesn’t stock item, progress reported, etc.)
           blocked.push({
             variantId,
             fromLocationId: src.locId,
@@ -692,7 +808,6 @@ async function enforceFulfillmentLocationsRebalance({
             attemptedQty: moveQty,
             reason: String(e)
           });
-          // Don’t loop forever on same failing src; mark it unusable and continue
           src.qty = 0;
         }
       }
@@ -970,7 +1085,6 @@ async function runAllocationOnly(req) {
         if (existing) existing.quantity += allocatedQty;
         else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
 
-        // merge allocations into plan
         const prev = allocationPlan.get(variant.id);
         const mergedAllocs = prev ? [...prev.allocations] : [];
 
@@ -1062,13 +1176,20 @@ app.get("/api/report.xlsx", async (req, res) => {
   }
 });
 
-// Import (draft -> complete unpaid -> SAFETY REDUCE -> DELTA REBALANCE). Saves runId too.
+// Import (draft -> complete unpaid -> wait for FOs -> remove over-cap -> rebuild desired plan -> delta rebalance)
 app.post("/api/import", upload.single("file"), async (req, res) => {
   try {
     const { reserveHours = "48", locationIdsJson } = req.body;
 
     const result = await runAllocationOnly(req);
-    const { report, allocationPlan, draftLineItems, locationIdToName, productMetaByHandle, locationIdsInOrder } = result;
+    const {
+      report,
+      allocationPlan,
+      draftLineItems,
+      locationIdToName,
+      productMetaByHandle,
+      locationIdsInOrder
+    } = result;
 
     const runId = saveRun({
       locationIdToName,
@@ -1092,25 +1213,46 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     const order = await draftOrderComplete(draft.id);
 
+    // Ensure fulfillment orders exist before we do anything else
+    await waitForFulfillmentOrders(order.id);
+
     const allowedLocationIds = locationIdsInOrder;
 
-    // GUARDRAIL #3: If inventory changed and order is now over-cap (Available across allowed locations), remove extras.
-    const reduceResult = await reduceOrderIfOverCap({
+    // Remove over-cap units with one order edit commit (uses calculated line item ids)
+    const reduceResult = await reduceOrderIfOverCapOneCommit({
       orderId: order.id,
       allocationPlan,
       allowedLocationIds,
       staffNotePrefix: "Wholesale importer"
     });
 
-    // After edits, re-run delta rebalance (GUARDRAIL #1) with hard available caps (GUARDRAIL #2)
+    // Re-fetch after edits
+    const fosAfterEdit = await getFulfillmentOrdersForOrder(order.id);
+
+    // Rebuild desired plan so it matches the order *as it exists now*
+    const desiredPlan = await buildDesiredPlanFromCurrentOrder({
+      fos: fosAfterEdit,
+      allocationPlan,
+      allowedLocationIdsInDrainOrder: allowedLocationIds
+    });
+
+    // Delta-based rebalance + monotonic available cap
     const rebalance = await enforceFulfillmentLocationsRebalance({
       orderId: order.id,
-      allocationPlan,
+      desiredPlan,
       allowedLocationIds,
-      drainOrderLocationIds: locationIdsInOrder
+      drainOrderLocationIds: allowedLocationIds
     });
 
     const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
+
+    // Optional: report variants that are still unfulfillable even after order edit (should usually be 0)
+    const unfulfillable = [];
+    for (const [variantId, p] of desiredPlan.entries()) {
+      if ((p.unfulfillable || 0) > 0) {
+        unfulfillable.push({ variantId, unfulfillableQty: p.unfulfillable });
+      }
+    }
 
     res.json({
       ok: true,
@@ -1122,13 +1264,14 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       reduceResult,
       moveLog: rebalance.moveLog,
       blockedMoves: rebalance.blocked,
+      unfulfillableAfterPlan: unfulfillable,
       report,
       finalFulfillment,
       locationIdToName,
       productMetaByHandle
     });
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
