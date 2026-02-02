@@ -105,7 +105,7 @@ async function getAccessToken() {
   return cachedAccessToken;
 }
 
-// ----------------- Shopify GraphQL helper -----------------
+// ----------------- Shopify GraphQL helper (WITH request-id debugging) -----------------
 
 async function shopifyGraphQL(query, variables = {}) {
   const token = await getAccessToken();
@@ -119,8 +119,26 @@ async function shopifyGraphQL(query, variables = {}) {
     body: JSON.stringify({ query, variables })
   });
 
-  const json = await res.json();
-  if (json.errors) throw new Error(JSON.stringify(json.errors, null, 2));
+  const reqId = res.headers.get("x-request-id") || res.headers.get("x-shopify-request-id") || null;
+
+  const text = await res.text();
+  let json;
+  try {
+    json = JSON.parse(text);
+  } catch {
+    json = { raw: text };
+  }
+
+  if (!res.ok || json.errors) {
+    const detail = {
+      status: res.status,
+      requestId: reqId,
+      errors: json.errors || null,
+      raw: json.raw || null
+    };
+    throw new Error(`Shopify GraphQL error: ${JSON.stringify(detail, null, 2)}`);
+  }
+
   return json.data;
 }
 
@@ -179,6 +197,7 @@ async function getProductVariantsByHandle(handle) {
   return data.productByHandle;
 }
 
+// Shopify: inventory via inventoryItem.inventoryLevel(locationId)
 async function getAvailableAtLocation(inventoryItemId, locationId) {
   const q = `
     query Inv($inventoryItemId: ID!, $locationId: ID!) {
@@ -190,6 +209,7 @@ async function getAvailableAtLocation(inventoryItemId, locationId) {
     }
   `;
   const data = await shopifyGraphQL(q, { inventoryItemId, locationId });
+
   const level = data.inventoryItem?.inventoryLevel;
   if (!level) return 0;
   const avail = level.quantities.find(x => x.name === "available")?.quantity ?? 0;
@@ -315,11 +335,7 @@ async function getFulfillmentOrdersForOrder(orderId) {
               nodes {
                 id
                 remainingQuantity
-                lineItem {
-                  id
-                  quantity
-                  variant { id inventoryItem { id } }
-                }
+                lineItem { variant { id inventoryItem { id } } }
               }
             }
           }
@@ -331,7 +347,8 @@ async function getFulfillmentOrdersForOrder(orderId) {
   return data.order.fulfillmentOrders.nodes;
 }
 
-async function waitForFulfillmentOrders(orderId, maxRetries = 20, delayMs = 500) {
+// Wait for fulfillment orders after completion (helps race conditions)
+async function waitForFulfillmentOrders(orderId, maxRetries = 30, delayMs = 500) {
   for (let i = 0; i < maxRetries; i++) {
     const fos = await getFulfillmentOrdersForOrder(orderId);
     if (fos.length > 0) return fos;
@@ -366,244 +383,14 @@ async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLin
   return data.fulfillmentOrderMove;
 }
 
-// ----------------- Order edit (remove unfulfillable units) -----------------
-
-async function orderEditBegin(orderId) {
-  const m = `
-    mutation Begin($id: ID!) {
-      orderEditBegin(id: $id) {
-        calculatedOrder { id }
-        userErrors { field message }
-      }
-    }
-  `;
-  const data = await shopifyGraphQL(m, { id: orderId });
-  const errs = data.orderEditBegin.userErrors || [];
-  if (errs.length) throw new Error(`orderEditBegin errors: ${JSON.stringify(errs, null, 2)}`);
-  return data.orderEditBegin.calculatedOrder.id;
-}
-
-/**
- * CalculatedLineItem IDs share the same numeric ID as the original LineItem.
- * Shopify just swaps the GID type prefix — no extra query needed.
- *
- *   gid://shopify/LineItem/1234  →  gid://shopify/CalculatedLineItem/1234
- */
-function toCalculatedLineItemId(originalLineItemId) {
-  return originalLineItemId.replace(
-    "gid://shopify/LineItem/",
-    "gid://shopify/CalculatedLineItem/"
-  );
-}
-
-async function orderEditSetQuantity(calculatedOrderId, calculatedLineItemId, quantity, restock = false) {
-  const m = `
-    mutation SetQty($id: ID!, $lineItemId: ID!, $quantity: Int!, $restock: Boolean) {
-      orderEditSetQuantity(id: $id, lineItemId: $lineItemId, quantity: $quantity, restock: $restock) {
-        calculatedOrder { id }
-        userErrors { field message }
-      }
-    }
-  `;
-  const data = await shopifyGraphQL(m, {
-    id: calculatedOrderId,
-    lineItemId: calculatedLineItemId,
-    quantity,
-    restock
-  });
-  const errs = data.orderEditSetQuantity.userErrors || [];
-  if (errs.length) throw new Error(`orderEditSetQuantity errors: ${JSON.stringify(errs, null, 2)}`);
-}
-
-async function orderEditCommit(calculatedOrderId, staffNote) {
-  const m = `
-    mutation Commit($id: ID!, $notifyCustomer: Boolean!, $staffNote: String) {
-      orderEditCommit(id: $id, notifyCustomer: $notifyCustomer, staffNote: $staffNote) {
-        order { id }
-        userErrors { field message }
-      }
-    }
-  `;
-  const data = await shopifyGraphQL(m, { id: calculatedOrderId, notifyCustomer: false, staffNote });
-  const errs = data.orderEditCommit.userErrors || [];
-  if (errs.length) throw new Error(`orderEditCommit errors: ${JSON.stringify(errs, null, 2)}`);
-  return data.orderEditCommit.order?.id || null;
-}
-
-function buildOrderLineItemIndexFromFOs(fos) {
-  // variantId -> [{ lineItemId, quantity, inventoryItemId }]
-  const map = new Map();
-
-  for (const fo of fos) {
-    for (const node of fo.lineItems.nodes) {
-      const li = node.lineItem;
-      const variantId = li?.variant?.id || null;
-      const inventoryItemId = li?.variant?.inventoryItem?.id || null;
-      const lineItemId = li?.id || null;
-      const qty = Number(li?.quantity || 0);
-
-      if (!variantId || !lineItemId || qty <= 0) continue;
-
-      if (!map.has(variantId)) map.set(variantId, []);
-      const arr = map.get(variantId);
-      if (!arr.some(x => x.lineItemId === lineItemId)) {
-        arr.push({ lineItemId, quantity: qty, inventoryItemId });
-      }
-    }
-  }
-
-  return map;
-}
-
-/**
- * One begin/commit edit for the whole order.
- * Removes "over cap" units where cap = SUM(available across allowed locations) per inventory item.
- * Uses toCalculatedLineItemId() for GID prefix swap — no extra query needed.
- */
-async function reduceOrderIfOverCapOneCommit({
-  orderId,
-  allocationPlan,
-  allowedLocationIds,
-  staffNotePrefix = "Wholesale importer"
-}) {
-  const fos = await getFulfillmentOrdersForOrder(orderId);
-  const orderLineItemsByVariant = buildOrderLineItemIndexFromFOs(fos);
-
-  // Cache live caps: inventoryItemId::locId -> available
-  const capMap = new Map();
-  async function getCap(inventoryItemId, locId) {
-    const key = `${inventoryItemId}::${locId}`;
-    if (capMap.has(key)) return capMap.get(key);
-    const avail = await getAvailableAtLocation(inventoryItemId, locId);
-    const v = Math.max(0, Number(avail) || 0);
-    capMap.set(key, v);
-    return v;
-  }
-
-  const removals = []; // { variantId, originalLineItemId, fromQty, toQty, removed }
-  const shortfalls = [];
-
-  for (const [variantId, plan] of allocationPlan.entries()) {
-    const inventoryItemId = plan.inventoryItemId;
-    const orderLines = orderLineItemsByVariant.get(variantId) || [];
-    const ordered = orderLines.reduce((s, x) => s + x.quantity, 0);
-    if (!ordered) continue;
-
-    let totalCap = 0;
-    for (const locId of allowedLocationIds) totalCap += await getCap(inventoryItemId, locId);
-
-    const over = Math.max(0, ordered - totalCap);
-    if (over <= 0) continue;
-
-    let remainingToRemove = over;
-    const lines = [...orderLines].sort((a, b) => b.quantity - a.quantity);
-
-    for (const line of lines) {
-      if (remainingToRemove <= 0) break;
-
-      const newQty = Math.max(0, line.quantity - remainingToRemove);
-      const removedHere = line.quantity - newQty;
-
-      if (removedHere > 0) {
-        removals.push({
-          variantId,
-          originalLineItemId: line.lineItemId,
-          fromQty: line.quantity,
-          toQty: newQty,
-          removed: removedHere
-        });
-        remainingToRemove -= removedHere;
-      }
-    }
-
-    if (remainingToRemove > 0) {
-      shortfalls.push({
-        variantId,
-        ordered,
-        totalCap,
-        attemptedRemove: over,
-        plannedRemove: over - remainingToRemove,
-        stillOverBy: remainingToRemove
-      });
-    }
-  }
-
-  if (removals.length === 0) {
-    return { didEdit: false, removals: [], shortfalls: [] };
-  }
-
-  const calculatedOrderId = await orderEditBegin(orderId);
-
-  for (const r of removals) {
-    const calculatedLineItemId = toCalculatedLineItemId(r.originalLineItemId);
-
-    if (!calculatedLineItemId) {
-      throw new Error(
-        `Could not map original line item to calculated line item. originalLineItemId=${r.originalLineItemId}`
-      );
-    }
-    await orderEditSetQuantity(calculatedOrderId, calculatedLineItemId, r.toQty, false);
-  }
-
-  const totalRemoved = removals.reduce((s, r) => s + r.removed, 0);
-  await orderEditCommit(
-    calculatedOrderId,
-    `${staffNotePrefix}: removed ${totalRemoved} unit(s) across ${removals.length} line(s) due to insufficient Available in allowed locations`
-  );
-
-  return { didEdit: true, removals, shortfalls };
-}
-
-// ----------------- Build desired allocations AFTER edits -----------------
-
-async function buildDesiredPlanFromCurrentOrder({
-  fos,
-  allocationPlan,
-  allowedLocationIdsInDrainOrder
-}) {
-  const lineIdx = buildOrderLineItemIndexFromFOs(fos);
-
-  // Cap cache per run
-  const capMap = new Map();
-  async function getCap(inventoryItemId, locId) {
-    const key = `${inventoryItemId}::${locId}`;
-    if (capMap.has(key)) return capMap.get(key);
-    const avail = await getAvailableAtLocation(inventoryItemId, locId);
-    const v = Math.max(0, Number(avail) || 0);
-    capMap.set(key, v);
-    return v;
-  }
-
-  const desiredPlan = new Map(); // variantId -> { inventoryItemId, allocations, orderedNow, unfulfillable }
-
-  for (const [variantId, plan] of allocationPlan.entries()) {
-    const inventoryItemId = plan.inventoryItemId;
-    const orderLines = lineIdx.get(variantId) || [];
-    const orderedNow = orderLines.reduce((s, x) => s + x.quantity, 0);
-    if (!orderedNow) continue;
-
-    let remaining = orderedNow;
-    const allocations = [];
-
-    for (const locId of allowedLocationIdsInDrainOrder) {
-      if (remaining <= 0) break;
-      const cap = await getCap(inventoryItemId, locId);
-      if (cap <= 0) continue;
-
-      const take = Math.min(cap, remaining);
-      if (take > 0) {
-        allocations.push({ locationId: locId, qty: take });
-        remaining -= take;
-      }
-    }
-
-    desiredPlan.set(variantId, { inventoryItemId, allocations, orderedNow, unfulfillable: remaining });
-  }
-
-  return desiredPlan;
-}
-
-// ----------------- Rebalance fulfillment (delta-based + monotonic available cap) -----------------
+// ----------------- Robust approach: NO order edits by default -----------------
+// Why: Your CalculatedLineItem schema is missing fields needed for safe mapping,
+// and Shopify orderEditCommit is opaque/racy. Instead:
+// - We only create what we *think* is fulfillable (allocation based on Available)
+// - We rebalance FO assignments to match drain order (delta-based)
+// - We NEVER move inventory INTO a destination beyond its current Available cap.
+// - If Shopify initially assigned units to disallowed locations, we preferentially
+//   move them OUT (subject to destination caps).
 
 function buildCurrentAllocationFromFOs(fos) {
   // variantId -> locationId -> [ { fulfillmentOrderId, fulfillmentOrderLineItemId, qty } ]
@@ -635,7 +422,7 @@ function buildCurrentAllocationFromFOs(fos) {
 
 async function enforceFulfillmentLocationsRebalance({
   orderId,
-  desiredPlan,              // Map(variantId -> { inventoryItemId, allocations:[...] })
+  allocationPlan,           // Map(variantId -> { inventoryItemId, allocations:[{locationId, qty}] })
   allowedLocationIds,       // allowed set
   drainOrderLocationIds     // ordering preference
 }) {
@@ -645,25 +432,21 @@ async function enforceFulfillmentLocationsRebalance({
   const allowedSet = new Set(allowedLocationIds);
   const drainIndex = new Map(drainOrderLocationIds.map((id, idx) => [id, idx]));
 
-  // Monotonic destination cap tracker (per inventoryItemId+locationId)
-  const destRemain = new Map(); // key -> remaining qty we allow to move INTO that destination
+  // Destination cap tracker (monotonic decreasing inside this run)
+  const destRemain = new Map(); // inventoryItemId::locationId -> remaining cap to move INTO
 
-  async function initOrGetDestRemain(inventoryItemId, locationId) {
-    const key = `${inventoryItemId}::${locationId}`;
-    if (destRemain.has(key)) return destRemain.get(key);
-    const live = Math.max(0, Number(await getAvailableAtLocation(inventoryItemId, locationId)) || 0);
-    destRemain.set(key, live);
-    return live;
-  }
-
-  // IMPORTANT: refresh must be monotonic decreasing (never increases within run)
-  async function refreshDestRemainMonotonic(inventoryItemId, locationId) {
+  async function getDestRemainMonotonic(inventoryItemId, locationId) {
     const key = `${inventoryItemId}::${locationId}`;
     const live = Math.max(0, Number(await getAvailableAtLocation(inventoryItemId, locationId)) || 0);
 
-    const local = destRemain.has(key) ? destRemain.get(key) : live;
-    const merged = Math.min(local, live);
+    if (!destRemain.has(key)) {
+      destRemain.set(key, live);
+      return live;
+    }
 
+    // never increase within this run
+    const cur = destRemain.get(key);
+    const merged = Math.min(cur, live);
     destRemain.set(key, merged);
     return merged;
   }
@@ -674,14 +457,13 @@ async function enforceFulfillmentLocationsRebalance({
     destRemain.set(key, Math.max(0, cur - qty));
   }
 
-  // Always start with fresh FOs for this order
   const fos = await getFulfillmentOrdersForOrder(orderId);
   const currentByVariant = buildCurrentAllocationFromFOs(fos);
 
-  for (const [variantId, plan] of desiredPlan.entries()) {
+  for (const [variantId, plan] of allocationPlan.entries()) {
     const inventoryItemId = plan.inventoryItemId;
 
-    // Desired: only allowed locations, in amounts from desiredPlan
+    // Desired: only allowed locations, amounts from plan (drain order already applied by allocator)
     const desiredByLoc = new Map();
     for (const a of plan.allocations || []) {
       if (!allowedSet.has(a.locationId)) continue;
@@ -690,7 +472,6 @@ async function enforceFulfillmentLocationsRebalance({
 
     // Current: whatever Shopify did (allowed + disallowed)
     const curLocLines = currentByVariant.get(variantId) || new Map();
-
     const currentByLoc = new Map();
     for (const [locId, lines] of curLocLines.entries()) {
       const total = lines.reduce((s, x) => s + x.qty, 0);
@@ -705,7 +486,7 @@ async function enforceFulfillmentLocationsRebalance({
       if (delta > 0) needs.push({ locId, qty: delta });
     }
 
-    // Excess: any locations where current > desired(0 if not desired)
+    // Excess: locations (including disallowed) where current > desired(0 if not desired)
     const excesses = [];
     for (const [locId, currentQty] of currentByLoc.entries()) {
       const desiredQty = desiredByLoc.get(locId) || 0;
@@ -715,11 +496,8 @@ async function enforceFulfillmentLocationsRebalance({
 
     // Prefer satisfying needs in drain order
     needs.sort((a, b) => (drainIndex.get(a.locId) ?? 9999) - (drainIndex.get(b.locId) ?? 9999));
-    // Prefer taking from disallowed sources first, then allowed
+    // Prefer taking from disallowed sources first
     excesses.sort((a, b) => Number(b.disallowed) - Number(a.disallowed));
-
-    // Prime destination caps for all desired destinations
-    for (const need of needs) await initOrGetDestRemain(inventoryItemId, need.locId);
 
     for (const need of needs) {
       let remainingNeed = need.qty;
@@ -727,7 +505,7 @@ async function enforceFulfillmentLocationsRebalance({
       while (remainingNeed > 0) {
         if (!allowedSet.has(need.locId)) break;
 
-        const destCap = await refreshDestRemainMonotonic(inventoryItemId, need.locId);
+        const destCap = await getDestRemainMonotonic(inventoryItemId, need.locId);
         if (destCap <= 0) {
           blocked.push({
             variantId,
@@ -756,6 +534,8 @@ async function enforceFulfillmentLocationsRebalance({
         }
 
         const line = srcLines[0];
+
+        // Move limited by: what's on that FO line, what's excess at that location, need, and destination cap
         const moveQty = Math.min(line.qty, src.qty, remainingNeed, destCap);
         if (moveQty <= 0) break;
 
@@ -775,6 +555,7 @@ async function enforceFulfillmentLocationsRebalance({
             originalFulfillmentOrder: result.originalFulfillmentOrder?.id || null
           });
 
+          // Update local bookkeeping
           line.qty -= moveQty;
           src.qty -= moveQty;
           remainingNeed -= moveQty;
@@ -785,8 +566,9 @@ async function enforceFulfillmentLocationsRebalance({
             fromLocationId: src.locId,
             toLocationId: need.locId,
             attemptedQty: moveQty,
-            reason: String(e)
+            reason: String(e?.message || e)
           });
+          // avoid infinite loops
           src.qty = 0;
         }
       }
@@ -1064,6 +846,7 @@ async function runAllocationOnly(req) {
         if (existing) existing.quantity += allocatedQty;
         else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
 
+        // merge allocations into plan
         const prev = allocationPlan.get(variant.id);
         const mergedAllocs = prev ? [...prev.allocations] : [];
 
@@ -1097,6 +880,32 @@ async function runAllocationOnly(req) {
   return { report, allocationPlan, draftLineItems, locationIdToName, productMetaByHandle, locationIdsInOrder };
 }
 
+// ----------------- DEBUG endpoints -----------------
+
+// Introspect what fields exist on CalculatedLineItem in YOUR store schema
+app.get("/api/debug/calculated-line-item-fields", async (_req, res) => {
+  try {
+    const q = `
+      query {
+        __type(name: "CalculatedLineItem") {
+          name
+          fields {
+            name
+            type { name kind ofType { name kind } }
+          }
+        }
+      }
+    `;
+    const data = await shopifyGraphQL(q, {});
+    res.json(data);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Quick healthcheck route
+app.get("/api/debug/ping", (_req, res) => res.json({ ok: true, version: VERSION }));
+
 // ----------------- Routes -----------------
 
 app.get("/api/locations", async (_req, res) => {
@@ -1104,7 +913,7 @@ app.get("/api/locations", async (_req, res) => {
     const locations = await getAllLocations();
     res.json({ locations });
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
@@ -1122,7 +931,7 @@ app.post("/api/preview", upload.single("file"), async (req, res) => {
 
     res.json({ ok: true, mode: "preview", runId, ...result });
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
@@ -1144,31 +953,21 @@ app.get("/api/report.xlsx", async (req, res) => {
       selectedLocationIds: run.locationIdsInOrder
     });
 
-    res.setHeader(
-      "Content-Type",
-      "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-    );
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="fulfillment_report.xlsx"`);
     res.send(xlsxBuffer);
   } catch (e) {
-    res.status(500).json({ error: String(e) });
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
-// Import (draft -> complete unpaid -> wait for FOs -> remove over-cap -> rebuild desired plan -> delta rebalance)
+// Import (draft -> complete unpaid -> wait for FOs -> delta rebalance with caps)
 app.post("/api/import", upload.single("file"), async (req, res) => {
   try {
     const { reserveHours = "48", locationIdsJson } = req.body;
 
     const result = await runAllocationOnly(req);
-    const {
-      report,
-      allocationPlan,
-      draftLineItems,
-      locationIdToName,
-      productMetaByHandle,
-      locationIdsInOrder
-    } = result;
+    const { report, allocationPlan, draftLineItems, locationIdToName, productMetaByHandle, locationIdsInOrder } = result;
 
     const runId = saveRun({
       locationIdToName,
@@ -1192,46 +991,22 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     const order = await draftOrderComplete(draft.id);
 
-    // Ensure fulfillment orders exist before we do anything else
+    // Wait for FOs so moves can be applied reliably
     await waitForFulfillmentOrders(order.id);
+
+    // Small settle delay reduces Shopify race weirdness
+    await new Promise(r => setTimeout(r, 1000));
 
     const allowedLocationIds = locationIdsInOrder;
 
-    // Remove over-cap units with one order edit commit (uses toCalculatedLineItemId GID swap)
-    const reduceResult = await reduceOrderIfOverCapOneCommit({
-      orderId: order.id,
-      allocationPlan,
-      allowedLocationIds,
-      staffNotePrefix: "Wholesale importer"
-    });
-
-    // Re-fetch after edits
-    const fosAfterEdit = await getFulfillmentOrdersForOrder(order.id);
-
-    // Rebuild desired plan so it matches the order *as it exists now*
-    const desiredPlan = await buildDesiredPlanFromCurrentOrder({
-      fos: fosAfterEdit,
-      allocationPlan,
-      allowedLocationIdsInDrainOrder: allowedLocationIds
-    });
-
-    // Delta-based rebalance + monotonic available cap
     const rebalance = await enforceFulfillmentLocationsRebalance({
       orderId: order.id,
-      desiredPlan,
+      allocationPlan,
       allowedLocationIds,
       drainOrderLocationIds: allowedLocationIds
     });
 
     const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
-
-    // Optional: report variants that are still unfulfillable even after order edit (should usually be 0)
-    const unfulfillable = [];
-    for (const [variantId, p] of desiredPlan.entries()) {
-      if ((p.unfulfillable || 0) > 0) {
-        unfulfillable.push({ variantId, unfulfillableQty: p.unfulfillable });
-      }
-    }
 
     res.json({
       ok: true,
@@ -1240,14 +1015,17 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       draftOrderId: draft.id,
       orderId: order.id,
       orderName: order.name,
-      reduceResult,
       moveLog: rebalance.moveLog,
       blockedMoves: rebalance.blocked,
-      unfulfillableAfterPlan: unfulfillable,
       report,
       finalFulfillment,
       locationIdToName,
-      productMetaByHandle
+      productMetaByHandle,
+      notes: [
+        "This recommended version DOES NOT use order edits (orderEditBegin/Commit).",
+        "It will never move units INTO a destination beyond that location’s current Available cap.",
+        "If Shopify initially assigns units to disallowed locations, the rebalancer tries to move them OUT first."
+      ]
     });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
