@@ -34,7 +34,7 @@ if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
 }
 
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
-const AUTO_TAGS = ["Wholesale"];
+const AUTO_TAGS = ["Wholesale", "Spreadsheet"];
 
 // Cache product lookups across requests
 const productCache = new Map(); // handle -> productByHandle result or null
