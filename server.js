@@ -5,6 +5,7 @@ import { parse as parseCsv } from "csv-parse/sync";
 import XLSX from "xlsx";
 import path from "path";
 import crypto from "crypto";
+import ExcelJS from "exceljs";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -458,14 +459,14 @@ async function enforceFulfillmentLocationsRebalance({
   for (const [variantId, plan] of allocationPlan.entries()) {
     const inventoryItemId = plan.inventoryItemId;
 
-    // Desired: only allowed locations, amounts from plan (drain order already applied by allocator)
+    // Desired: only allowed locations, amounts from plan
     const desiredByLoc = new Map();
     for (const a of plan.allocations || []) {
       if (!allowedSet.has(a.locationId)) continue;
       desiredByLoc.set(a.locationId, (desiredByLoc.get(a.locationId) || 0) + Number(a.qty || 0));
     }
 
-    // Current: whatever Shopify did (allowed + disallowed)
+    // Current
     const curLocLines = currentByVariant.get(variantId) || new Map();
     const currentByLoc = new Map();
     for (const [locId, lines] of curLocLines.entries()) {
@@ -473,7 +474,7 @@ async function enforceFulfillmentLocationsRebalance({
       currentByLoc.set(locId, total);
     }
 
-    // Needs: allowed locations where desired > current
+    // Needs
     const needs = [];
     for (const [locId, desiredQty] of desiredByLoc.entries()) {
       const currentQty = currentByLoc.get(locId) || 0;
@@ -481,7 +482,7 @@ async function enforceFulfillmentLocationsRebalance({
       if (delta > 0) needs.push({ locId, qty: delta });
     }
 
-    // Excess: locations (including disallowed) where current > desired(0 if not desired)
+    // Excess
     const excesses = [];
     for (const [locId, currentQty] of currentByLoc.entries()) {
       const desiredQty = desiredByLoc.get(locId) || 0;
@@ -489,9 +490,7 @@ async function enforceFulfillmentLocationsRebalance({
       if (delta > 0) excesses.push({ locId, qty: delta, disallowed: !allowedSet.has(locId) });
     }
 
-    // Prefer satisfying needs in drain order
     needs.sort((a, b) => (drainIndex.get(a.locId) ?? 9999) - (drainIndex.get(b.locId) ?? 9999));
-    // Prefer taking from disallowed sources first
     excesses.sort((a, b) => Number(b.disallowed) - Number(a.disallowed));
 
     for (const need of needs) {
@@ -529,8 +528,6 @@ async function enforceFulfillmentLocationsRebalance({
         }
 
         const line = srcLines[0];
-
-        // Move limited by: what's on that FO line, what's excess at that location, need, and destination cap
         const moveQty = Math.min(line.qty, src.qty, remainingNeed, destCap);
         if (moveQty <= 0) break;
 
@@ -550,7 +547,6 @@ async function enforceFulfillmentLocationsRebalance({
             originalFulfillmentOrder: result.originalFulfillmentOrder?.id || null
           });
 
-          // Update local bookkeeping
           line.qty -= moveQty;
           src.qty -= moveQty;
           remainingNeed -= moveQty;
@@ -563,7 +559,6 @@ async function enforceFulfillmentLocationsRebalance({
             attemptedQty: moveQty,
             reason: String(e?.message || e)
           });
-          // avoid infinite loops
           src.qty = 0;
         }
       }
@@ -586,14 +581,7 @@ async function summarizeFulfillmentByLocation(orderId) {
       fulfillmentOrderId: fo.id,
       location: locName,
       locationId: fo.assignedLocation?.location?.id || null,
-      status: fo.status,
-      lines: fo.lineItems.nodes.map(li => ({
-        fulfillmentOrderLineItemId: li.id,
-        lineItemId: li.lineItem?.id || null,
-        variantId: li.lineItem?.variant?.id || null,
-        inventoryItemId: li.lineItem?.variant?.inventoryItem?.id || null,
-        remainingQuantity: li.remainingQuantity
-      }))
+      status: fo.status
     };
   });
 
@@ -624,141 +612,185 @@ function parseUpload(file) {
   throw new Error("Unsupported file type. Upload CSV or XLSX.");
 }
 
-// ----------------- Report XLSX builder helpers -----------------
+// ----------------- ExcelJS report builder (embedded images) -----------------
 
 function safeSheetName(name) {
-  return String(name).replace(/[\[\]\*\/\\\?\:]/g, " ").trim() || "Sheet";
+  const s = String(name ?? "").replace(/[\[\]\*\/\\\?\:]/g, " ").trim() || "Sheet";
+  return s.slice(0, 31);
 }
 
-function makeUniqueSheetName(wb, baseName) {
-  let n = safeSheetName(baseName).slice(0, 31);
-  if (!wb.SheetNames.includes(n)) return n;
-
-  for (let i = 2; i < 100; i++) {
-    const suffix = ` (${i})`;
-    const trimmed = safeSheetName(baseName).slice(0, 31 - suffix.length) + suffix;
-    if (!wb.SheetNames.includes(trimmed)) return trimmed;
-  }
-  return safeSheetName(baseName).slice(0, 31);
-}
-
-function sheetHeaderRows({ sheetName, locationLabel, customer, notes }) {
-  return [
-    [sheetName],
-    ["Location", locationLabel],
-    ["Customer", customer || ""],
-    ["Notes", notes || ""],
-    []
-  ];
-}
-
-function makeRowForHandle({ handle, meta, sizeMap }) {
-  const title = meta?.title || "";
-  const imageUrl = meta?.imageUrl || "";
-  // Prefer Excel's IMAGE() formula if supported. If not supported, it will show the formula text.
-  const imageCell = imageUrl ? { f: `IMAGE("${imageUrl}")` } : "";
-
-  const row = [title, handle, imageCell];
-  let total = 0;
-  for (const s of SIZES) {
-    const v = Number(sizeMap.get(s) || 0);
-    row.push(v);
-    total += v;
-  }
-  row.push(total);
-  return row;
-}
-
-function buildHandleSizeMapEmpty() {
+function makeHandleSizeMapEmpty() {
   const m = new Map();
   for (const s of SIZES) m.set(s, 0);
   return m;
 }
 
-function finalizeSheet(ws) {
-  // Basic column sizing
-  const cols = [
-    { wch: 40 }, // Product Title
-    { wch: 28 }, // Handle
-    { wch: 18 }, // Image
-    ...SIZES.map(() => ({ wch: 6 })),
-    { wch: 8 }   // Total
-  ];
-  ws["!cols"] = cols;
+// Cache image downloads across requests
+const imageCache = new Map(); // url -> { buffer, extension } or null
+
+function guessImageExt(url) {
+  const u = String(url || "");
+  const lower = u.toLowerCase();
+  if (lower.includes(".png")) return "png";
+  if (lower.includes(".webp")) return "webp";
+  // Shopify often serves jpg/jpeg
+  return "jpeg";
 }
 
-function buildSheetFromLocHandleMap({
+async function fetchImageBuffer(url) {
+  const key = String(url || "").trim();
+  if (!key) return null;
+
+  if (imageCache.has(key)) return imageCache.get(key);
+
+  try {
+    const res = await fetch(key, { redirect: "follow" });
+    if (!res.ok) {
+      imageCache.set(key, null);
+      return null;
+    }
+    const ab = await res.arrayBuffer();
+    const buffer = Buffer.from(ab);
+    const extension = guessImageExt(key);
+    const out = { buffer, extension };
+    imageCache.set(key, out);
+    return out;
+  } catch {
+    imageCache.set(key, null);
+    return null;
+  }
+}
+
+function styleSheet(ws) {
+  ws.getColumn(1).width = 40; // title
+  ws.getColumn(2).width = 28; // handle
+  ws.getColumn(3).width = 12; // image
+  for (let i = 0; i < SIZES.length; i++) ws.getColumn(4 + i).width = 6;
+  ws.getColumn(4 + SIZES.length).width = 8; // total
+
+  ws.views = [{ state: "frozen", ySplit: 6 }];
+
+  // Header row styling (the table header row is row 6)
+  const headerRow = ws.getRow(6);
+  headerRow.font = { bold: true };
+  headerRow.alignment = { vertical: "middle", horizontal: "left" };
+}
+
+function writeSheetTop(ws, sheetName, locationLabel, customer, notes) {
+  ws.getRow(1).values = [sheetName];
+  ws.getRow(1).font = { bold: true, size: 16 };
+
+  ws.getRow(2).values = ["Location", locationLabel];
+  ws.getRow(3).values = ["Customer", customer || ""];
+  ws.getRow(4).values = ["Notes", notes || ""];
+  ws.getRow(5).values = []; // blank line spacer
+
+  ws.getRow(2).font = { bold: true };
+  ws.getRow(3).font = { bold: true };
+  ws.getRow(4).font = { bold: true };
+}
+
+function writeTableHeader(ws) {
+  ws.getRow(6).values = ["Product Title", "Handle", "Image", ...SIZES, "Total"];
+}
+
+async function addHandleRowsWithImages({
   wb,
-  sheetName,
-  locationLabel,
-  customer,
-  notes,
+  ws,
   handleToSizeMap,
   productMetaByHandle
 }) {
-  const header = ["Product Title", "Handle", "Image", ...SIZES, "Total"];
-  const rows = [
-    ...sheetHeaderRows({ sheetName, locationLabel, customer, notes }),
-    header
-  ];
-
   const handles = Array.from(handleToSizeMap.keys());
-  if (handles.length === 0) {
-    rows.push([`(No units)`, "", "", ...SIZES.map(() => 0), 0]);
-  } else {
-    handles.sort((a, b) => {
-      const ta = (productMetaByHandle[a]?.title || "").toLowerCase();
-      const tb = (productMetaByHandle[b]?.title || "").toLowerCase();
-      if (ta < tb) return -1;
-      if (ta > tb) return 1;
-      return a.localeCompare(b);
-    });
+  handles.sort((a, b) => {
+    const ta = (productMetaByHandle[a]?.title || "").toLowerCase();
+    const tb = (productMetaByHandle[b]?.title || "").toLowerCase();
+    if (ta < tb) return -1;
+    if (ta > tb) return 1;
+    return a.localeCompare(b);
+  });
 
-    for (const handle of handles) {
-      rows.push(
-        makeRowForHandle({
-          handle,
-          meta: productMetaByHandle[handle],
-          sizeMap: handleToSizeMap.get(handle)
-        })
-      );
+  let rowIndex = 7; // first data row
+  for (const handle of handles) {
+    const meta = productMetaByHandle[handle] || {};
+    const title = meta.title || "";
+    const imageUrl = meta.imageUrl || "";
+    const sizeMap = handleToSizeMap.get(handle) || makeHandleSizeMapEmpty();
+
+    const vals = [title, handle, ""];
+    let total = 0;
+    for (const s of SIZES) {
+      const v = Number(sizeMap.get(s) || 0);
+      vals.push(v);
+      total += v;
+    }
+    vals.push(total);
+
+    ws.getRow(rowIndex).values = vals;
+    ws.getRow(rowIndex).height = 46;
+    ws.getRow(rowIndex).alignment = { vertical: "middle" };
+
+    if (imageUrl) {
+      const img = await fetchImageBuffer(imageUrl);
+      if (img?.buffer?.length) {
+        const imageId = wb.addImage({
+          buffer: img.buffer,
+          extension: img.extension
+        });
+
+        // Column C is index 3 (1-based), ExcelJS expects 0-based in positioning
+        // Place a ~42x42 thumbnail inside the Image column cell.
+        ws.addImage(imageId, {
+          tl: { col: 2, row: rowIndex - 1 },
+          ext: { width: 42, height: 42 }
+        });
+      } else {
+        // fallback: keep url in the cell if fetch fails
+        ws.getCell(rowIndex, 3).value = imageUrl;
+        ws.getCell(rowIndex, 3).font = { color: { argb: "FF0000FF" }, underline: true };
+      }
     }
 
-    const totalsRow = ["TOTAL", "", "", ...SIZES.map(() => 0), 0];
-    for (let r = 0; r < handles.length; r++) {
-      const row = rows[rows.length - handles.length + r];
-      // title=0, handle=1, image=2, sizes start at 3
-      for (let i = 0; i < SIZES.length; i++) totalsRow[3 + i] += Number(row[3 + i] || 0);
-      totalsRow[3 + SIZES.length] += Number(row[3 + SIZES.length] || 0);
-    }
-    rows.push([]);
-    rows.push(totalsRow);
+    rowIndex += 1;
   }
 
-  const ws = XLSX.utils.aoa_to_sheet(rows);
-  finalizeSheet(ws);
-  XLSX.utils.book_append_sheet(wb, ws, makeUniqueSheetName(wb, sheetName));
+  // Totals row
+  const totalsRow = ws.getRow(rowIndex + 1);
+  totalsRow.values = ["TOTAL", "", "", ...SIZES.map(() => 0), 0];
+  totalsRow.font = { bold: true };
+
+  for (let i = 0; i < handles.length; i++) {
+    const r = 7 + i;
+    for (let s = 0; s < SIZES.length; s++) {
+      totalsRow.getCell(4 + s).value =
+        Number(totalsRow.getCell(4 + s).value || 0) + Number(ws.getCell(r, 4 + s).value || 0);
+    }
+    totalsRow.getCell(4 + SIZES.length).value =
+      Number(totalsRow.getCell(4 + SIZES.length).value || 0) + Number(ws.getCell(r, 4 + SIZES.length).value || 0);
+  }
+
+  // Add a blank line before totals (rowIndex)
+  ws.getRow(rowIndex).values = [];
 }
 
-function buildWorkbookV2({
+async function buildWorkbookExcelJS({
   locationIdToName,
-  requestedSeen,     // array of {handle,size,requestedQty}
-  availabilitySeen,  // report.availabilitySeen
+  requestedSeen,
+  availabilitySeen,
   productMetaByHandle,
   selectedLocationIds,
   customer,
   notes
 }) {
-  // ---------- Requested: handle -> size -> qty ----------
+  // Requested: handle -> size -> qty
   const requestedHandleMap = new Map();
   for (const entry of requestedSeen || []) {
     const { handle, size, requestedQty } = entry;
     if (!handle || !size) continue;
-    if (!requestedHandleMap.has(handle)) requestedHandleMap.set(handle, buildHandleSizeMapEmpty());
+    if (!requestedHandleMap.has(handle)) requestedHandleMap.set(handle, makeHandleSizeMapEmpty());
     requestedHandleMap.get(handle).set(size, (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0));
   }
 
-  // ---------- Allocated by location: locId -> handle -> size -> qty ----------
+  // Allocated by location: locId -> handle -> size -> qty
   const locMap = new Map();
   for (const entry of availabilitySeen || []) {
     const handle = entry.handle;
@@ -770,92 +802,84 @@ function buildWorkbookV2({
 
       if (!locMap.has(locId)) locMap.set(locId, new Map());
       const handleMap = locMap.get(locId);
+      if (!handleMap.has(handle)) handleMap.set(handle, makeHandleSizeMapEmpty());
 
-      if (!handleMap.has(handle)) handleMap.set(handle, buildHandleSizeMapEmpty());
       const sizeMap = handleMap.get(handle);
       sizeMap.set(size, (sizeMap.get(size) || 0) + qty);
     }
   }
 
-  // ---------- Total ordered: handle -> size -> qty (sum across all locations) ----------
+  // Total ordered: handle -> size -> qty
   const totalHandleMap = new Map();
-  for (const [locId, handleMap] of locMap.entries()) {
+  for (const handleMap of locMap.values()) {
     for (const [handle, sizeMap] of handleMap.entries()) {
-      if (!totalHandleMap.has(handle)) totalHandleMap.set(handle, buildHandleSizeMapEmpty());
+      if (!totalHandleMap.has(handle)) totalHandleMap.set(handle, makeHandleSizeMapEmpty());
       const tgt = totalHandleMap.get(handle);
       for (const s of SIZES) tgt.set(s, (tgt.get(s) || 0) + Number(sizeMap.get(s) || 0));
     }
   }
 
-  // ---------- Total Warehouse (Bogota + Warehouse) ----------
+  // Total Warehouse: Bogota + Warehouse
   const totalWarehouseHandleMap = new Map();
   for (const [locId, handleMap] of locMap.entries()) {
-    const name = locationIdToName[locId] || "";
-    if (name !== "Bogota" && name !== "Warehouse") continue;
+    const locName = locationIdToName[locId] || "";
+    if (locName !== "Bogota" && locName !== "Warehouse") continue;
 
     for (const [handle, sizeMap] of handleMap.entries()) {
-      if (!totalWarehouseHandleMap.has(handle)) totalWarehouseHandleMap.set(handle, buildHandleSizeMapEmpty());
+      if (!totalWarehouseHandleMap.has(handle)) totalWarehouseHandleMap.set(handle, makeHandleSizeMapEmpty());
       const tgt = totalWarehouseHandleMap.get(handle);
       for (const s of SIZES) tgt.set(s, (tgt.get(s) || 0) + Number(sizeMap.get(s) || 0));
     }
   }
 
-  const wb = XLSX.utils.book_new();
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "Wholesale Importer";
+  wb.created = new Date();
 
-  // 1) Requested tab
-  buildSheetFromLocHandleMap({
-    wb,
-    sheetName: "Requested",
-    locationLabel: "ALL REQUESTED",
-    customer,
-    notes,
-    handleToSizeMap: requestedHandleMap,
-    productMetaByHandle
-  });
+  // helper to build a sheet
+  async function addSheet(sheetName, locationLabel, map) {
+    const ws = wb.addWorksheet(safeSheetName(sheetName));
+    writeSheetTop(ws, sheetName, locationLabel, customer, notes);
+    writeTableHeader(ws);
+    styleSheet(ws);
 
-  // 2) Total tab
-  buildSheetFromLocHandleMap({
-    wb,
-    sheetName: "Total",
-    locationLabel: "ALL ORDERED",
-    customer,
-    notes,
-    handleToSizeMap: totalHandleMap,
-    productMetaByHandle
-  });
+    if (!map || map.size === 0) {
+      ws.getRow(7).values = ["(No units)", "", "", ...SIZES.map(() => 0), 0];
+      return;
+    }
 
-  // 3) Total Warehouse tab
-  buildSheetFromLocHandleMap({
-    wb,
-    sheetName: "Total Warehouse",
-    locationLabel: "Bogota + Warehouse",
-    customer,
-    notes,
-    handleToSizeMap: totalWarehouseHandleMap,
-    productMetaByHandle
-  });
-
-  // 4) Existing location tabs (selected in drain order)
-  const locIds = Array.isArray(selectedLocationIds) && selectedLocationIds.length
-    ? selectedLocationIds
-    : Array.from(locMap.keys());
-
-  for (const locId of locIds) {
-    const locName = locationIdToName[locId] || locId;
-
-    const handleMap = locMap.get(locId) || new Map();
-    buildSheetFromLocHandleMap({
+    await addHandleRowsWithImages({
       wb,
-      sheetName: locName,
-      locationLabel: locName,
-      customer,
-      notes,
-      handleToSizeMap: handleMap,
+      ws,
+      handleToSizeMap: map,
       productMetaByHandle
     });
   }
 
-  return XLSX.write(wb, { type: "buffer", bookType: "xlsx" });
+  // 1) Requested
+  await addSheet("Requested", "ALL REQUESTED", requestedHandleMap);
+
+  // 2) Total
+  await addSheet("Total", "ALL ORDERED", totalHandleMap);
+
+  // 3) Total Warehouse
+  await addSheet("Total Warehouse", "Bogota + Warehouse", totalWarehouseHandleMap);
+
+  // 4) Existing location tabs in selected drain order
+  const locIds =
+    Array.isArray(selectedLocationIds) && selectedLocationIds.length
+      ? selectedLocationIds
+      : Array.from(locMap.keys());
+
+  for (const locId of locIds) {
+    const locName = locationIdToName[locId] || locId;
+    const handleMap = locMap.get(locId) || new Map();
+    await addSheet(locName, locName, handleMap);
+  }
+
+  // Return xlsx buffer
+  const buf = await wb.xlsx.writeBuffer();
+  return Buffer.from(buf);
 }
 
 // ----------------- Shared allocator used by Preview / Import -----------------
@@ -906,7 +930,7 @@ async function runAllocationOnly(req) {
     droppedUnits: 0,
     missingHandles: [],
     availabilitySeen: [],
-    requestedSeen: [], // for Requested sheet
+    requestedSeen: [],
     lines: []
   };
 
@@ -979,7 +1003,6 @@ async function runAllocationOnly(req) {
         if (existing) existing.quantity += allocatedQty;
         else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
 
-        // merge allocations into plan
         const prev = allocationPlan.get(variant.id);
         const mergedAllocs = prev ? [...prev.allocations] : [];
 
@@ -1022,30 +1045,6 @@ async function runAllocationOnly(req) {
   };
 }
 
-// ----------------- DEBUG endpoints -----------------
-
-app.get("/api/debug/calculated-line-item-fields", async (_req, res) => {
-  try {
-    const q = `
-      query {
-        __type(name: "CalculatedLineItem") {
-          name
-          fields {
-            name
-            type { name kind ofType { name kind } }
-          }
-        }
-      }
-    `;
-    const data = await shopifyGraphQL(q, {});
-    res.json(data);
-  } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
-  }
-});
-
-app.get("/api/debug/ping", (_req, res) => res.json({ ok: true, version: VERSION }));
-
 // ----------------- Routes -----------------
 
 app.get("/api/locations", async (_req, res) => {
@@ -1057,7 +1056,7 @@ app.get("/api/locations", async (_req, res) => {
   }
 });
 
-// Preview only (no draft/order created). Saves run and returns runId for report download.
+// Preview only
 app.post("/api/preview", upload.single("file"), async (req, res) => {
   try {
     const result = await runAllocationOnly(req);
@@ -1078,7 +1077,7 @@ app.post("/api/preview", upload.single("file"), async (req, res) => {
   }
 });
 
-// Report download by runId (no recompute, always matches preview/import)
+// Report download by runId (ExcelJS)
 app.get("/api/report.xlsx", async (req, res) => {
   try {
     const runId = String(req.query.runId || "");
@@ -1089,7 +1088,7 @@ app.get("/api/report.xlsx", async (req, res) => {
       });
     }
 
-    const xlsxBuffer = buildWorkbookV2({
+    const xlsxBuffer = await buildWorkbookExcelJS({
       locationIdToName: run.locationIdToName,
       requestedSeen: run.requestedSeen || [],
       availabilitySeen: run.availabilitySeen || [],
@@ -1149,10 +1148,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     const order = await draftOrderComplete(draft.id);
 
-    // Wait for FOs so moves can be applied reliably
     await waitForFulfillmentOrders(order.id);
-
-    // Small settle delay reduces Shopify race weirdness
     await new Promise(r => setTimeout(r, 1000));
 
     const allowedLocationIds = locationIdsInOrder;
@@ -1180,19 +1176,14 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       locationIdToName,
       productMetaByHandle,
       customer,
-      notes,
-      notesArr: [
-        "This version DOES NOT use order edits (orderEditBegin/Commit).",
-        "It will never move units INTO a destination beyond that location’s current Available cap.",
-        "If Shopify initially assigns units to disallowed locations, the rebalancer tries to move them OUT first."
-      ]
+      notes
     });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
-// ----------------- Packing List (PDF) -----------------
+// ----------------- Packing List (PDF with fallback HTML) -----------------
 
 async function getOrderPackingData(orderId) {
   const q = `
@@ -1219,9 +1210,7 @@ async function getOrderPackingData(orderId) {
             title
             quantity
             sku
-            originalUnitPriceSet {
-              shopMoney { amount currencyCode }
-            }
+            originalUnitPriceSet { shopMoney { amount currencyCode } }
             image { url }
             variant { id title }
             product { id tags }
@@ -1245,12 +1234,7 @@ async function getOrderPackingData(orderId) {
         name
         email
         primaryDomain { url }
-        billingAddress {
-          address1
-          city
-          provinceCode
-          zip
-        }
+        billingAddress { address1 city provinceCode zip }
       }
     }
   `;
@@ -1268,15 +1252,12 @@ function escapeHtml(s) {
 }
 
 function buildPackingSlipHtml({ order, shop }) {
-  // Map lineItemId -> location {id,name} using fulfillmentOrders
   const lineItemLoc = new Map();
-  const orderLocations = [];
 
   for (const fo of order.fulfillmentOrders.nodes || []) {
     const loc = fo.assignedLocation?.location;
     const locId = loc?.id || "unassigned";
     const locName = loc?.name || "Unassigned";
-    if (!orderLocations.some(x => x.id === locId)) orderLocations.push({ id: locId, name: locName });
 
     for (const n of fo.lineItems.nodes || []) {
       const liId = n.lineItem?.id;
@@ -1284,8 +1265,7 @@ function buildPackingSlipHtml({ order, shop }) {
     }
   }
 
-  // Group order lineItems by location id
-  const byLoc = new Map(); // locId -> {name, items:[]}
+  const byLoc = new Map();
   for (const li of order.lineItems.nodes || []) {
     const loc = lineItemLoc.get(li.id) || { id: "unassigned", name: "Unassigned" };
     if (!byLoc.has(loc.id)) byLoc.set(loc.id, { name: loc.name, items: [] });
@@ -1293,7 +1273,7 @@ function buildPackingSlipHtml({ order, shop }) {
   }
 
   const pages = [];
-  for (const [locId, locData] of byLoc.entries()) {
+  for (const [, locData] of byLoc.entries()) {
     pages.push(`
       <div class="slip-container">
         <div class="main-content">
@@ -1337,7 +1317,10 @@ function buildPackingSlipHtml({ order, shop }) {
           <table class="products-tbl">
             ${(locData.items || []).map(li => {
               const img = li.image?.url ? (li.image.url.split("?")[0] + "?width=60") : "";
-              const variantTitle = li.variant?.title && li.variant.title !== "Default Title" ? `<br>${escapeHtml(li.variant.title)}` : "";
+              const variantTitle =
+                li.variant?.title && li.variant.title !== "Default Title"
+                  ? `<br>${escapeHtml(li.variant.title)}`
+                  : "";
               const isFinalSale = (li.product?.tags || []).includes("finalsale");
               const price = li.originalUnitPriceSet?.shopMoney?.amount || "";
               const cur = li.originalUnitPriceSet?.shopMoney?.currencyCode || "";
@@ -1425,7 +1408,7 @@ app.get("/api/packing-list.pdf", async (req, res) => {
     const { order, shop } = await getOrderPackingData(orderId);
     const html = buildPackingSlipHtml({ order, shop });
 
-    // Try to use PDF if deps exist, otherwise return HTML
+    // Try to render PDF via Puppeteer on Render
     let puppeteerCore = null;
     let chromium = null;
 
@@ -1439,35 +1422,43 @@ app.get("/api/packing-list.pdf", async (req, res) => {
 
     if (!puppeteerCore || !chromium) {
       res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.send(html);
-      return;
+      return res.send(html);
     }
 
-    const browser = await puppeteerCore.default.launch({
-      args: chromium.default.args,
-      executablePath: await chromium.default.executablePath(),
-      headless: chromium.default.headless
-    });
+    try {
+      const browser = await puppeteerCore.default.launch({
+        args: chromium.default.args,
+        executablePath: await chromium.default.executablePath(),
+        headless: chromium.default.headless
+      });
 
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
+      const page = await browser.newPage();
+      await page.setContent(html, { waitUntil: "networkidle0" });
 
-    const pdf = await page.pdf({
-      format: "Letter",
-      printBackground: true,
-      margin: { top: "0.25in", right: "0.25in", bottom: "0.25in", left: "0.25in" }
-    });
+      const pdf = await page.pdf({
+        format: "Letter",
+        printBackground: true,
+        margin: { top: "0.25in", right: "0.25in", bottom: "0.25in", left: "0.25in" }
+      });
 
-    await browser.close();
+      await browser.close();
 
-    const safeName = String(order.name || "order").replaceAll("#", "").replaceAll("/", "-");
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="packing-list-${safeName}.pdf"`);
-    res.send(pdf);
+      const safeName = String(order.name || "order").replaceAll("#", "").replaceAll("/", "-");
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="packing-list-${safeName}.pdf"`);
+      return res.send(Buffer.from(pdf));
+    } catch (e) {
+      // If Chromium fails at runtime, fall back to HTML (so you never download "fake pdf")
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.send(html);
+    }
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
+
+// ----------------- Healthcheck -----------------
+app.get("/api/debug/ping", (_req, res) => res.json({ ok: true, version: VERSION }));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Wholesale importer running on http://localhost:${port}`));
