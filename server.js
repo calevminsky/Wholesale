@@ -1420,36 +1420,35 @@ function buildPackingSlipHtml({ order, shop }) {
 app.get("/api/packing-list.pdf", async (req, res) => {
   try {
     const orderId = String(req.query.orderId || "").trim();
-    if (!orderId) return res.status(400).send("Missing orderId");
+    if (!orderId) return res.status(400).json({ error: "Missing orderId query param." });
 
     const { order, shop } = await getOrderPackingData(orderId);
     const html = buildPackingSlipHtml({ order, shop });
 
-    // Try PDF with puppeteer if installed
-    let puppeteer = null;
+    // Try to use PDF if deps exist, otherwise return HTML
+    let puppeteerCore = null;
+    let chromium = null;
+
     try {
-      puppeteer = await import("puppeteer");
+      puppeteerCore = await import("puppeteer-core");
+      chromium = await import("@sparticuz/chromium");
     } catch {
-      puppeteer = null;
+      puppeteerCore = null;
+      chromium = null;
     }
 
-    if (!puppeteer) {
+    if (!puppeteerCore || !chromium) {
       res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.send(`
-        <div style="font-family:system-ui; padding:20px;">
-          <h2>Packing slip HTML (PDF requires Puppeteer)</h2>
-          <p>Install Puppeteer to export PDF:</p>
-          <pre>npm i puppeteer</pre>
-          <hr/>
-          ${html}
-        </div>
-      `);
+      res.send(html);
       return;
     }
 
-    const browser = await puppeteer.default.launch({
-      args: ["--no-sandbox", "--disable-setuid-sandbox"]
+    const browser = await puppeteerCore.default.launch({
+      args: chromium.default.args,
+      executablePath: await chromium.default.executablePath(),
+      headless: chromium.default.headless
     });
+
     const page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
 
@@ -1461,11 +1460,12 @@ app.get("/api/packing-list.pdf", async (req, res) => {
 
     await browser.close();
 
+    const safeName = String(order.name || "order").replaceAll("#", "").replaceAll("/", "-");
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="packing-list-${order.name.replace("#", "")}.pdf"`);
+    res.setHeader("Content-Disposition", `attachment; filename="packing-list-${safeName}.pdf"`);
     res.send(pdf);
   } catch (e) {
-    res.status(500).send(String(e?.message || e));
+    res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
