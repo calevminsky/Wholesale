@@ -17,27 +17,6 @@ app.use(express.static("public"));
 const SHOP = process.env.SHOPIFY_SHOP; // must be *.myshopify.com
 const VERSION = process.env.SHOPIFY_API_VERSION || "2025-01";
 
-// Option A: long-lived Admin token (custom app created inside Shopify admin)
-const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN;
-
-// Option B: client credentials => mint token
-const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
-const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
-
-if (!SHOP) {
-  console.error("Missing SHOPIFY_SHOP env var (must be your *.myshopify.com domain).");
-  process.exit(1);
-}
-if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
-  console.error(
-    "Missing auth env vars. Provide either SHOPIFY_ADMIN_TOKEN OR (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET)."
-  );
-  process.exit(1);
-}
-
-const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
-const AUTO_TAGS = ["Wholesale", "Spreadsheet"];
-
 // ----------------- Email (SendGrid) -----------------
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
 const EMAIL_TO = process.env.EMAIL_TO || "calev@yakirabella.com";
@@ -50,7 +29,7 @@ function sendgridReady() {
 async function sendEmailWithAttachments({ subject, text, attachments }) {
   if (!sendgridReady()) {
     console.warn("SendGrid not configured (SENDGRID_API_KEY / EMAIL_FROM / EMAIL_TO). Skipping email.");
-    return { skipped: true };
+    return { skipped: true, reason: "SendGrid env vars missing" };
   }
 
   sgMail.setApiKey(SENDGRID_API_KEY);
@@ -68,11 +47,10 @@ async function sendEmailWithAttachments({ subject, text, attachments }) {
     }))
   };
 
-  await sgMail.send(msg);
-  return { ok: true };
+  const resp = await sgMail.send(msg);
+  return { ok: true, resp: Array.isArray(resp) ? resp[0]?.statusCode : "sent" };
 }
 
-// ----------------- Helpers -----------------
 function baseNameNoExt(filename) {
   const name = String(filename || "upload").split(/[\\/]/).pop();
   const dot = name.lastIndexOf(".");
@@ -86,6 +64,27 @@ function safeFilePart(s) {
     .replace(/\s+/g, "_")
     .slice(0, 80) || "upload";
 }
+
+// ----------------- Shopify auth -----------------
+
+// Option A: long-lived Admin token (custom app created inside Shopify admin)
+const ADMIN_TOKEN = process.env.SHOPIFY_ADMIN_TOKEN;
+
+// Option B: client credentials => mint token
+const CLIENT_ID = process.env.SHOPIFY_CLIENT_ID;
+const CLIENT_SECRET = process.env.SHOPIFY_CLIENT_SECRET;
+
+if (!SHOP) {
+  console.error("Missing SHOPIFY_SHOP env var (must be your *.myshopify.com domain).");
+  process.exit(1);
+}
+if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
+  console.error("Missing auth env vars. Provide either SHOPIFY_ADMIN_TOKEN OR (SHOPIFY_CLIENT_ID + SHOPIFY_CLIENT_SECRET).");
+  process.exit(1);
+}
+
+const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+const AUTO_TAGS = ["Wholesale", "Spreadsheet"];
 
 // Cache product lookups across requests
 const productCache = new Map(); // handle -> productByHandle result or null
@@ -178,12 +177,7 @@ async function shopifyGraphQL(query, variables = {}) {
   }
 
   if (!res.ok || json.errors) {
-    const detail = {
-      status: res.status,
-      requestId: reqId,
-      errors: json.errors || null,
-      raw: json.raw || null
-    };
+    const detail = { status: res.status, requestId: reqId, errors: json.errors || null, raw: json.raw || null };
     throw new Error(`Shopify GraphQL error: ${JSON.stringify(detail, null, 2)}`);
   }
 
@@ -228,6 +222,7 @@ async function getProductVariantsByHandle(handle) {
       productByHandle(handle: $handle) {
         id
         title
+        handle
         featuredImage { url }
         images(first: 1) { nodes { url } }
         variants(first: 100) {
@@ -245,6 +240,7 @@ async function getProductVariantsByHandle(handle) {
   return data.productByHandle;
 }
 
+// Shopify: inventory via inventoryItem.inventoryLevel(locationId)
 async function getAvailableAtLocation(inventoryItemId, locationId) {
   const q = `
     query Inv($inventoryItemId: ID!, $locationId: ID!) {
@@ -281,13 +277,7 @@ function makeAvailKey(inventoryItemId, locationId) {
   return `${inventoryItemId}::${locationId}`;
 }
 
-async function allocateVariantQty({
-  inventoryItemId,
-  requestedQty,
-  locationIdsInOrder,
-  remainingAvailMap,
-  availabilityDebug
-}) {
+async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsInOrder, remainingAvailMap, availabilityDebug }) {
   let remaining = requestedQty;
   const allocations = [];
 
@@ -381,7 +371,10 @@ async function getFulfillmentOrdersForOrder(orderId) {
               nodes {
                 id
                 remainingQuantity
-                lineItem { id variant { id inventoryItem { id } } }
+                lineItem {
+                  id
+                  variant { id inventoryItem { id } }
+                }
               }
             }
           }
@@ -393,6 +386,7 @@ async function getFulfillmentOrdersForOrder(orderId) {
   return data.order.fulfillmentOrders.nodes;
 }
 
+// Wait for fulfillment orders after completion (helps race conditions)
 async function waitForFulfillmentOrders(orderId, maxRetries = 30, delayMs = 500) {
   for (let i = 0; i < maxRetries; i++) {
     const fos = await getFulfillmentOrdersForOrder(orderId);
@@ -428,9 +422,11 @@ async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLin
   return data.fulfillmentOrderMove;
 }
 
-// ----------------- Rebalance logic -----------------
+// ----------------- Rebalance logic (same as you had) -----------------
 function buildCurrentAllocationFromFOs(fos) {
+  // variantId -> locationId -> [ { fulfillmentOrderId, fulfillmentOrderLineItemId, qty } ]
   const byVariant = new Map();
+
   for (const fo of fos) {
     const locId = fo.assignedLocation?.location?.id || null;
     if (!locId) continue;
@@ -451,14 +447,15 @@ function buildCurrentAllocationFromFOs(fos) {
       });
     }
   }
+
   return byVariant;
 }
 
 async function enforceFulfillmentLocationsRebalance({
   orderId,
-  allocationPlan,
-  allowedLocationIds,
-  drainOrderLocationIds
+  allocationPlan,           // Map(variantId -> { inventoryItemId, allocations:[{locationId, qty}] })
+  allowedLocationIds,       // allowed set
+  drainOrderLocationIds     // ordering preference
 }) {
   const moveLog = [];
   const blocked = [];
@@ -466,7 +463,8 @@ async function enforceFulfillmentLocationsRebalance({
   const allowedSet = new Set(allowedLocationIds);
   const drainIndex = new Map(drainOrderLocationIds.map((id, idx) => [id, idx]));
 
-  const destRemain = new Map(); // inventoryItemId::locationId -> remaining cap
+  // Destination cap tracker (monotonic decreasing inside this run)
+  const destRemain = new Map(); // inventoryItemId::locationId -> remaining cap to move INTO
 
   async function getDestRemainMonotonic(inventoryItemId, locationId) {
     const key = `${inventoryItemId}::${locationId}`;
@@ -476,6 +474,8 @@ async function enforceFulfillmentLocationsRebalance({
       destRemain.set(key, live);
       return live;
     }
+
+    // never increase within this run
     const cur = destRemain.get(key);
     const merged = Math.min(cur, live);
     destRemain.set(key, merged);
@@ -494,12 +494,14 @@ async function enforceFulfillmentLocationsRebalance({
   for (const [variantId, plan] of allocationPlan.entries()) {
     const inventoryItemId = plan.inventoryItemId;
 
+    // Desired: only allowed locations, amounts from plan (drain order already applied by allocator)
     const desiredByLoc = new Map();
     for (const a of plan.allocations || []) {
       if (!allowedSet.has(a.locationId)) continue;
       desiredByLoc.set(a.locationId, (desiredByLoc.get(a.locationId) || 0) + Number(a.qty || 0));
     }
 
+    // Current: whatever Shopify did (allowed + disallowed)
     const curLocLines = currentByVariant.get(variantId) || new Map();
     const currentByLoc = new Map();
     for (const [locId, lines] of curLocLines.entries()) {
@@ -507,6 +509,7 @@ async function enforceFulfillmentLocationsRebalance({
       currentByLoc.set(locId, total);
     }
 
+    // Needs: allowed locations where desired > current
     const needs = [];
     for (const [locId, desiredQty] of desiredByLoc.entries()) {
       const currentQty = currentByLoc.get(locId) || 0;
@@ -514,6 +517,7 @@ async function enforceFulfillmentLocationsRebalance({
       if (delta > 0) needs.push({ locId, qty: delta });
     }
 
+    // Excess: locations (including disallowed) where current > desired(0 if not desired)
     const excesses = [];
     for (const [locId, currentQty] of currentByLoc.entries()) {
       const desiredQty = desiredByLoc.get(locId) || 0;
@@ -521,7 +525,9 @@ async function enforceFulfillmentLocationsRebalance({
       if (delta > 0) excesses.push({ locId, qty: delta, disallowed: !allowedSet.has(locId) });
     }
 
+    // Prefer satisfying needs in drain order
     needs.sort((a, b) => (drainIndex.get(a.locId) ?? 9999) - (drainIndex.get(b.locId) ?? 9999));
+    // Prefer taking from disallowed sources first
     excesses.sort((a, b) => Number(b.disallowed) - Number(a.disallowed));
 
     for (const need of needs) {
@@ -559,6 +565,8 @@ async function enforceFulfillmentLocationsRebalance({
         }
 
         const line = srcLines[0];
+
+        // Move limited by: what's on that FO line, what's excess at that location, need, and destination cap
         const moveQty = Math.min(line.qty, src.qty, remainingNeed, destCap);
         if (moveQty <= 0) break;
 
@@ -578,6 +586,7 @@ async function enforceFulfillmentLocationsRebalance({
             originalFulfillmentOrder: result.originalFulfillmentOrder?.id || null
           });
 
+          // Update local bookkeeping
           line.qty -= moveQty;
           src.qty -= moveQty;
           remainingNeed -= moveQty;
@@ -590,6 +599,7 @@ async function enforceFulfillmentLocationsRebalance({
             attemptedQty: moveQty,
             reason: String(e?.message || e)
           });
+          // avoid infinite loops
           src.qty = 0;
         }
       }
@@ -610,7 +620,98 @@ async function summarizeFulfillmentByLocation(orderId) {
   return { summary };
 }
 
-// ----------------- Upload parsing -----------------
+// ----------------- Settlement wait (critical for consistency) -----------------
+function buildVariantLocQtyFromFOs(fos) {
+  // variantId -> locId -> qty
+  const m = new Map();
+
+  for (const fo of fos || []) {
+    const locId = fo.assignedLocation?.location?.id;
+    if (!locId) continue;
+
+    for (const n of fo.lineItems.nodes || []) {
+      const variantId = n.lineItem?.variant?.id;
+      const qty = Number(n.remainingQuantity || 0);
+      if (!variantId || qty <= 0) continue;
+
+      if (!m.has(variantId)) m.set(variantId, new Map());
+      const byLoc = m.get(variantId);
+      byLoc.set(locId, (byLoc.get(locId) || 0) + qty);
+    }
+  }
+  return m;
+}
+
+function buildDesiredVariantLocQtyFromPlan(allocationPlan) {
+  // variantId -> locId -> qty
+  const m = new Map();
+  for (const [variantId, plan] of allocationPlan.entries()) {
+    if (!m.has(variantId)) m.set(variantId, new Map());
+    const byLoc = m.get(variantId);
+    for (const a of plan.allocations || []) {
+      const locId = a.locationId;
+      const qty = Number(a.qty || 0);
+      if (!locId || qty <= 0) continue;
+      byLoc.set(locId, (byLoc.get(locId) || 0) + qty);
+    }
+  }
+  return m;
+}
+
+function mapsEqualVariantLocQty(actual, desired) {
+  const variantIds = new Set([...actual.keys(), ...desired.keys()]);
+
+  for (const vId of variantIds) {
+    const aLoc = actual.get(vId) || new Map();
+    const dLoc = desired.get(vId) || new Map();
+    const locIds = new Set([...aLoc.keys(), ...dLoc.keys()]);
+
+    for (const locId of locIds) {
+      const a = Number(aLoc.get(locId) || 0);
+      const d = Number(dLoc.get(locId) || 0);
+      if (a !== d) return false;
+    }
+  }
+  return true;
+}
+
+async function waitForFulfillmentSettlement({
+  orderId,
+  allocationPlan,
+  maxMs = 60_000,
+  pollMs = 1500,
+  stableChecksRequired = 2
+}) {
+  const desired = buildDesiredVariantLocQtyFromPlan(allocationPlan);
+  const started = Date.now();
+  let stableCount = 0;
+  let lastSnapshot = null;
+
+  while (Date.now() - started < maxMs) {
+    const fos = await getFulfillmentOrdersForOrder(orderId);
+    const actual = buildVariantLocQtyFromFOs(fos);
+    const matches = mapsEqualVariantLocQty(actual, desired);
+
+    const snapshotStr = JSON.stringify(
+      [...actual.entries()].map(([v, lm]) => [v, [...lm.entries()].sort()]).sort()
+    );
+
+    if (matches && snapshotStr === lastSnapshot) stableCount += 1;
+    else stableCount = matches ? 1 : 0;
+
+    lastSnapshot = snapshotStr;
+
+    if (stableCount >= stableChecksRequired) {
+      return { ok: true, waitedMs: Date.now() - started };
+    }
+
+    await new Promise(r => setTimeout(r, pollMs));
+  }
+
+  return { ok: false, waitedMs: Date.now() - started };
+}
+
+// ----------------- Upload parsing (CSV + XLSX) -----------------
 function parseUpload(file) {
   const ext = path.extname(file.originalname || "").toLowerCase();
 
@@ -629,7 +730,7 @@ function parseUpload(file) {
   throw new Error("Unsupported file type. Upload CSV or XLSX.");
 }
 
-// ----------------- ExcelJS report builder -----------------
+// ----------------- ExcelJS (Option B: build from FINAL Shopify fulfillment data) -----------------
 function safeSheetName(name) {
   const s = String(name ?? "").replace(/[\[\]\*\/\\\?\:]/g, " ").trim() || "Sheet";
   return s.slice(0, 31);
@@ -641,6 +742,7 @@ function makeHandleSizeMapEmpty() {
   return m;
 }
 
+// cache images so the workbook is faster
 const imageCache = new Map(); // url -> { buffer, extension } or null
 
 function guessImageExt(url) {
@@ -673,17 +775,6 @@ async function fetchImageBuffer(url) {
   }
 }
 
-// Excel sizing helpers:
-// Excel row height is in "points" (pt). 1 px ~= 0.75 pt.
-// Excel column width is "characters". ~1 char ~= 7 px (varies), we approximate.
-function pxToRowHeightPt(px) {
-  return Math.max(12, Math.round(px * 0.75));
-}
-
-function pxToColWidth(px) {
-  return Math.max(8, Math.round(px / 7));
-}
-
 function applyPrintSetup(ws) {
   ws.pageSetup = {
     paperSize: 1, // Letter
@@ -697,13 +788,10 @@ function applyPrintSetup(ws) {
 }
 
 function styleSheet(ws) {
+  // Proportions to make images look normal
   ws.getColumn(1).width = 40; // title
   ws.getColumn(2).width = 28; // handle
-
-  // Image column: make it "image-like"
-  // We'll size rows to match, so images don't look stretched.
-  ws.getColumn(3).width = pxToColWidth(70); // ~70px wide cell
-
+  ws.getColumn(3).width = 14; // image
   for (let i = 0; i < SIZES.length; i++) ws.getColumn(4 + i).width = 6;
   ws.getColumn(4 + SIZES.length).width = 8; // total
 
@@ -734,26 +822,49 @@ function writeTableHeader(ws) {
   ws.getRow(6).values = ["Product Title", "Handle", "Image", ...SIZES, "Total"];
 }
 
-// Make images look "in-cell":
-// - keep image square-ish (60x60)
-// - set row height to match
-// - anchor to cell bounds (oneCell)
-async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, productMetaByHandle }) {
+function getSizeFromLineItem(li) {
+  // prefer selectedOptions "Size"; fallback to variant title parse
+  const opts = li?.variant?.selectedOptions || [];
+  const found = opts.find(o => String(o?.name || "").toLowerCase().includes("size"));
+  const v = found?.value || "";
+
+  const candidate = String(v).trim();
+  if (SIZES.includes(candidate)) return candidate;
+
+  // fallback parse from variant.title
+  const vt = String(li?.variant?.title || "").trim();
+  if (SIZES.includes(vt)) return vt;
+
+  // sometimes variant title is "XL / Black" etc
+  for (const s of SIZES) {
+    if (vt.split(/[\/,|-]/).map(x => x.trim()).includes(s)) return s;
+  }
+
+  return null;
+}
+
+function addQtyToMap(handleToSizeMap, handle, size, qty) {
+  if (!handle) return;
+  if (!handleToSizeMap.has(handle)) handleToSizeMap.set(handle, makeHandleSizeMapEmpty());
+  const sm = handleToSizeMap.get(handle);
+  if (!size || !SIZES.includes(size)) return; // ignore unknown size for now
+  sm.set(size, (sm.get(size) || 0) + Number(qty || 0));
+}
+
+async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, metaByHandle }) {
   const handles = Array.from(handleToSizeMap.keys());
   handles.sort((a, b) => {
-    const ta = (productMetaByHandle[a]?.title || "").toLowerCase();
-    const tb = (productMetaByHandle[b]?.title || "").toLowerCase();
+    const ta = (metaByHandle[a]?.title || "").toLowerCase();
+    const tb = (metaByHandle[b]?.title || "").toLowerCase();
     if (ta < tb) return -1;
     if (ta > tb) return 1;
     return a.localeCompare(b);
   });
 
-  const imgPx = 60; // target image box
-  const rowHeight = pxToRowHeightPt(imgPx + 10);
-
   let rowIndex = 7;
+
   for (const handle of handles) {
-    const meta = productMetaByHandle[handle] || {};
+    const meta = metaByHandle[handle] || {};
     const title = meta.title || "";
     const imageUrl = meta.imageUrl || "";
     const sizeMap = handleToSizeMap.get(handle) || makeHandleSizeMapEmpty();
@@ -767,20 +878,21 @@ async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, productMetaByH
     }
     vals.push(total);
 
-    const row = ws.getRow(rowIndex);
-    row.values = vals;
-    row.height = rowHeight;
-    row.alignment = { vertical: "middle" };
+    ws.getRow(rowIndex).values = vals;
+    ws.getRow(rowIndex).height = 64; // better for image proportions
+    ws.getRow(rowIndex).alignment = { vertical: "middle" };
 
+    // Place image anchored to the cell bounds (best ExcelJS can do)
     if (imageUrl) {
       const img = await fetchImageBuffer(imageUrl);
       if (img?.buffer?.length) {
         const imageId = wb.addImage({ buffer: img.buffer, extension: img.extension });
 
-        // Anchor to the exact cell bounds: column C (0-based col=2), rowIndex (0-based row=rowIndex-1)
+        // Column C is 3 -> 0-based col=2
+        // Use ext to keep proportions inside that cell
         ws.addImage(imageId, {
           tl: { col: 2, row: rowIndex - 1 },
-          br: { col: 3, row: rowIndex },
+          ext: { width: 90, height: 90 },
           editAs: "oneCell"
         });
       } else {
@@ -792,10 +904,8 @@ async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, productMetaByH
     rowIndex += 1;
   }
 
-  // blank row
   ws.getRow(rowIndex).values = [];
 
-  // totals row
   const totalsRow = ws.getRow(rowIndex + 1);
   totalsRow.values = ["TOTAL", "", "", ...SIZES.map(() => 0), 0];
   totalsRow.font = { bold: true };
@@ -812,15 +922,41 @@ async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, productMetaByH
   }
 }
 
-async function buildWorkbookExcelJS({
-  locationIdToName,
-  requestedSeen,
-  availabilitySeen,
-  productMetaByHandle,
-  selectedLocationIds,
+async function buildWorkbookFromFinalOrder({
+  finalOrder,            // from getOrderPackingData (order node)
+  locationIdToName,      // from getAllLocations
+  requestedSeen,         // from upload parsing (requested tab)
   customer,
-  notes
+  notes,
+  selectedLocationIds    // drain order (for sheet order)
 }) {
+  // Build mapping: lineItemId -> location {id,name} based on fulfillmentOrders lineItems
+  const lineItemLoc = new Map();
+  for (const fo of finalOrder.fulfillmentOrders.nodes || []) {
+    const loc = fo.assignedLocation?.location;
+    const locId = loc?.id || "unassigned";
+    const locName = loc?.name || "Unassigned";
+
+    for (const n of fo.lineItems.nodes || []) {
+      const liId = n.lineItem?.id;
+      if (liId) lineItemLoc.set(liId, { id: locId, name: locName });
+    }
+  }
+
+  // Build metaByHandle from order line items (title + image)
+  const metaByHandle = {};
+  for (const li of finalOrder.lineItems.nodes || []) {
+    const handle = li?.product?.handle || "";
+    if (!handle) continue;
+    if (!metaByHandle[handle]) {
+      metaByHandle[handle] = {
+        title: li?.product?.title || li?.title || "",
+        imageUrl: (li?.image?.url ? li.image.url.split("?")[0] : "") || ""
+      };
+    }
+  }
+
+  // ---------- Requested tab map (from upload) ----------
   const requestedHandleMap = new Map();
   for (const entry of requestedSeen || []) {
     const { handle, size, requestedQty } = entry;
@@ -831,36 +967,40 @@ async function buildWorkbookExcelJS({
       .set(size, (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0));
   }
 
+  // If requested handles didn’t appear in order, try to keep their meta if available from productCache request stage
+  // (not strictly required, but nice)
+  // metaByHandle already exists for ordered items; requested-only items will just have blank title/image.
+
+  // ---------- Actual fulfillment maps (the source of truth) ----------
+  // locId -> handle -> size -> qty
   const locMap = new Map();
-  for (const entry of availabilitySeen || []) {
-    const handle = entry.handle;
-    const size = entry.size;
-    for (const a of entry.allocations || []) {
-      const locId = a.locationId;
-      const qty = Number(a.qty || 0);
-      if (!qty) continue;
-
-      if (!locMap.has(locId)) locMap.set(locId, new Map());
-      const handleMap = locMap.get(locId);
-      if (!handleMap.has(handle)) handleMap.set(handle, makeHandleSizeMapEmpty());
-
-      const sizeMap = handleMap.get(handle);
-      sizeMap.set(size, (sizeMap.get(size) || 0) + qty);
-    }
-  }
-
+  // total ordered (by handle/size) across all locations (from fulfillment split)
   const totalHandleMap = new Map();
-  for (const handleMap of locMap.values()) {
-    for (const [handle, sizeMap] of handleMap.entries()) {
-      if (!totalHandleMap.has(handle)) totalHandleMap.set(handle, makeHandleSizeMapEmpty());
-      const tgt = totalHandleMap.get(handle);
-      for (const s of SIZES) tgt.set(s, (tgt.get(s) || 0) + Number(sizeMap.get(s) || 0));
-    }
+
+  for (const li of finalOrder.lineItems.nodes || []) {
+    const qty = Number(li.quantity || 0);
+    if (!qty) continue;
+
+    const handle = li?.product?.handle || "";
+    if (!handle) continue;
+
+    const size = getSizeFromLineItem(li);
+    if (!size) continue;
+
+    const loc = lineItemLoc.get(li.id) || { id: "unassigned", name: "Unassigned" };
+    const locId = loc.id;
+
+    if (!locMap.has(locId)) locMap.set(locId, new Map());
+    addQtyToMap(locMap.get(locId), handle, size, qty);
+
+    if (!totalHandleMap.has(handle)) totalHandleMap.set(handle, makeHandleSizeMapEmpty());
+    addQtyToMap(totalHandleMap, handle, size, qty);
   }
 
+  // Total Warehouse (Bogota + Warehouse)
   const totalWarehouseHandleMap = new Map();
   for (const [locId, handleMap] of locMap.entries()) {
-    const locName = locationIdToName[locId] || "";
+    const locName = locationIdToName[locId] || "Unassigned";
     if (locName !== "Bogota" && locName !== "Warehouse") continue;
 
     for (const [handle, sizeMap] of handleMap.entries()) {
@@ -870,6 +1010,7 @@ async function buildWorkbookExcelJS({
     }
   }
 
+  // Create workbook
   const wb = new ExcelJS.Workbook();
   wb.creator = "Wholesale Importer";
   wb.created = new Date();
@@ -882,20 +1023,25 @@ async function buildWorkbookExcelJS({
 
     if (!map || map.size === 0) {
       ws.getRow(7).values = ["(No units)", "", "", ...SIZES.map(() => 0), 0];
+      ws.getRow(7).height = 18;
       return;
     }
-
-    await addHandleRowsWithImages({ wb, ws, handleToSizeMap: map, productMetaByHandle });
+    await addHandleRowsWithImages({ wb, ws, handleToSizeMap: map, metaByHandle });
   }
 
+  // Requested (upload)
   await addSheet("Requested", "ALL REQUESTED", requestedHandleMap);
+
+  // Total (actual, from fulfillment split)
   await addSheet("Total", "ALL ORDERED", totalHandleMap);
+
+  // Total Warehouse
   await addSheet("Total Warehouse", "Bogota + Warehouse", totalWarehouseHandleMap);
 
-  const locIds =
-    Array.isArray(selectedLocationIds) && selectedLocationIds.length
-      ? selectedLocationIds
-      : Array.from(locMap.keys());
+  // Location tabs in chosen drain order (but ONLY what Shopify actually has)
+  const locIds = Array.isArray(selectedLocationIds) && selectedLocationIds.length
+    ? selectedLocationIds
+    : Array.from(locMap.keys());
 
   for (const locId of locIds) {
     const locName = locationIdToName[locId] || locId;
@@ -903,11 +1049,16 @@ async function buildWorkbookExcelJS({
     await addSheet(locName, locName, handleMap);
   }
 
+  // Also include Unassigned if exists and wasn’t in selected list
+  if (locMap.has("unassigned") && !locIds.includes("unassigned")) {
+    await addSheet("Unassigned", "Unassigned", locMap.get("unassigned"));
+  }
+
   const buf = await wb.xlsx.writeBuffer();
   return Buffer.from(buf);
 }
 
-// ----------------- Shared allocator -----------------
+// ----------------- Shared allocator used by Preview / Import -----------------
 async function runAllocationOnly(req) {
   const { locationIdsJson } = req.body;
 
@@ -945,9 +1096,8 @@ async function runAllocationOnly(req) {
   }
 
   const remainingAvailMap = new Map();
-  const allocationPlan = new Map();
+  const allocationPlan = new Map(); // variantId -> { inventoryItemId, allocations:[{locationId, qty}] }
   const draftLineItems = [];
-  const productMetaByHandle = {};
 
   const report = {
     tagApplied: AUTO_TAGS,
@@ -955,8 +1105,8 @@ async function runAllocationOnly(req) {
     allocatedUnits: 0,
     droppedUnits: 0,
     missingHandles: [],
-    availabilitySeen: [],
-    requestedSeen: [],
+    availabilitySeen: [], // (still useful for preview/debug)
+    requestedSeen: [],    // for Requested tab
     lines: []
   };
 
@@ -971,13 +1121,6 @@ async function runAllocationOnly(req) {
       report.missingHandles.push(item.handle);
       continue;
     }
-
-    const imageUrl = product.featuredImage?.url || product.images?.nodes?.[0]?.url || "";
-
-    productMetaByHandle[item.handle] = {
-      title: product.title,
-      imageUrl
-    };
 
     for (const size of SIZES) {
       const qty = item.sizeQty[size];
@@ -1021,24 +1164,19 @@ async function runAllocationOnly(req) {
 
       if (allocatedQty > 0) {
         const priceStr = String(item.unitPrice);
-
         const existing = draftLineItems.find(li => li.variantId === variant.id && li.unitPrice === priceStr);
         if (existing) existing.quantity += allocatedQty;
         else draftLineItems.push({ variantId: variant.id, quantity: allocatedQty, unitPrice: priceStr });
 
+        // merge allocations into plan
         const prev = allocationPlan.get(variant.id);
         const mergedAllocs = prev ? [...prev.allocations] : [];
-
         for (const a of allocations) {
           const m = mergedAllocs.find(x => x.locationId === a.locationId);
           if (m) m.qty += a.qty;
           else mergedAllocs.push({ locationId: a.locationId, qty: a.qty });
         }
-
-        allocationPlan.set(variant.id, {
-          inventoryItemId: variant.inventoryItem.id,
-          allocations: mergedAllocs
-        });
+        allocationPlan.set(variant.id, { inventoryItemId: variant.inventoryItem.id, allocations: mergedAllocs });
 
         report.allocatedUnits += allocatedQty;
       }
@@ -1061,7 +1199,6 @@ async function runAllocationOnly(req) {
     allocationPlan,
     draftLineItems,
     locationIdToName,
-    productMetaByHandle,
     locationIdsInOrder,
     customer,
     notes,
@@ -1069,251 +1206,7 @@ async function runAllocationOnly(req) {
   };
 }
 
-// ----------------- Routes -----------------
-app.get("/api/locations", async (_req, res) => {
-  try {
-    const locations = await getAllLocations();
-    res.json({ locations });
-  } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
-  }
-});
-
-app.post("/api/preview", upload.single("file"), async (req, res) => {
-  try {
-    const result = await runAllocationOnly(req);
-
-    const runId = saveRun({
-      locationIdToName: result.locationIdToName,
-      availabilitySeen: result.report.availabilitySeen,
-      requestedSeen: result.report.requestedSeen,
-      productMetaByHandle: result.productMetaByHandle,
-      locationIdsInOrder: result.locationIdsInOrder,
-      customer: result.customer,
-      notes: result.notes,
-      uploadFileName: result.uploadFileName
-    });
-
-    res.json({ ok: true, mode: "preview", runId, ...result });
-  } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
-  }
-});
-
-app.get("/api/report.xlsx", async (req, res) => {
-  try {
-    const runId = String(req.query.runId || "");
-    const run = getRun(runId);
-    if (!run) {
-      return res.status(400).json({
-        error: "Invalid or expired runId. Run Preview or Create Order again, then download."
-      });
-    }
-
-    const xlsxBuffer = await buildWorkbookExcelJS({
-      locationIdToName: run.locationIdToName,
-      requestedSeen: run.requestedSeen || [],
-      availabilitySeen: run.availabilitySeen || [],
-      productMetaByHandle: run.productMetaByHandle || {},
-      selectedLocationIds: run.locationIdsInOrder || [],
-      customer: run.customer || "",
-      notes: run.notes || ""
-    });
-
-    const base = safeFilePart(baseNameNoExt(run.uploadFileName || "upload"));
-    const outName = `${base}-fulfillment.xlsx`;
-
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", `attachment; filename="${outName}"`);
-    res.send(xlsxBuffer);
-  } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
-  }
-});
-
-app.post("/api/import", upload.single("file"), async (req, res) => {
-  try {
-    const { reserveHours = "48", locationIdsJson } = req.body;
-
-    const result = await runAllocationOnly(req);
-    const {
-      report,
-      allocationPlan,
-      draftLineItems,
-      locationIdToName,
-      productMetaByHandle,
-      locationIdsInOrder,
-      customer,
-      notes,
-      uploadFileName
-    } = result;
-
-    const runId = saveRun({
-      locationIdToName,
-      availabilitySeen: report.availabilitySeen,
-      requestedSeen: report.requestedSeen,
-      productMetaByHandle,
-      locationIdsInOrder: JSON.parse(locationIdsJson || "[]"),
-      customer,
-      notes,
-      uploadFileName
-    });
-
-    if (draftLineItems.length === 0) {
-      return res.status(400).json({
-        error: "Nothing fulfillable from selected locations. No order created.",
-        runId,
-        report
-      });
-    }
-
-    const draft = await draftOrderCreate({
-      lineItems: draftLineItems,
-      reserveHours: Number(reserveHours)
-    });
-
-    const order = await draftOrderComplete(draft.id);
-
-    await waitForFulfillmentOrders(order.id);
-    await new Promise(r => setTimeout(r, 1000));
-
-    const allowedLocationIds = locationIdsInOrder;
-
-    const rebalance = await enforceFulfillmentLocationsRebalance({
-      orderId: order.id,
-      allocationPlan,
-      allowedLocationIds,
-      drainOrderLocationIds: allowedLocationIds
-    });
-
-    const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
-
-    // ----------------- Build artifacts and email them -----------------
-    const base = safeFilePart(baseNameNoExt(uploadFileName || req.file?.originalname || "upload"));
-    const excelFilename = `${base}-fulfillment.xlsx`;
-    const pdfFilename = `packing-slip-${String(order.name || "order").replaceAll("#", "")}.pdf`;
-
-    // Excel (ExcelJS)
-    const excelBuffer = await buildWorkbookExcelJS({
-      locationIdToName,
-      requestedSeen: report.requestedSeen || [],
-      availabilitySeen: report.availabilitySeen || [],
-      productMetaByHandle,
-      selectedLocationIds: locationIdsInOrder || [],
-      customer,
-      notes
-    });
-
-    // Packing slip PDF/HTML
-    const { order: packingOrder, shop: packingShop } = await getOrderPackingData(order.id);
-    const packingHtml = buildPackingSlipHtml({ order: packingOrder, shop: packingShop });
-    const { pdfBuffer, reason: pdfReason } = await renderPdfFromHtml(packingHtml);
-
-    const attachments = [
-      {
-        filename: excelFilename,
-        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-        contentBase64: Buffer.from(excelBuffer).toString("base64")
-      }
-    ];
-
-    if (pdfBuffer) {
-      attachments.push({
-        filename: pdfFilename,
-        type: "application/pdf",
-        contentBase64: Buffer.from(pdfBuffer).toString("base64")
-      });
-    } else {
-      attachments.push({
-        filename: pdfFilename.replace(/\.pdf$/i, ".html"),
-        type: "text/html",
-        contentBase64: Buffer.from(packingHtml, "utf8").toString("base64")
-      });
-      console.warn("Packing slip PDF not generated:", pdfReason);
-    }
-
-    const subject = `Wholesale Order ${order.name} — XLSX + Packing Slip`;
-    const text =
-      `Order: ${order.name}\n` +
-      `Run ID: ${runId}\n` +
-      `Requested Units: ${report.requestedUnits}\n` +
-      `Fulfillable Units: ${report.allocatedUnits}\n` +
-      `Dropped Units: ${report.droppedUnits}\n\n` +
-      `Customer: ${customer || "(none)"}\n` +
-      `Notes: ${notes || "(none)"}\n`;
-
-    let emailStatus = null;
-    try {
-      emailStatus = await sendEmailWithAttachments({ subject, text, attachments });
-    } catch (e) {
-      emailStatus = { error: String(e?.message || e) };
-      console.error("SendGrid email failed:", e);
-    }
-
-    res.json({
-      ok: true,
-      tags: AUTO_TAGS,
-      runId,
-      draftOrderId: draft.id,
-      orderId: order.id,
-      orderName: order.name,
-      moveLog: rebalance.moveLog,
-      blockedMoves: rebalance.blocked,
-      report,
-      finalFulfillment,
-      locationIdToName,
-      productMetaByHandle,
-      customer,
-      notes,
-      emailStatus,
-      excelFilename,
-      packingSlipFilename: pdfBuffer ? pdfFilename : pdfFilename.replace(/\.pdf$/i, ".html")
-    });
-  } catch (e) {
-    res.status(500).json({ error: String(e?.message || e) });
-  }
-});
-
-// ----------------- PDF render (puppeteer-core + chromium) -----------------
-async function renderPdfFromHtml(html) {
-  let puppeteerCore = null;
-  let chromium = null;
-
-  try {
-    puppeteerCore = await import("puppeteer-core");
-    chromium = await import("@sparticuz/chromium");
-  } catch {
-    puppeteerCore = null;
-    chromium = null;
-  }
-
-  if (!puppeteerCore || !chromium) {
-    return { pdfBuffer: null, reason: "Missing puppeteer-core and/or @sparticuz/chromium" };
-  }
-
-  const browser = await puppeteerCore.default.launch({
-    args: chromium.default.args,
-    executablePath: await chromium.default.executablePath(),
-    headless: chromium.default.headless
-  });
-
-  try {
-    const page = await browser.newPage();
-    await page.setContent(html, { waitUntil: "networkidle0" });
-
-    const pdfBuffer = await page.pdf({
-      format: "Letter",
-      printBackground: true,
-      margin: { top: "0.25in", right: "0.25in", bottom: "0.25in", left: "0.25in" }
-    });
-
-    return { pdfBuffer, reason: null };
-  } finally {
-    await browser.close();
-  }
-}
-
-// ----------------- Packing List (PDF) -----------------
+// ----------------- Packing list data + HTML -----------------
 async function getOrderPackingData(orderId) {
   const q = `
     query Packing($id: ID!) {
@@ -1322,17 +1215,6 @@ async function getOrderPackingData(orderId) {
         name
         createdAt
         tags
-        shippingAddress {
-          name
-          company
-          address1
-          address2
-          city
-          provinceCode
-          zip
-          country
-          phone
-        }
         lineItems(first: 250) {
           nodes {
             id
@@ -1341,8 +1223,17 @@ async function getOrderPackingData(orderId) {
             sku
             originalUnitPriceSet { shopMoney { amount currencyCode } }
             image { url }
-            variant { id title }
-            product { id tags }
+            variant {
+              id
+              title
+              selectedOptions { name value }
+            }
+            product {
+              id
+              title
+              handle
+              tags
+            }
           }
         }
         fulfillmentOrders(first: 50) {
@@ -1363,7 +1254,6 @@ async function getOrderPackingData(orderId) {
         name
         email
         primaryDomain { url }
-        billingAddress { address1 city provinceCode zip }
       }
     }
   `;
@@ -1387,19 +1277,19 @@ function formatUSD(amountStr) {
 }
 
 function buildPackingSlipHtml({ order, shop }) {
+  // Map lineItemId -> location
   const lineItemLoc = new Map();
-
   for (const fo of order.fulfillmentOrders.nodes || []) {
     const loc = fo.assignedLocation?.location;
     const locId = loc?.id || "unassigned";
     const locName = loc?.name || "Unassigned";
-
     for (const n of fo.lineItems.nodes || []) {
       const liId = n.lineItem?.id;
       if (liId) lineItemLoc.set(liId, { id: locId, name: locName });
     }
   }
 
+  // Group order lineItems by location id (using final fulfillment mapping)
   const byLoc = new Map();
   for (const li of order.lineItems.nodes || []) {
     const loc = lineItemLoc.get(li.id) || { id: "unassigned", name: "Unassigned" };
@@ -1435,6 +1325,7 @@ function buildPackingSlipHtml({ order, shop }) {
                   : "";
               const isFinalSale = (li.product?.tags || []).includes("finalsale");
               const price = formatUSD(li.originalUnitPriceSet?.shopMoney?.amount || "");
+
               return `
                 <tr>
                   <td class="img-td">${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(li.title)}">` : ""}</td>
@@ -1512,6 +1403,278 @@ function buildPackingSlipHtml({ order, shop }) {
 `;
 }
 
+async function renderPdfFromHtml(html) {
+  let puppeteerCore = null;
+  let chromium = null;
+
+  try {
+    puppeteerCore = await import("puppeteer-core");
+    chromium = await import("@sparticuz/chromium");
+  } catch {
+    puppeteerCore = null;
+    chromium = null;
+  }
+
+  if (!puppeteerCore || !chromium) {
+    return { pdfBuffer: null, reason: "Missing puppeteer-core and/or @sparticuz/chromium" };
+  }
+
+  const browser = await puppeteerCore.default.launch({
+    args: chromium.default.args,
+    executablePath: await chromium.default.executablePath(),
+    headless: chromium.default.headless
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    const pdfBuffer = await page.pdf({
+      format: "Letter",
+      printBackground: true,
+      margin: { top: "0.25in", right: "0.25in", bottom: "0.25in", left: "0.25in" }
+    });
+
+    return { pdfBuffer: Buffer.from(pdfBuffer), reason: null };
+  } finally {
+    await browser.close();
+  }
+}
+
+// ----------------- Routes -----------------
+app.get("/api/debug/ping", (_req, res) => res.json({ ok: true, version: VERSION }));
+
+app.get("/api/locations", async (_req, res) => {
+  try {
+    const locations = await getAllLocations();
+    res.json({ locations });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Preview only: DOES NOT create order. Returns runId (for report download)
+app.post("/api/preview", upload.single("file"), async (req, res) => {
+  try {
+    const result = await runAllocationOnly(req);
+
+    const runId = saveRun({
+      locationIdToName: result.locationIdToName,
+      requestedSeen: result.report.requestedSeen,
+      locationIdsInOrder: result.locationIdsInOrder,
+      customer: result.customer,
+      notes: result.notes,
+      uploadFileName: result.uploadFileName
+    });
+
+    res.json({ ok: true, mode: "preview", runId, ...result });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Report download by runId (Preview-only report: Requested tab populated; other tabs empty unless order exists)
+app.get("/api/report.xlsx", async (req, res) => {
+  try {
+    const runId = String(req.query.runId || "");
+    const run = getRun(runId);
+    if (!run) {
+      return res.status(400).json({ error: "Invalid or expired runId. Run Preview or Create Order again, then download." });
+    }
+
+    // Preview cannot build location/total tabs from Shopify (no order),
+    // so this endpoint only makes a workbook with Requested + blank others.
+    // After Create Order, you’ll get the final Excel via email.
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet("Requested");
+    writeSheetTop(ws, "Requested", "ALL REQUESTED", run.customer || "", run.notes || "");
+    writeTableHeader(ws);
+    styleSheet(ws);
+
+    // Build Requested map
+    const requestedHandleMap = new Map();
+    for (const entry of run.requestedSeen || []) {
+      const { handle, size, requestedQty } = entry;
+      if (!handle || !size) continue;
+      if (!requestedHandleMap.has(handle)) requestedHandleMap.set(handle, makeHandleSizeMapEmpty());
+      requestedHandleMap
+        .get(handle)
+        .set(size, (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0));
+    }
+
+    // Minimal meta (no images during preview)
+    const metaByHandle = {};
+    for (const h of requestedHandleMap.keys()) metaByHandle[h] = { title: "", imageUrl: "" };
+
+    await addHandleRowsWithImages({ wb, ws, handleToSizeMap: requestedHandleMap, metaByHandle });
+
+    const buf = await wb.xlsx.writeBuffer();
+    const base = safeFilePart(baseNameNoExt(run.uploadFileName || "upload"));
+    const outName = `${base}-fulfillment.xlsx`;
+
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="${outName}"`);
+    res.send(Buffer.from(buf));
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Create order (draft -> complete unpaid -> wait -> rebalance -> wait for settlement -> build FINAL excel+pdf -> email)
+app.post("/api/import", upload.single("file"), async (req, res) => {
+  try {
+    const { reserveHours = "48", locationIdsJson } = req.body;
+
+    const result = await runAllocationOnly(req);
+    const {
+      report,
+      allocationPlan,
+      draftLineItems,
+      locationIdToName,
+      locationIdsInOrder,
+      customer,
+      notes,
+      uploadFileName
+    } = result;
+
+    const runId = saveRun({
+      locationIdToName,
+      requestedSeen: report.requestedSeen,
+      locationIdsInOrder: JSON.parse(locationIdsJson || "[]"),
+      customer,
+      notes,
+      uploadFileName
+    });
+
+    if (draftLineItems.length === 0) {
+      return res.status(400).json({
+        error: "Nothing fulfillable from selected locations. No order created.",
+        runId,
+        report
+      });
+    }
+
+    const draft = await draftOrderCreate({
+      lineItems: draftLineItems,
+      reserveHours: Number(reserveHours)
+    });
+
+    const order = await draftOrderComplete(draft.id);
+
+    // Wait for FOs so moves can be applied reliably
+    await waitForFulfillmentOrders(order.id);
+
+    // Small settle delay reduces Shopify race weirdness
+    await new Promise(r => setTimeout(r, 1000));
+
+    // Rebalance to match allocation plan
+    const allowedLocationIds = locationIdsInOrder;
+    const rebalance = await enforceFulfillmentLocationsRebalance({
+      orderId: order.id,
+      allocationPlan,
+      allowedLocationIds,
+      drainOrderLocationIds: allowedLocationIds
+    });
+
+    // Wait for Shopify to fully settle to the desired split
+    const settled = await waitForFulfillmentSettlement({
+      orderId: order.id,
+      allocationPlan,
+      maxMs: 60_000,
+      pollMs: 1500,
+      stableChecksRequired: 2
+    });
+
+    // Now fetch FINAL order data (source of truth)
+    const { order: finalOrder, shop: finalShop } = await getOrderPackingData(order.id);
+
+    // Build FINAL Excel from Shopify fulfillmentOrders + lineItems (Option B)
+    const excelBuffer = await buildWorkbookFromFinalOrder({
+      finalOrder,
+      locationIdToName,
+      requestedSeen: report.requestedSeen || [],
+      customer,
+      notes,
+      selectedLocationIds: locationIdsInOrder || []
+    });
+
+    const uploadBase = safeFilePart(baseNameNoExt(uploadFileName || "upload"));
+    const excelFilename = `${uploadBase}-fulfillment.xlsx`;
+
+    // Build FINAL packing slip PDF from the same settled order data
+    const packingHtml = buildPackingSlipHtml({ order: finalOrder, shop: finalShop });
+    const { pdfBuffer, reason: pdfReason } = await renderPdfFromHtml(packingHtml);
+    const pdfFilename = `packing-slip-${String(order.name || "order").replaceAll("#", "")}.pdf`;
+
+    const attachments = [
+      {
+        filename: excelFilename,
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        contentBase64: Buffer.from(excelBuffer).toString("base64")
+      }
+    ];
+
+    if (pdfBuffer) {
+      attachments.push({
+        filename: pdfFilename,
+        type: "application/pdf",
+        contentBase64: Buffer.from(pdfBuffer).toString("base64")
+      });
+    } else {
+      attachments.push({
+        filename: pdfFilename.replace(/\.pdf$/i, ".html"),
+        type: "text/html",
+        contentBase64: Buffer.from(packingHtml, "utf8").toString("base64")
+      });
+      console.warn("Packing slip PDF not generated:", pdfReason);
+    }
+
+    const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
+
+    // Email (only after create order)
+    const subject = `Wholesale Order ${order.name} — Final XLSX + Packing Slip`;
+    const text =
+      `Order: ${order.name}\n` +
+      `Run ID: ${runId}\n` +
+      `Settlement: ${settled.ok ? "OK" : "Timed out"} (waited ${Math.round(settled.waitedMs / 1000)}s)\n\n` +
+      `Requested Units: ${report.requestedUnits}\n` +
+      `Fulfillable Units: ${report.allocatedUnits}\n` +
+      `Dropped Units: ${report.droppedUnits}\n\n` +
+      `Customer: ${customer || "(none)"}\n` +
+      `Notes: ${notes || "(none)"}\n`;
+
+    let emailStatus = null;
+    try {
+      emailStatus = await sendEmailWithAttachments({ subject, text, attachments });
+    } catch (e) {
+      emailStatus = { error: String(e?.message || e) };
+      console.error("SendGrid email failed:", e);
+    }
+
+    res.json({
+      ok: true,
+      tags: AUTO_TAGS,
+      runId,
+      draftOrderId: draft.id,
+      orderId: order.id,
+      orderName: order.name,
+      settlement: settled,
+      moveLog: rebalance.moveLog,
+      blockedMoves: rebalance.blocked,
+      report,
+      finalFulfillment,
+      customer,
+      notes,
+      emailStatus,
+      excelFilename,
+      packingSlipFilename: pdfBuffer ? pdfFilename : pdfFilename.replace(/\.pdf$/i, ".html")
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Packing list download endpoint (optional manual download)
 app.get("/api/packing-list.pdf", async (req, res) => {
   try {
     const orderId = String(req.query.orderId || "").trim();
@@ -1519,8 +1682,8 @@ app.get("/api/packing-list.pdf", async (req, res) => {
 
     const { order, shop } = await getOrderPackingData(orderId);
     const html = buildPackingSlipHtml({ order, shop });
-
     const { pdfBuffer } = await renderPdfFromHtml(html);
+
     if (!pdfBuffer) {
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       return res.send(html);
@@ -1534,9 +1697,6 @@ app.get("/api/packing-list.pdf", async (req, res) => {
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
-
-// ----------------- Healthcheck -----------------
-app.get("/api/debug/ping", (_req, res) => res.json({ ok: true, version: VERSION }));
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Wholesale importer running on http://localhost:${port}`));
