@@ -9,7 +9,7 @@
       .box { border: 1px solid #ddd; padding: 12px; border-radius: 10px; }
       button { padding: 8px 12px; cursor: pointer; border-radius: 10px; border: 1px solid #ccc; background: #fff; }
       button.primary { border-color:#111; }
-      input[type="number"], input[type="text"] { padding: 6px; width: 280px; }
+      input[type="number"], input[type="text"] { padding: 6px; width: 240px; }
       textarea { padding: 6px; width: 520px; height: 80px; }
       .loc { display:flex; gap:10px; align-items:center; padding:6px 0; border-bottom: 1px solid #f2f2f2;}
       .loc:last-child{border-bottom:none;}
@@ -28,28 +28,28 @@
       <span class="pill">Accepts CSV & XLSX</span>
       <span class="pill">Completes as Unpaid</span>
       <span class="pill">Moves fulfillment orders to match allocations</span>
-      <span class="pill">Excel export uses embedded images (ExcelJS)</span>
+      <span class="pill">Final Excel/PDF generated AFTER settlement</span>
     </div>
 
     <div class="box">
       <div class="row">
-        <label style="width:140px;"><b>Customer</b></label>
-        <input id="customer" type="text" placeholder="Customer name / account" />
-      </div>
-
-      <div class="row">
-        <label style="width:140px;"><b>Notes</b></label>
-        <textarea id="notes" placeholder="Notes to print on every tab..."></textarea>
-      </div>
-
-      <div class="row">
-        <label style="width:140px;"><b>Reserve hours</b></label>
+        <label><b>Reserve hours</b></label>
         <input id="reserveHours" type="number" value="48" min="0" />
         <small class="muted">(0 disables draft reservation)</small>
       </div>
 
       <div class="row">
-        <label style="width:140px;"><b>Upload file</b></label>
+        <label style="width:120px;"><b>Customer</b></label>
+        <input id="customer" type="text" placeholder="Customer name" />
+      </div>
+
+      <div class="row">
+        <label style="width:120px;"><b>Notes</b></label>
+        <textarea id="notes" placeholder="Notes that should appear in the export"></textarea>
+      </div>
+
+      <div class="row">
+        <label><b>Upload file</b></label>
         <input id="file" type="file" accept=".csv,.xlsx" />
         <small class="muted">Headers: product_handle, unit_price, XXS..XXL</small>
       </div>
@@ -60,8 +60,7 @@
 
     <div class="row">
       <button id="previewBtn">Preview Only</button>
-      <button id="downloadReportBtn">Download XLSX Report</button>
-      <button id="packingBtn">Export Packing List (PDF)</button>
+      <button id="downloadReportBtn">Download XLSX Report (Preview)</button>
       <button id="runBtn" class="primary">Create Order</button>
     </div>
 
@@ -74,7 +73,6 @@
     <script>
       let locations = [];
       let lastRunId = null;
-      let lastOrderId = null;
 
       const out = document.getElementById("out");
       const box = document.getElementById("locationsBox");
@@ -162,7 +160,6 @@
         const file = document.getElementById("file").files[0];
         const reserveHours = document.getElementById("reserveHours").value;
         const selectedIds = locations.filter(l => l.selected).map(l => l.id);
-
         const customer = document.getElementById("customer").value || "";
         const notes = document.getElementById("notes").value || "";
 
@@ -186,7 +183,6 @@
         const alloc = r.allocatedUnits ?? 0;
         const req = r.requestedUnits ?? 0;
         const drop = r.droppedUnits ?? 0;
-
         const ff = json.finalFulfillment?.summary || null;
 
         summaryBox.innerHTML = `
@@ -198,6 +194,11 @@
             ${json.orderName ? `<span class="pill">Order: ${json.orderName}</span>` : ""}
             ${json.runId ? `<span class="pill">Run ID: ${json.runId}</span>` : ""}
           </div>
+          ${json.orderName ? `
+            <div class="muted" style="margin-top:10px;">
+              After Create Order: the FINAL Excel + Packing Slip are emailed to you (SendGrid).
+            </div>
+          ` : ""}
           ${ff ? `
             <div style="margin-top:10px"><b>Final fulfillment by location</b></div>
             <table style="margin-top:6px">
@@ -205,12 +206,6 @@
               ${Object.entries(ff).map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}
             </table>
           ` : `<div class="muted">Tip: Run “Create Order” to see final fulfillment splits.</div>`}
-          <div class="muted" style="margin-top:10px;">
-            Download Report uses the most recent Run ID (so it always matches what you just previewed/created).
-          </div>
-          <div class="muted" style="margin-top:6px;">
-            Packing List uses the most recent created Order (Create Order first).
-          </div>
         `;
       }
 
@@ -224,7 +219,6 @@
           const json = await res.json();
           out.textContent = JSON.stringify(json, null, 2);
           lastRunId = json.runId || null;
-          lastOrderId = json.orderId || lastOrderId || null;
           showSummary(json);
         } catch (e) {
           out.textContent = String(e.message || e);
@@ -236,18 +230,10 @@
 
       document.getElementById("downloadReportBtn").addEventListener("click", async () => {
         if (!lastRunId) {
-          out.textContent = "Run Preview or Create Order first, then Download Report.";
+          out.textContent = "Run Preview first, then Download Report.";
           return;
         }
         window.location = `/api/report.xlsx?runId=${encodeURIComponent(lastRunId)}`;
-      });
-
-      document.getElementById("packingBtn").addEventListener("click", async () => {
-        if (!lastOrderId) {
-          out.textContent = "Create Order first, then Export Packing List.";
-          return;
-        }
-        window.location = `/api/packing-list.pdf?orderId=${encodeURIComponent(lastOrderId)}`;
       });
 
       loadLocations().catch(e => box.textContent = e.message);
