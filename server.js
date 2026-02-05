@@ -106,7 +106,7 @@ async function getAccessToken() {
   return cachedAccessToken;
 }
 
-// ----------------- Shopify GraphQL helper (WITH request-id debugging) -----------------
+// ----------------- Shopify GraphQL helper -----------------
 
 async function shopifyGraphQL(query, variables = {}) {
   const token = await getAccessToken();
@@ -200,7 +200,6 @@ async function getProductVariantsByHandle(handle) {
   return data.productByHandle;
 }
 
-// Shopify: inventory via inventoryItem.inventoryLevel(locationId)
 async function getAvailableAtLocation(inventoryItemId, locationId) {
   const q = `
     query Inv($inventoryItemId: ID!, $locationId: ID!) {
@@ -350,7 +349,6 @@ async function getFulfillmentOrdersForOrder(orderId) {
   return data.order.fulfillmentOrders.nodes;
 }
 
-// Wait for fulfillment orders after completion (helps race conditions)
 async function waitForFulfillmentOrders(orderId, maxRetries = 30, delayMs = 500) {
   for (let i = 0; i < maxRetries; i++) {
     const fos = await getFulfillmentOrdersForOrder(orderId);
@@ -386,12 +384,10 @@ async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLin
   return data.fulfillmentOrderMove;
 }
 
-// ----------------- Robust approach: NO order edits by default -----------------
+// ----------------- Rebalance logic -----------------
 
 function buildCurrentAllocationFromFOs(fos) {
-  // variantId -> locationId -> [ { fulfillmentOrderId, fulfillmentOrderLineItemId, qty } ]
   const byVariant = new Map();
-
   for (const fo of fos) {
     const locId = fo.assignedLocation?.location?.id || null;
     if (!locId) continue;
@@ -412,15 +408,14 @@ function buildCurrentAllocationFromFOs(fos) {
       });
     }
   }
-
   return byVariant;
 }
 
 async function enforceFulfillmentLocationsRebalance({
   orderId,
-  allocationPlan,           // Map(variantId -> { inventoryItemId, allocations:[{locationId, qty}] })
-  allowedLocationIds,       // allowed set
-  drainOrderLocationIds     // ordering preference
+  allocationPlan,
+  allowedLocationIds,
+  drainOrderLocationIds
 }) {
   const moveLog = [];
   const blocked = [];
@@ -428,8 +423,7 @@ async function enforceFulfillmentLocationsRebalance({
   const allowedSet = new Set(allowedLocationIds);
   const drainIndex = new Map(drainOrderLocationIds.map((id, idx) => [id, idx]));
 
-  // Destination cap tracker (monotonic decreasing inside this run)
-  const destRemain = new Map(); // inventoryItemId::locationId -> remaining cap to move INTO
+  const destRemain = new Map(); // inventoryItemId::locationId -> remaining cap
 
   async function getDestRemainMonotonic(inventoryItemId, locationId) {
     const key = `${inventoryItemId}::${locationId}`;
@@ -439,8 +433,6 @@ async function enforceFulfillmentLocationsRebalance({
       destRemain.set(key, live);
       return live;
     }
-
-    // never increase within this run
     const cur = destRemain.get(key);
     const merged = Math.min(cur, live);
     destRemain.set(key, merged);
@@ -459,14 +451,12 @@ async function enforceFulfillmentLocationsRebalance({
   for (const [variantId, plan] of allocationPlan.entries()) {
     const inventoryItemId = plan.inventoryItemId;
 
-    // Desired: only allowed locations, amounts from plan
     const desiredByLoc = new Map();
     for (const a of plan.allocations || []) {
       if (!allowedSet.has(a.locationId)) continue;
       desiredByLoc.set(a.locationId, (desiredByLoc.get(a.locationId) || 0) + Number(a.qty || 0));
     }
 
-    // Current
     const curLocLines = currentByVariant.get(variantId) || new Map();
     const currentByLoc = new Map();
     for (const [locId, lines] of curLocLines.entries()) {
@@ -474,7 +464,6 @@ async function enforceFulfillmentLocationsRebalance({
       currentByLoc.set(locId, total);
     }
 
-    // Needs
     const needs = [];
     for (const [locId, desiredQty] of desiredByLoc.entries()) {
       const currentQty = currentByLoc.get(locId) || 0;
@@ -482,7 +471,6 @@ async function enforceFulfillmentLocationsRebalance({
       if (delta > 0) needs.push({ locId, qty: delta });
     }
 
-    // Excess
     const excesses = [];
     for (const [locId, currentQty] of currentByLoc.entries()) {
       const desiredQty = desiredByLoc.get(locId) || 0;
@@ -570,36 +558,23 @@ async function enforceFulfillmentLocationsRebalance({
 
 async function summarizeFulfillmentByLocation(orderId) {
   const fos = await getFulfillmentOrdersForOrder(orderId);
-
   const summary = {};
-  const detail = fos.map(fo => {
+  for (const fo of fos) {
     const locName = fo.assignedLocation?.location?.name || "Unknown";
     const qty = fo.lineItems.nodes.reduce((s, li) => s + (li.remainingQuantity || 0), 0);
     summary[locName] = (summary[locName] || 0) + qty;
-
-    return {
-      fulfillmentOrderId: fo.id,
-      location: locName,
-      locationId: fo.assignedLocation?.location?.id || null,
-      status: fo.status
-    };
-  });
-
-  return { summary, fulfillmentOrders: detail };
+  }
+  return { summary };
 }
 
-// ----------------- Upload parsing (CSV + XLSX) -----------------
+// ----------------- Upload parsing -----------------
 
 function parseUpload(file) {
   const ext = path.extname(file.originalname || "").toLowerCase();
 
   if (ext === ".csv") {
     const text = file.buffer.toString("utf8");
-    return parseCsv(text, {
-      columns: true,
-      skip_empty_lines: true,
-      trim: true
-    });
+    return parseCsv(text, { columns: true, skip_empty_lines: true, trim: true });
   }
 
   if (ext === ".xlsx") {
@@ -612,7 +587,7 @@ function parseUpload(file) {
   throw new Error("Unsupported file type. Upload CSV or XLSX.");
 }
 
-// ----------------- ExcelJS report builder (embedded images) -----------------
+// ----------------- ExcelJS report builder -----------------
 
 function safeSheetName(name) {
   const s = String(name ?? "").replace(/[\[\]\*\/\\\?\:]/g, " ").trim() || "Sheet";
@@ -625,22 +600,18 @@ function makeHandleSizeMapEmpty() {
   return m;
 }
 
-// Cache image downloads across requests
 const imageCache = new Map(); // url -> { buffer, extension } or null
 
 function guessImageExt(url) {
-  const u = String(url || "");
-  const lower = u.toLowerCase();
-  if (lower.includes(".png")) return "png";
-  if (lower.includes(".webp")) return "webp";
-  // Shopify often serves jpg/jpeg
+  const u = String(url || "").toLowerCase();
+  if (u.includes(".png")) return "png";
+  if (u.includes(".webp")) return "webp";
   return "jpeg";
 }
 
 async function fetchImageBuffer(url) {
   const key = String(url || "").trim();
   if (!key) return null;
-
   if (imageCache.has(key)) return imageCache.get(key);
 
   try {
@@ -661,6 +632,20 @@ async function fetchImageBuffer(url) {
   }
 }
 
+function applyPrintSetup(ws) {
+  // Letter portrait, fit to 1 page wide, gridlines on
+  ws.pageSetup = {
+    paperSize: 1, // Letter
+    orientation: "portrait",
+    fitToPage: true,
+    fitToWidth: 1,
+    fitToHeight: 0,
+    showGridLines: true
+  };
+  // Repeat rows 1-6 on each printed page
+  ws.pageSetup.printTitlesRow = "1:6";
+}
+
 function styleSheet(ws) {
   ws.getColumn(1).width = 40; // title
   ws.getColumn(2).width = 28; // handle
@@ -670,10 +655,11 @@ function styleSheet(ws) {
 
   ws.views = [{ state: "frozen", ySplit: 6 }];
 
-  // Header row styling (the table header row is row 6)
   const headerRow = ws.getRow(6);
   headerRow.font = { bold: true };
   headerRow.alignment = { vertical: "middle", horizontal: "left" };
+
+  applyPrintSetup(ws);
 }
 
 function writeSheetTop(ws, sheetName, locationLabel, customer, notes) {
@@ -683,7 +669,7 @@ function writeSheetTop(ws, sheetName, locationLabel, customer, notes) {
   ws.getRow(2).values = ["Location", locationLabel];
   ws.getRow(3).values = ["Customer", customer || ""];
   ws.getRow(4).values = ["Notes", notes || ""];
-  ws.getRow(5).values = []; // blank line spacer
+  ws.getRow(5).values = [];
 
   ws.getRow(2).font = { bold: true };
   ws.getRow(3).font = { bold: true };
@@ -694,12 +680,7 @@ function writeTableHeader(ws) {
   ws.getRow(6).values = ["Product Title", "Handle", "Image", ...SIZES, "Total"];
 }
 
-async function addHandleRowsWithImages({
-  wb,
-  ws,
-  handleToSizeMap,
-  productMetaByHandle
-}) {
+async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, productMetaByHandle }) {
   const handles = Array.from(handleToSizeMap.keys());
   handles.sort((a, b) => {
     const ta = (productMetaByHandle[a]?.title || "").toLowerCase();
@@ -709,7 +690,7 @@ async function addHandleRowsWithImages({
     return a.localeCompare(b);
   });
 
-  let rowIndex = 7; // first data row
+  let rowIndex = 7;
   for (const handle of handles) {
     const meta = productMetaByHandle[handle] || {};
     const title = meta.title || "";
@@ -726,25 +707,23 @@ async function addHandleRowsWithImages({
     vals.push(total);
 
     ws.getRow(rowIndex).values = vals;
-    ws.getRow(rowIndex).height = 46;
+    ws.getRow(rowIndex).height = 48;
     ws.getRow(rowIndex).alignment = { vertical: "middle" };
 
+    // "In-cell" behavior (anchored exactly to the cell bounds, move/size with cell)
     if (imageUrl) {
       const img = await fetchImageBuffer(imageUrl);
       if (img?.buffer?.length) {
-        const imageId = wb.addImage({
-          buffer: img.buffer,
-          extension: img.extension
-        });
+        const imageId = wb.addImage({ buffer: img.buffer, extension: img.extension });
 
-        // Column C is index 3 (1-based), ExcelJS expects 0-based in positioning
-        // Place a ~42x42 thumbnail inside the Image column cell.
+        // Column C is index 3 (1-based) -> col=2 in 0-based
+        // Anchor within the single cell C{rowIndex}
         ws.addImage(imageId, {
           tl: { col: 2, row: rowIndex - 1 },
-          ext: { width: 42, height: 42 }
+          br: { col: 3, row: rowIndex },
+          editAs: "oneCell"
         });
       } else {
-        // fallback: keep url in the cell if fetch fails
         ws.getCell(rowIndex, 3).value = imageUrl;
         ws.getCell(rowIndex, 3).font = { color: { argb: "FF0000FF" }, underline: true };
       }
@@ -753,7 +732,10 @@ async function addHandleRowsWithImages({
     rowIndex += 1;
   }
 
-  // Totals row
+  // blank row
+  ws.getRow(rowIndex).values = [];
+
+  // totals row
   const totalsRow = ws.getRow(rowIndex + 1);
   totalsRow.values = ["TOTAL", "", "", ...SIZES.map(() => 0), 0];
   totalsRow.font = { bold: true };
@@ -765,11 +747,9 @@ async function addHandleRowsWithImages({
         Number(totalsRow.getCell(4 + s).value || 0) + Number(ws.getCell(r, 4 + s).value || 0);
     }
     totalsRow.getCell(4 + SIZES.length).value =
-      Number(totalsRow.getCell(4 + SIZES.length).value || 0) + Number(ws.getCell(r, 4 + SIZES.length).value || 0);
+      Number(totalsRow.getCell(4 + SIZES.length).value || 0) +
+      Number(ws.getCell(r, 4 + SIZES.length).value || 0);
   }
-
-  // Add a blank line before totals (rowIndex)
-  ws.getRow(rowIndex).values = [];
 }
 
 async function buildWorkbookExcelJS({
@@ -781,16 +761,16 @@ async function buildWorkbookExcelJS({
   customer,
   notes
 }) {
-  // Requested: handle -> size -> qty
   const requestedHandleMap = new Map();
   for (const entry of requestedSeen || []) {
     const { handle, size, requestedQty } = entry;
     if (!handle || !size) continue;
     if (!requestedHandleMap.has(handle)) requestedHandleMap.set(handle, makeHandleSizeMapEmpty());
-    requestedHandleMap.get(handle).set(size, (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0));
+    requestedHandleMap
+      .get(handle)
+      .set(size, (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0));
   }
 
-  // Allocated by location: locId -> handle -> size -> qty
   const locMap = new Map();
   for (const entry of availabilitySeen || []) {
     const handle = entry.handle;
@@ -809,7 +789,6 @@ async function buildWorkbookExcelJS({
     }
   }
 
-  // Total ordered: handle -> size -> qty
   const totalHandleMap = new Map();
   for (const handleMap of locMap.values()) {
     for (const [handle, sizeMap] of handleMap.entries()) {
@@ -819,7 +798,6 @@ async function buildWorkbookExcelJS({
     }
   }
 
-  // Total Warehouse: Bogota + Warehouse
   const totalWarehouseHandleMap = new Map();
   for (const [locId, handleMap] of locMap.entries()) {
     const locName = locationIdToName[locId] || "";
@@ -836,7 +814,6 @@ async function buildWorkbookExcelJS({
   wb.creator = "Wholesale Importer";
   wb.created = new Date();
 
-  // helper to build a sheet
   async function addSheet(sheetName, locationLabel, map) {
     const ws = wb.addWorksheet(safeSheetName(sheetName));
     writeSheetTop(ws, sheetName, locationLabel, customer, notes);
@@ -848,24 +825,13 @@ async function buildWorkbookExcelJS({
       return;
     }
 
-    await addHandleRowsWithImages({
-      wb,
-      ws,
-      handleToSizeMap: map,
-      productMetaByHandle
-    });
+    await addHandleRowsWithImages({ wb, ws, handleToSizeMap: map, productMetaByHandle });
   }
 
-  // 1) Requested
   await addSheet("Requested", "ALL REQUESTED", requestedHandleMap);
-
-  // 2) Total
   await addSheet("Total", "ALL ORDERED", totalHandleMap);
-
-  // 3) Total Warehouse
   await addSheet("Total Warehouse", "Bogota + Warehouse", totalWarehouseHandleMap);
 
-  // 4) Existing location tabs in selected drain order
   const locIds =
     Array.isArray(selectedLocationIds) && selectedLocationIds.length
       ? selectedLocationIds
@@ -877,12 +843,27 @@ async function buildWorkbookExcelJS({
     await addSheet(locName, locName, handleMap);
   }
 
-  // Return xlsx buffer
   const buf = await wb.xlsx.writeBuffer();
   return Buffer.from(buf);
 }
 
-// ----------------- Shared allocator used by Preview / Import -----------------
+function baseNameNoExt(filename) {
+  const f = String(filename || "upload").trim();
+  const base = f.replace(/^.*[\\/]/, ""); // strip directories
+  const dot = base.lastIndexOf(".");
+  const noExt = dot > 0 ? base.slice(0, dot) : base;
+  return noExt || "upload";
+}
+
+function safeFilePart(s) {
+  return String(s || "")
+    .replace(/[^\w\- ]+/g, "")
+    .trim()
+    .replace(/\s+/g, "_")
+    .slice(0, 80) || "upload";
+}
+
+// ----------------- Shared allocator -----------------
 
 async function runAllocationOnly(req) {
   const { locationIdsJson } = req.body;
@@ -892,6 +873,8 @@ async function runAllocationOnly(req) {
     throw new Error("Select at least one location.");
   }
   if (!req.file?.buffer) throw new Error("Missing CSV/XLSX file.");
+
+  const uploadFileName = req.file?.originalname || "upload.xlsx";
 
   const customer = String(req.body.customer || "").trim();
   const notes = String(req.body.notes || "").trim();
@@ -919,7 +902,7 @@ async function runAllocationOnly(req) {
   }
 
   const remainingAvailMap = new Map();
-  const allocationPlan = new Map(); // variantId -> { inventoryItemId, allocations:[{locationId, qty}] }
+  const allocationPlan = new Map();
   const draftLineItems = [];
   const productMetaByHandle = {};
 
@@ -946,10 +929,7 @@ async function runAllocationOnly(req) {
       continue;
     }
 
-    const imageUrl =
-      product.featuredImage?.url ||
-      product.images?.nodes?.[0]?.url ||
-      "";
+    const imageUrl = product.featuredImage?.url || product.images?.nodes?.[0]?.url || "";
 
     productMetaByHandle[item.handle] = {
       title: product.title,
@@ -1041,7 +1021,8 @@ async function runAllocationOnly(req) {
     productMetaByHandle,
     locationIdsInOrder,
     customer,
-    notes
+    notes,
+    uploadFileName
   };
 }
 
@@ -1056,7 +1037,6 @@ app.get("/api/locations", async (_req, res) => {
   }
 });
 
-// Preview only
 app.post("/api/preview", upload.single("file"), async (req, res) => {
   try {
     const result = await runAllocationOnly(req);
@@ -1068,7 +1048,8 @@ app.post("/api/preview", upload.single("file"), async (req, res) => {
       productMetaByHandle: result.productMetaByHandle,
       locationIdsInOrder: result.locationIdsInOrder,
       customer: result.customer,
-      notes: result.notes
+      notes: result.notes,
+      uploadFileName: result.uploadFileName
     });
 
     res.json({ ok: true, mode: "preview", runId, ...result });
@@ -1077,7 +1058,6 @@ app.post("/api/preview", upload.single("file"), async (req, res) => {
   }
 });
 
-// Report download by runId (ExcelJS)
 app.get("/api/report.xlsx", async (req, res) => {
   try {
     const runId = String(req.query.runId || "");
@@ -1098,15 +1078,17 @@ app.get("/api/report.xlsx", async (req, res) => {
       notes: run.notes || ""
     });
 
+    const base = safeFilePart(baseNameNoExt(run.uploadFileName || "upload"));
+    const outName = `${base}-fulfillment.xlsx`;
+
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", `attachment; filename="fulfillment_report.xlsx"`);
+    res.setHeader("Content-Disposition", `attachment; filename="${outName}"`);
     res.send(xlsxBuffer);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
-// Import (draft -> complete unpaid -> wait for FOs -> delta rebalance with caps)
 app.post("/api/import", upload.single("file"), async (req, res) => {
   try {
     const { reserveHours = "48", locationIdsJson } = req.body;
@@ -1120,7 +1102,8 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       productMetaByHandle,
       locationIdsInOrder,
       customer,
-      notes
+      notes,
+      uploadFileName
     } = result;
 
     const runId = saveRun({
@@ -1130,7 +1113,8 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       productMetaByHandle,
       locationIdsInOrder: JSON.parse(locationIdsJson || "[]"),
       customer,
-      notes
+      notes,
+      uploadFileName
     });
 
     if (draftLineItems.length === 0) {
@@ -1183,7 +1167,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
   }
 });
 
-// ----------------- Packing List (PDF with fallback HTML) -----------------
+// ----------------- Packing List (PDF) -----------------
 
 async function getOrderPackingData(orderId) {
   const q = `
@@ -1251,6 +1235,12 @@ function escapeHtml(s) {
     .replaceAll("'", "&#039;");
 }
 
+function formatUSD(amountStr) {
+  const n = Number(amountStr);
+  if (!Number.isFinite(n)) return "";
+  return `$${n.toFixed(2)}`;
+}
+
 function buildPackingSlipHtml({ order, shop }) {
   const lineItemLoc = new Map();
 
@@ -1287,32 +1277,9 @@ function buildPackingSlipHtml({ order, shop }) {
               <b>Order:</b> ${escapeHtml(order.name)}<br>
               <b>Date:</b> ${new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "2-digit" })}<br>
               <b>Location:</b> ${escapeHtml(locData.name)}<br>
-              ${order.tags?.includes("Wholesale") ? `<strong style="font-size:20px;">WHOLESALE</strong><br>` : ""}
+              ${order.tags?.includes("Wholesale") ? `<strong style="font-size:16px;">WHOLESALE</strong><br>` : ""}
             </p>
           </div>
-
-          <table class="address-tbl">
-            <tr>
-              <td>
-                <b>Ship To:</b><br>
-                ${escapeHtml(order.shippingAddress?.name || "")}<br>
-                ${order.shippingAddress?.company ? `${escapeHtml(order.shippingAddress.company)}<br>` : ""}
-                ${escapeHtml(order.shippingAddress?.address1 || "")}<br>
-                ${order.shippingAddress?.address2 ? `${escapeHtml(order.shippingAddress.address2)}<br>` : ""}
-                ${escapeHtml(order.shippingAddress?.city || "")}, ${escapeHtml(order.shippingAddress?.provinceCode || "")} ${escapeHtml(order.shippingAddress?.zip || "")}<br>
-                ${escapeHtml(order.shippingAddress?.country || "")}
-                ${order.shippingAddress?.phone ? `<br>${escapeHtml(order.shippingAddress.phone)}` : ""}
-              </td>
-              <td>
-                <b>Ship From:</b><br>
-                ${escapeHtml(shop.name)}<br>
-                ${escapeHtml(shop.billingAddress?.address1 || "")}<br>
-                ${escapeHtml(shop.billingAddress?.city || "")}, ${escapeHtml(shop.billingAddress?.provinceCode || "")} ${escapeHtml(shop.billingAddress?.zip || "")}<br>
-                ${escapeHtml(shop.email)}<br>
-                ${escapeHtml((shop.primaryDomain?.url || "").replace("https://", "").replace("http://", ""))}
-              </td>
-            </tr>
-          </table>
 
           <table class="products-tbl">
             ${(locData.items || []).map(li => {
@@ -1322,8 +1289,7 @@ function buildPackingSlipHtml({ order, shop }) {
                   ? `<br>${escapeHtml(li.variant.title)}`
                   : "";
               const isFinalSale = (li.product?.tags || []).includes("finalsale");
-              const price = li.originalUnitPriceSet?.shopMoney?.amount || "";
-              const cur = li.originalUnitPriceSet?.shopMoney?.currencyCode || "";
+              const price = formatUSD(li.originalUnitPriceSet?.shopMoney?.amount || "");
               return `
                 <tr>
                   <td class="img-td">${img ? `<img src="${escapeHtml(img)}" alt="${escapeHtml(li.title)}">` : ""}</td>
@@ -1333,7 +1299,7 @@ function buildPackingSlipHtml({ order, shop }) {
                     ${isFinalSale ? `<br><span class="tag">Final Sale</span>` : ""}
                   </td>
                   <td class="qty-td">x ${escapeHtml(li.quantity || 0)}</td>
-                  <td class="price-td">${escapeHtml(price)} ${escapeHtml(cur)}</td>
+                  <td class="price-td">${escapeHtml(price)}</td>
                 </tr>
               `;
             }).join("")}
@@ -1366,31 +1332,32 @@ function buildPackingSlipHtml({ order, shop }) {
 <head>
   <meta charset="utf-8">
   <style>
-    @page { margin: 20px; }
-    body { margin:0; padding:0; font-family: Arial, sans-serif; font-size: 20px; }
-    .slip-container { display:flex; flex-direction:column; justify-content:space-between; min-height: 96vh; padding:20px; page-break-after: always; }
-    .logo { text-align:center; margin-bottom: 5px; }
-    .logo img { max-width: 400px; height:auto; }
-    .slogan { font-size: 24px; text-align:center; margin: 5px 0 20px 0; font-weight: normal; }
-    .order-info { margin: 20px 0; }
-    .order-info p { font-size: 20px; line-height: 1.6; margin: 0; }
-    .address-tbl { width: 100%; border-collapse: collapse; margin: 20px 0; font-size: 20px; }
-    .address-tbl td { width: 50%; vertical-align: top; padding: 0 10px; line-height: 1.6; }
-    .products-tbl { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    @page { margin: 16px; }
+    body { margin:0; padding:0; font-family: Arial, sans-serif; font-size: 18px; }
+    .slip-container { display:flex; flex-direction:column; justify-content:space-between; min-height: 96vh; padding:16px; page-break-after: always; }
+    .logo { text-align:center; margin-bottom: 4px; }
+    .logo img { max-width: 360px; height:auto; }
+    .slogan { font-size: 20px; text-align:center; margin: 4px 0 10px 0; font-weight: normal; }
+    .order-info { margin: 10px 0 8px 0; }
+    .order-info p { font-size: 18px; line-height: 1.4; margin: 0; }
+
+    .products-tbl { width: 100%; border-collapse: collapse; margin-top: 6px; }
     .products-tbl tr:first-child td { border-top: 2px solid #000; }
-    .products-tbl td { padding: 12px 8px; border-bottom: 1px solid #dbdbdb; font-size: 20px; vertical-align: middle; }
-    .products-tbl .img-td { width: 80px; text-align: center; }
-    .products-tbl .img-td img { max-width: 60px; height: auto; }
-    .products-tbl .sku-td { width: 180px; font-size: 18px; }
-    .products-tbl .desc-td { font-size: 20px; line-height: 1.4; }
-    .products-tbl .qty-td { width: 80px; text-align: right; font-size: 20px; }
-    .products-tbl .price-td { width: 140px; text-align: right; font-size: 20px; }
-    .tag { color: red; font-weight: bold; font-size: 18px; }
+    .products-tbl td { padding: 10px 6px; border-bottom: 1px solid #dbdbdb; font-size: 18px; vertical-align: middle; }
+    .products-tbl .img-td { width: 70px; text-align: center; }
+    .products-tbl .img-td img { max-width: 56px; height: auto; }
+    .products-tbl .sku-td { width: 150px; font-size: 16px; }
+    .products-tbl .desc-td { font-size: 18px; line-height: 1.3; }
+    .products-tbl .qty-td { width: 70px; text-align: right; font-size: 18px; }
+    .products-tbl .price-td { width: 110px; text-align: right; font-size: 18px; }
+
+    .tag { color: red; font-weight: bold; font-size: 16px; }
+
     .footer { border-top: 2px solid #000; padding: 4px 0; width: 100%; page-break-inside: avoid; }
     .footer-info-container { display:flex; align-items:flex-start; gap: 10px; }
-    .footer-info-container img { width: 60px; height: auto; }
-    .footer-txt-container { flex:1; display:flex; gap: 20px; }
-    .footer-txt, .footer-txt-2 { font-size: 12px; flex:1; line-height: 1.4; }
+    .footer-info-container img { width: 56px; height: auto; }
+    .footer-txt-container { flex:1; display:flex; gap: 16px; }
+    .footer-txt, .footer-txt-2 { font-size: 11px; flex:1; line-height: 1.35; }
   </style>
 </head>
 <body>
@@ -1408,7 +1375,6 @@ app.get("/api/packing-list.pdf", async (req, res) => {
     const { order, shop } = await getOrderPackingData(orderId);
     const html = buildPackingSlipHtml({ order, shop });
 
-    // Try to render PDF via Puppeteer on Render
     let puppeteerCore = null;
     let chromium = null;
 
@@ -1447,8 +1413,7 @@ app.get("/api/packing-list.pdf", async (req, res) => {
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="packing-list-${safeName}.pdf"`);
       return res.send(Buffer.from(pdf));
-    } catch (e) {
-      // If Chromium fails at runtime, fall back to HTML (so you never download "fake pdf")
+    } catch {
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       return res.send(html);
     }
