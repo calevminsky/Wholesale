@@ -6,6 +6,7 @@ import XLSX from "xlsx";
 import path from "path";
 import crypto from "crypto";
 import ExcelJS from "exceljs";
+import sgMail from "@sendgrid/mail";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -37,11 +38,59 @@ if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 const AUTO_TAGS = ["Wholesale", "Spreadsheet"];
 
+// ----------------- Email (SendGrid) -----------------
+const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
+const EMAIL_TO = process.env.EMAIL_TO || "calev@yakirabella.com";
+const EMAIL_FROM = process.env.EMAIL_FROM || "";
+
+function sendgridReady() {
+  return Boolean(SENDGRID_API_KEY && EMAIL_FROM && EMAIL_TO);
+}
+
+async function sendEmailWithAttachments({ subject, text, attachments }) {
+  if (!sendgridReady()) {
+    console.warn("SendGrid not configured (SENDGRID_API_KEY / EMAIL_FROM / EMAIL_TO). Skipping email.");
+    return { skipped: true };
+  }
+
+  sgMail.setApiKey(SENDGRID_API_KEY);
+
+  const msg = {
+    to: EMAIL_TO,
+    from: EMAIL_FROM,
+    subject,
+    text,
+    attachments: (attachments || []).map(a => ({
+      content: a.contentBase64,
+      filename: a.filename,
+      type: a.type,
+      disposition: "attachment"
+    }))
+  };
+
+  await sgMail.send(msg);
+  return { ok: true };
+}
+
+// ----------------- Helpers -----------------
+function baseNameNoExt(filename) {
+  const name = String(filename || "upload").split(/[\\/]/).pop();
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(0, dot) : name;
+}
+
+function safeFilePart(s) {
+  return String(s || "")
+    .replace(/[^\w\- ]+/g, "")
+    .trim()
+    .replace(/\s+/g, "_")
+    .slice(0, 80) || "upload";
+}
+
 // Cache product lookups across requests
 const productCache = new Map(); // handle -> productByHandle result or null
 
 // ----------------- Run store (so reports match runs) -----------------
-
 const runStore = new Map(); // runId -> { createdAt, ...payload }
 const RUN_TTL_MS = 30 * 60 * 1000;
 
@@ -73,7 +122,6 @@ setInterval(() => {
 }, 5 * 60 * 1000);
 
 // ----------------- Auth: access token -----------------
-
 let cachedAccessToken = null;
 let tokenExpiresAtMs = 0;
 
@@ -107,7 +155,6 @@ async function getAccessToken() {
 }
 
 // ----------------- Shopify GraphQL helper -----------------
-
 async function shopifyGraphQL(query, variables = {}) {
   const token = await getAccessToken();
 
@@ -144,7 +191,6 @@ async function shopifyGraphQL(query, variables = {}) {
 }
 
 // ----------------- Currency code (for priceOverride) -----------------
-
 let cachedCurrencyCode = null;
 
 async function getShopCurrencyCode() {
@@ -156,7 +202,6 @@ async function getShopCurrencyCode() {
 }
 
 // ----------------- Shopify queries/mutations -----------------
-
 async function getAllLocations() {
   const q = `
     query Locations($first: Int!, $after: String) {
@@ -232,7 +277,6 @@ function findVariantForSize(variants, size) {
 }
 
 // ---------- Allocation (best-effort, partial allowed) ----------
-
 function makeAvailKey(inventoryItemId, locationId) {
   return `${inventoryItemId}::${locationId}`;
 }
@@ -385,7 +429,6 @@ async function fulfillmentOrderMove({ fulfillmentOrderId, newLocationId, moveLin
 }
 
 // ----------------- Rebalance logic -----------------
-
 function buildCurrentAllocationFromFOs(fos) {
   const byVariant = new Map();
   for (const fo of fos) {
@@ -568,7 +611,6 @@ async function summarizeFulfillmentByLocation(orderId) {
 }
 
 // ----------------- Upload parsing -----------------
-
 function parseUpload(file) {
   const ext = path.extname(file.originalname || "").toLowerCase();
 
@@ -588,7 +630,6 @@ function parseUpload(file) {
 }
 
 // ----------------- ExcelJS report builder -----------------
-
 function safeSheetName(name) {
   const s = String(name ?? "").replace(/[\[\]\*\/\\\?\:]/g, " ").trim() || "Sheet";
   return s.slice(0, 31);
@@ -632,8 +673,18 @@ async function fetchImageBuffer(url) {
   }
 }
 
+// Excel sizing helpers:
+// Excel row height is in "points" (pt). 1 px ~= 0.75 pt.
+// Excel column width is "characters". ~1 char ~= 7 px (varies), we approximate.
+function pxToRowHeightPt(px) {
+  return Math.max(12, Math.round(px * 0.75));
+}
+
+function pxToColWidth(px) {
+  return Math.max(8, Math.round(px / 7));
+}
+
 function applyPrintSetup(ws) {
-  // Letter portrait, fit to 1 page wide, gridlines on
   ws.pageSetup = {
     paperSize: 1, // Letter
     orientation: "portrait",
@@ -642,14 +693,17 @@ function applyPrintSetup(ws) {
     fitToHeight: 0,
     showGridLines: true
   };
-  // Repeat rows 1-6 on each printed page
   ws.pageSetup.printTitlesRow = "1:6";
 }
 
 function styleSheet(ws) {
   ws.getColumn(1).width = 40; // title
   ws.getColumn(2).width = 28; // handle
-  ws.getColumn(3).width = 12; // image
+
+  // Image column: make it "image-like"
+  // We'll size rows to match, so images don't look stretched.
+  ws.getColumn(3).width = pxToColWidth(70); // ~70px wide cell
+
   for (let i = 0; i < SIZES.length; i++) ws.getColumn(4 + i).width = 6;
   ws.getColumn(4 + SIZES.length).width = 8; // total
 
@@ -680,6 +734,10 @@ function writeTableHeader(ws) {
   ws.getRow(6).values = ["Product Title", "Handle", "Image", ...SIZES, "Total"];
 }
 
+// Make images look "in-cell":
+// - keep image square-ish (60x60)
+// - set row height to match
+// - anchor to cell bounds (oneCell)
 async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, productMetaByHandle }) {
   const handles = Array.from(handleToSizeMap.keys());
   handles.sort((a, b) => {
@@ -689,6 +747,9 @@ async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, productMetaByH
     if (ta > tb) return 1;
     return a.localeCompare(b);
   });
+
+  const imgPx = 60; // target image box
+  const rowHeight = pxToRowHeightPt(imgPx + 10);
 
   let rowIndex = 7;
   for (const handle of handles) {
@@ -706,18 +767,17 @@ async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, productMetaByH
     }
     vals.push(total);
 
-    ws.getRow(rowIndex).values = vals;
-    ws.getRow(rowIndex).height = 48;
-    ws.getRow(rowIndex).alignment = { vertical: "middle" };
+    const row = ws.getRow(rowIndex);
+    row.values = vals;
+    row.height = rowHeight;
+    row.alignment = { vertical: "middle" };
 
-    // "In-cell" behavior (anchored exactly to the cell bounds, move/size with cell)
     if (imageUrl) {
       const img = await fetchImageBuffer(imageUrl);
       if (img?.buffer?.length) {
         const imageId = wb.addImage({ buffer: img.buffer, extension: img.extension });
 
-        // Column C is index 3 (1-based) -> col=2 in 0-based
-        // Anchor within the single cell C{rowIndex}
+        // Anchor to the exact cell bounds: column C (0-based col=2), rowIndex (0-based row=rowIndex-1)
         ws.addImage(imageId, {
           tl: { col: 2, row: rowIndex - 1 },
           br: { col: 3, row: rowIndex },
@@ -847,24 +907,7 @@ async function buildWorkbookExcelJS({
   return Buffer.from(buf);
 }
 
-function baseNameNoExt(filename) {
-  const f = String(filename || "upload").trim();
-  const base = f.replace(/^.*[\\/]/, ""); // strip directories
-  const dot = base.lastIndexOf(".");
-  const noExt = dot > 0 ? base.slice(0, dot) : base;
-  return noExt || "upload";
-}
-
-function safeFilePart(s) {
-  return String(s || "")
-    .replace(/[^\w\- ]+/g, "")
-    .trim()
-    .replace(/\s+/g, "_")
-    .slice(0, 80) || "upload";
-}
-
 // ----------------- Shared allocator -----------------
-
 async function runAllocationOnly(req) {
   const { locationIdsJson } = req.body;
 
@@ -1027,7 +1070,6 @@ async function runAllocationOnly(req) {
 }
 
 // ----------------- Routes -----------------
-
 app.get("/api/locations", async (_req, res) => {
   try {
     const locations = await getAllLocations();
@@ -1146,6 +1188,68 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
     const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
 
+    // ----------------- Build artifacts and email them -----------------
+    const base = safeFilePart(baseNameNoExt(uploadFileName || req.file?.originalname || "upload"));
+    const excelFilename = `${base}-fulfillment.xlsx`;
+    const pdfFilename = `packing-slip-${String(order.name || "order").replaceAll("#", "")}.pdf`;
+
+    // Excel (ExcelJS)
+    const excelBuffer = await buildWorkbookExcelJS({
+      locationIdToName,
+      requestedSeen: report.requestedSeen || [],
+      availabilitySeen: report.availabilitySeen || [],
+      productMetaByHandle,
+      selectedLocationIds: locationIdsInOrder || [],
+      customer,
+      notes
+    });
+
+    // Packing slip PDF/HTML
+    const { order: packingOrder, shop: packingShop } = await getOrderPackingData(order.id);
+    const packingHtml = buildPackingSlipHtml({ order: packingOrder, shop: packingShop });
+    const { pdfBuffer, reason: pdfReason } = await renderPdfFromHtml(packingHtml);
+
+    const attachments = [
+      {
+        filename: excelFilename,
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        contentBase64: Buffer.from(excelBuffer).toString("base64")
+      }
+    ];
+
+    if (pdfBuffer) {
+      attachments.push({
+        filename: pdfFilename,
+        type: "application/pdf",
+        contentBase64: Buffer.from(pdfBuffer).toString("base64")
+      });
+    } else {
+      attachments.push({
+        filename: pdfFilename.replace(/\.pdf$/i, ".html"),
+        type: "text/html",
+        contentBase64: Buffer.from(packingHtml, "utf8").toString("base64")
+      });
+      console.warn("Packing slip PDF not generated:", pdfReason);
+    }
+
+    const subject = `Wholesale Order ${order.name} — XLSX + Packing Slip`;
+    const text =
+      `Order: ${order.name}\n` +
+      `Run ID: ${runId}\n` +
+      `Requested Units: ${report.requestedUnits}\n` +
+      `Fulfillable Units: ${report.allocatedUnits}\n` +
+      `Dropped Units: ${report.droppedUnits}\n\n` +
+      `Customer: ${customer || "(none)"}\n` +
+      `Notes: ${notes || "(none)"}\n`;
+
+    let emailStatus = null;
+    try {
+      emailStatus = await sendEmailWithAttachments({ subject, text, attachments });
+    } catch (e) {
+      emailStatus = { error: String(e?.message || e) };
+      console.error("SendGrid email failed:", e);
+    }
+
     res.json({
       ok: true,
       tags: AUTO_TAGS,
@@ -1160,15 +1264,56 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       locationIdToName,
       productMetaByHandle,
       customer,
-      notes
+      notes,
+      emailStatus,
+      excelFilename,
+      packingSlipFilename: pdfBuffer ? pdfFilename : pdfFilename.replace(/\.pdf$/i, ".html")
     });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
 });
 
-// ----------------- Packing List (PDF) -----------------
+// ----------------- PDF render (puppeteer-core + chromium) -----------------
+async function renderPdfFromHtml(html) {
+  let puppeteerCore = null;
+  let chromium = null;
 
+  try {
+    puppeteerCore = await import("puppeteer-core");
+    chromium = await import("@sparticuz/chromium");
+  } catch {
+    puppeteerCore = null;
+    chromium = null;
+  }
+
+  if (!puppeteerCore || !chromium) {
+    return { pdfBuffer: null, reason: "Missing puppeteer-core and/or @sparticuz/chromium" };
+  }
+
+  const browser = await puppeteerCore.default.launch({
+    args: chromium.default.args,
+    executablePath: await chromium.default.executablePath(),
+    headless: chromium.default.headless
+  });
+
+  try {
+    const page = await browser.newPage();
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    const pdfBuffer = await page.pdf({
+      format: "Letter",
+      printBackground: true,
+      margin: { top: "0.25in", right: "0.25in", bottom: "0.25in", left: "0.25in" }
+    });
+
+    return { pdfBuffer, reason: null };
+  } finally {
+    await browser.close();
+  }
+}
+
+// ----------------- Packing List (PDF) -----------------
 async function getOrderPackingData(orderId) {
   const q = `
     query Packing($id: ID!) {
@@ -1375,48 +1520,16 @@ app.get("/api/packing-list.pdf", async (req, res) => {
     const { order, shop } = await getOrderPackingData(orderId);
     const html = buildPackingSlipHtml({ order, shop });
 
-    let puppeteerCore = null;
-    let chromium = null;
-
-    try {
-      puppeteerCore = await import("puppeteer-core");
-      chromium = await import("@sparticuz/chromium");
-    } catch {
-      puppeteerCore = null;
-      chromium = null;
-    }
-
-    if (!puppeteerCore || !chromium) {
+    const { pdfBuffer } = await renderPdfFromHtml(html);
+    if (!pdfBuffer) {
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       return res.send(html);
     }
 
-    try {
-      const browser = await puppeteerCore.default.launch({
-        args: chromium.default.args,
-        executablePath: await chromium.default.executablePath(),
-        headless: chromium.default.headless
-      });
-
-      const page = await browser.newPage();
-      await page.setContent(html, { waitUntil: "networkidle0" });
-
-      const pdf = await page.pdf({
-        format: "Letter",
-        printBackground: true,
-        margin: { top: "0.25in", right: "0.25in", bottom: "0.25in", left: "0.25in" }
-      });
-
-      await browser.close();
-
-      const safeName = String(order.name || "order").replaceAll("#", "").replaceAll("/", "-");
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="packing-list-${safeName}.pdf"`);
-      return res.send(Buffer.from(pdf));
-    } catch {
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      return res.send(html);
-    }
+    const safeName = String(order.name || "order").replaceAll("#", "").replaceAll("/", "-");
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="packing-list-${safeName}.pdf"`);
+    return res.send(Buffer.from(pdfBuffer));
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
