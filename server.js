@@ -1058,6 +1058,98 @@ async function buildWorkbookFromFinalOrder({
   return Buffer.from(buf);
 }
 
+// Build a full multi-tab preview workbook from saved run data (no Shopify order needed)
+async function buildWorkbookFromPreviewData({
+  requestedSeen,      // [{ handle, size, requestedQty }]
+  availabilitySeen,   // [{ handle, size, allocations: [{locationId, qty}] }]
+  metaByHandle,       // { handle: { title, imageUrl } }
+  locationIdToName,   // { locId: name }
+  locationIdsInOrder, // [locId, ...]
+  customer,
+  notes
+}) {
+  // Build requestedHandleMap
+  const requestedHandleMap = new Map();
+  for (const entry of requestedSeen || []) {
+    const { handle, size, requestedQty } = entry;
+    if (!handle || !size) continue;
+    if (!requestedHandleMap.has(handle)) requestedHandleMap.set(handle, makeHandleSizeMapEmpty());
+    requestedHandleMap.get(handle).set(size,
+      (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0)
+    );
+  }
+
+  // Build totalHandleMap and locMap from allocation data
+  const totalHandleMap = new Map();
+  const locMap = new Map(); // locId -> Map(handle -> Map(size -> qty))
+
+  for (const entry of availabilitySeen || []) {
+    const { handle, size, allocations } = entry;
+    if (!handle || !size || !allocations?.length) continue;
+    for (const { locationId, qty } of allocations) {
+      if (!qty || qty <= 0) continue;
+      addQtyToMap(totalHandleMap, handle, size, qty);
+      if (!locMap.has(locationId)) locMap.set(locationId, new Map());
+      addQtyToMap(locMap.get(locationId), handle, size, qty);
+    }
+  }
+
+  // Build Total Warehouse (Bogota + Warehouse)
+  const totalWarehouseHandleMap = new Map();
+  for (const [locId, handleMap] of locMap.entries()) {
+    const locName = locationIdToName[locId] || "Unassigned";
+    if (locName !== "Bogota" && locName !== "Warehouse") continue;
+    for (const [handle, sizeMap] of handleMap.entries()) {
+      if (!totalWarehouseHandleMap.has(handle)) totalWarehouseHandleMap.set(handle, makeHandleSizeMapEmpty());
+      const tgt = totalWarehouseHandleMap.get(handle);
+      for (const s of SIZES) tgt.set(s, (tgt.get(s) || 0) + Number(sizeMap.get(s) || 0));
+    }
+  }
+
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "Wholesale Importer (Preview)";
+  wb.created = new Date();
+
+  const fullMeta = Object.assign({}, metaByHandle || {});
+  for (const h of requestedHandleMap.keys()) {
+    if (!fullMeta[h]) fullMeta[h] = { title: "", imageUrl: "" };
+  }
+
+  async function addSheet(sheetName, locationLabel, map) {
+    const ws = wb.addWorksheet(safeSheetName(sheetName));
+    writeSheetTop(ws, sheetName, locationLabel, customer || "", notes || "");
+    writeTableHeader(ws);
+    styleSheet(ws);
+    if (!map || map.size === 0) {
+      ws.getRow(7).values = ["(No units)", "", "", ...SIZES.map(() => 0), 0];
+      ws.getRow(7).height = 18;
+      return;
+    }
+    await addHandleRowsWithImages({ wb, ws, handleToSizeMap: map, metaByHandle: fullMeta });
+  }
+
+  await addSheet("Requested", "ALL REQUESTED", requestedHandleMap);
+  await addSheet("Total", "ALL ALLOCATED (Preview)", totalHandleMap);
+  await addSheet("Total Warehouse", "Bogota + Warehouse", totalWarehouseHandleMap);
+
+  const locIds = Array.isArray(locationIdsInOrder) && locationIdsInOrder.length
+    ? locationIdsInOrder
+    : Array.from(locMap.keys());
+
+  for (const locId of locIds) {
+    const locName = locationIdToName[locId] || locId;
+    const handleMap = locMap.get(locId) || new Map();
+    await addSheet(locName, locName, handleMap);
+  }
+
+  if (locMap.has("unassigned") && !locIds.includes("unassigned")) {
+    await addSheet("Unassigned", "Unassigned", locMap.get("unassigned"));
+  }
+
+  const bufPrev = await wb.xlsx.writeBuffer();
+  return Buffer.from(bufPrev);
+}
+
 // ----------------- Shared allocator used by Preview / Import -----------------
 async function runAllocationOnly(req) {
   const { locationIdsJson } = req.body;
@@ -1066,9 +1158,9 @@ async function runAllocationOnly(req) {
   if (!Array.isArray(locationIdsInOrder) || locationIdsInOrder.length === 0) {
     throw new Error("Select at least one location.");
   }
-  if (!req.file?.buffer) throw new Error("Missing CSV/XLSX file.");
+  if (!req.file?.buffer && !req.body.orderItemsJson) throw new Error("Missing CSV/XLSX file or orderItemsJson.");
 
-  const uploadFileName = req.file?.originalname || "upload.xlsx";
+  const uploadFileName = req.file?.originalname || "manual-order.xlsx";
 
   const customer = String(req.body.customer || "").trim();
   const notes = String(req.body.notes || "").trim();
@@ -1076,28 +1168,44 @@ async function runAllocationOnly(req) {
   const locations = await getAllLocations();
   const locationIdToName = Object.fromEntries(locations.map(l => [l.id, l.name]));
 
-  const records = parseUpload(req.file);
-
   const requested = [];
-  for (const row of records) {
-    const handle = (row.product_handle || "").toString().trim();
-    if (!handle) continue;
-
-    const unitPrice = Number((row.unit_price ?? "").toString().trim());
-    if (!Number.isFinite(unitPrice)) throw new Error(`Invalid unit_price for handle ${handle}`);
-
-    const sizeQty = {};
-    for (const s of SIZES) {
-      const n = Number((row[s] ?? "").toString().trim() || 0);
-      sizeQty[s] = Number.isFinite(n) ? n : 0;
+  if (req.file?.buffer) {
+    // File upload path (CSV/XLSX)
+    const records = parseUpload(req.file);
+    for (const row of records) {
+      const handle = (row.product_handle || "").toString().trim();
+      if (!handle) continue;
+      const unitPrice = Number((row.unit_price ?? "").toString().trim());
+      if (!Number.isFinite(unitPrice)) throw new Error(`Invalid unit_price for handle ${handle}`);
+      const sizeQty = {};
+      for (const s of SIZES) {
+        const n = Number((row[s] ?? "").toString().trim() || 0);
+        sizeQty[s] = Number.isFinite(n) ? n : 0;
+      }
+      requested.push({ handle, unitPrice, sizeQty });
     }
-
-    requested.push({ handle, unitPrice, sizeQty });
+  } else {
+    // In-app order builder path (JSON)
+    const items = JSON.parse(req.body.orderItemsJson);
+    if (!Array.isArray(items) || items.length === 0) throw new Error("orderItemsJson must be a non-empty array.");
+    for (const item of items) {
+      const handle = String(item.handle || "").trim();
+      if (!handle) continue;
+      const unitPrice = Number(item.unitPrice ?? 0);
+      if (!Number.isFinite(unitPrice) || unitPrice < 0) throw new Error(`Invalid unitPrice for ${handle}`);
+      const sizeQty = {};
+      for (const s of SIZES) {
+        const n = Number(item.sizeQty?.[s] ?? 0);
+        sizeQty[s] = Number.isFinite(n) ? Math.max(0, n) : 0;
+      }
+      requested.push({ handle, unitPrice, sizeQty });
+    }
   }
 
   const remainingAvailMap = new Map();
   const allocationPlan = new Map(); // variantId -> { inventoryItemId, allocations:[{locationId, qty}] }
   const draftLineItems = [];
+  const metaByHandle = {}; // handle -> { title, imageUrl } for report generation
 
   const report = {
     tagApplied: AUTO_TAGS,
@@ -1120,6 +1228,15 @@ async function runAllocationOnly(req) {
     if (!product) {
       report.missingHandles.push(item.handle);
       continue;
+    }
+
+    // Capture product meta for report generation
+    if (!metaByHandle[item.handle]) {
+      metaByHandle[item.handle] = {
+        title: product.title || "",
+        imageUrl: product.featuredImage?.url?.split("?")[0] ||
+                  product.images?.nodes?.[0]?.url?.split("?")[0] || ""
+      };
     }
 
     for (const size of SIZES) {
@@ -1202,7 +1319,8 @@ async function runAllocationOnly(req) {
     locationIdsInOrder,
     customer,
     notes,
-    uploadFileName
+    uploadFileName,
+    metaByHandle
   };
 }
 
@@ -1453,6 +1571,73 @@ app.get("/api/locations", async (_req, res) => {
   }
 });
 
+// Product search for the in-app order builder
+app.get("/api/products/search", async (req, res) => {
+  try {
+    const q = String(req.query.q || "").trim();
+    if (q.length < 2) return res.json({ products: [] });
+
+    const limit = Math.min(20, Math.max(1, Number(req.query.limit || 12)));
+
+    const gql = `
+      query SearchProducts($query: String!, $first: Int!) {
+        products(first: $first, query: $query) {
+          nodes {
+            id
+            title
+            handle
+            featuredImage { url }
+            priceRangeV2 {
+              minVariantPrice { amount currencyCode }
+            }
+            options { name values }
+            variants(first: 100) {
+              nodes {
+                id
+                title
+                price
+                selectedOptions { name value }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await shopifyGraphQL(gql, { query: q, first: limit });
+    const raw = data?.products?.nodes || [];
+
+    const products = raw.map(p => {
+      // Detect available sizes from variant selectedOptions or variant titles
+      const sizesFound = new Set();
+      for (const v of p.variants?.nodes || []) {
+        for (const opt of v.selectedOptions || []) {
+          if (String(opt.name || "").toLowerCase().includes("size") && SIZES.includes(opt.value)) {
+            sizesFound.add(opt.value);
+          }
+        }
+        // Fallback: match variant title directly
+        const vt = String(v.title || "").trim();
+        if (SIZES.includes(vt)) sizesFound.add(vt);
+      }
+      const availableSizes = SIZES.filter(s => sizesFound.has(s));
+      const retailPrice = Number(p.priceRangeV2?.minVariantPrice?.amount || 0);
+
+      return {
+        handle: p.handle,
+        title: p.title,
+        imageUrl: p.featuredImage?.url?.split("?")[0] || "",
+        retailPrice,
+        availableSizes
+      };
+    });
+
+    res.json({ products });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 // Preview only: DOES NOT create order. Returns runId (for report download)
 app.post("/api/preview", upload.single("file"), async (req, res) => {
   try {
@@ -1461,6 +1646,8 @@ app.post("/api/preview", upload.single("file"), async (req, res) => {
     const runId = saveRun({
       locationIdToName: result.locationIdToName,
       requestedSeen: result.report.requestedSeen,
+      availabilitySeen: result.report.availabilitySeen,
+      metaByHandle: result.metaByHandle,
       locationIdsInOrder: result.locationIdsInOrder,
       customer: result.customer,
       notes: result.notes,
@@ -1473,7 +1660,7 @@ app.post("/api/preview", upload.single("file"), async (req, res) => {
   }
 });
 
-// Report download by runId (Preview-only report: Requested tab populated; other tabs empty unless order exists)
+// Report download by runId — full multi-tab workbook when preview data is available
 app.get("/api/report.xlsx", async (req, res) => {
   try {
     const runId = String(req.query.runId || "");
@@ -1482,41 +1669,219 @@ app.get("/api/report.xlsx", async (req, res) => {
       return res.status(400).json({ error: "Invalid or expired runId. Run Preview or Create Order again, then download." });
     }
 
-    // Preview cannot build location/total tabs from Shopify (no order),
-    // so this endpoint only makes a workbook with Requested + blank others.
-    // After Create Order, you’ll get the final Excel via email.
-    const wb = new ExcelJS.Workbook();
-    const ws = wb.addWorksheet("Requested");
-    writeSheetTop(ws, "Requested", "ALL REQUESTED", run.customer || "", run.notes || "");
-    writeTableHeader(ws);
-    styleSheet(ws);
-
-    // Build Requested map
-    const requestedHandleMap = new Map();
-    for (const entry of run.requestedSeen || []) {
-      const { handle, size, requestedQty } = entry;
-      if (!handle || !size) continue;
-      if (!requestedHandleMap.has(handle)) requestedHandleMap.set(handle, makeHandleSizeMapEmpty());
-      requestedHandleMap
-        .get(handle)
-        .set(size, (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0));
+    let buf;
+    if (run.metaByHandle && run.availabilitySeen) {
+      // Full multi-tab preview report
+      buf = await buildWorkbookFromPreviewData({
+        requestedSeen: run.requestedSeen,
+        availabilitySeen: run.availabilitySeen,
+        metaByHandle: run.metaByHandle,
+        locationIdToName: run.locationIdToName,
+        locationIdsInOrder: run.locationIdsInOrder,
+        customer: run.customer || "",
+        notes: run.notes || ""
+      });
+    } else {
+      // Legacy fallback: single Requested tab, no images
+      const wb = new ExcelJS.Workbook();
+      const ws = wb.addWorksheet("Requested");
+      writeSheetTop(ws, "Requested", "ALL REQUESTED", run.customer || "", run.notes || "");
+      writeTableHeader(ws);
+      styleSheet(ws);
+      const requestedHandleMap = new Map();
+      for (const entry of run.requestedSeen || []) {
+        const { handle, size, requestedQty } = entry;
+        if (!handle || !size) continue;
+        if (!requestedHandleMap.has(handle)) requestedHandleMap.set(handle, makeHandleSizeMapEmpty());
+        requestedHandleMap.get(handle).set(size,
+          (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0)
+        );
+      }
+      const legacyMeta = {};
+      for (const h of requestedHandleMap.keys()) legacyMeta[h] = { title: "", imageUrl: "" };
+      await addHandleRowsWithImages({ wb, ws, handleToSizeMap: requestedHandleMap, metaByHandle: legacyMeta });
+      buf = Buffer.from(await wb.xlsx.writeBuffer());
     }
 
-    // Minimal meta (no images during preview)
-    const metaByHandle = {};
-    for (const h of requestedHandleMap.keys()) metaByHandle[h] = { title: "", imageUrl: "" };
-
-    await addHandleRowsWithImages({ wb, ws, handleToSizeMap: requestedHandleMap, metaByHandle });
-
-    const buf = await wb.xlsx.writeBuffer();
     const base = safeFilePart(baseNameNoExt(run.uploadFileName || "upload"));
-    const outName = `${base}-fulfillment.xlsx`;
+    const outName = `${base}-preview-report.xlsx`;
 
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${outName}"`);
-    res.send(Buffer.from(buf));
+    res.send(buf);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Build a browser-printable HTML report from preview run data
+function buildPreviewPrintHtml(run) {
+  function esc(s) {
+    return String(s || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  const meta = run.metaByHandle || {};
+  const locIdToName = run.locationIdToName || {};
+  const locIds = run.locationIdsInOrder || [];
+
+  // Build requested map: handle -> size -> qty
+  const reqMap = {};
+  for (const { handle, size, requestedQty } of run.requestedSeen || []) {
+    if (!handle || !size) continue;
+    if (!reqMap[handle]) reqMap[handle] = {};
+    reqMap[handle][size] = (reqMap[handle][size] || 0) + Number(requestedQty || 0);
+  }
+
+  // Build total allocated and per-location maps
+  const totalMap = {}; // handle -> size -> qty
+  const locMap = {};   // locId -> handle -> size -> qty
+  for (const { handle, size, allocations } of run.availabilitySeen || []) {
+    if (!handle || !size || !allocations?.length) continue;
+    for (const { locationId, qty } of allocations) {
+      if (!qty || qty <= 0) continue;
+      if (!totalMap[handle]) totalMap[handle] = {};
+      totalMap[handle][size] = (totalMap[handle][size] || 0) + qty;
+      if (!locMap[locationId]) locMap[locationId] = {};
+      if (!locMap[locationId][handle]) locMap[locationId][handle] = {};
+      locMap[locationId][handle][size] = (locMap[locationId][handle][size] || 0) + qty;
+    }
+  }
+
+  // Collect all handles across requested and allocated
+  const allHandles = Array.from(new Set([
+    ...Object.keys(reqMap),
+    ...Object.keys(totalMap)
+  ])).sort((a, b) => {
+    const ta = (meta[a]?.title || a).toLowerCase();
+    const tb = (meta[b]?.title || b).toLowerCase();
+    return ta < tb ? -1 : ta > tb ? 1 : 0;
+  });
+
+  // Summary totals
+  let totalReq = 0, totalAlloc = 0, totalDrop = 0;
+  for (const { requestedQty } of run.requestedSeen || []) totalReq += Number(requestedQty || 0);
+  for (const { allocations } of run.availabilitySeen || []) {
+    for (const { qty } of allocations || []) totalAlloc += Number(qty || 0);
+  }
+  totalDrop = totalReq - totalAlloc;
+
+  // Column headers: Requested + Total + one per selected location
+  const activeLocIds = locIds.filter(id => locMap[id]);
+  const locHeaders = activeLocIds.map(id => esc(locIdToName[id] || id));
+
+  function sizeRow(handle, size) {
+    const req = reqMap[handle]?.[size] || 0;
+    const alloc = totalMap[handle]?.[size] || 0;
+    if (req === 0 && alloc === 0) return "";
+    const drop = req - alloc;
+    const locCells = activeLocIds.map(id =>
+      `<td>${locMap[id]?.[handle]?.[size] || 0}</td>`
+    ).join("");
+    return `<tr>
+      <td class="size-lbl">${esc(size)}</td>
+      <td>${req}</td>
+      <td class="${drop > 0 ? "dropped" : ""}">${alloc}</td>
+      ${drop > 0 ? `<td class="dropped">${drop}</td>` : "<td>—</td>"}
+      ${locCells}
+    </tr>`;
+  }
+
+  const productSections = allHandles.map(handle => {
+    const title = esc(meta[handle]?.title || handle);
+    const rows = SIZES.map(s => sizeRow(handle, s)).filter(Boolean).join("");
+    if (!rows) return "";
+    return `
+      <div class="product-block">
+        <div class="product-title">${title} <span class="handle-lbl">${esc(handle)}</span></div>
+        <table class="product-table">
+          <thead>
+            <tr>
+              <th>Size</th>
+              <th>Requested</th>
+              <th>Allocated</th>
+              <th>Dropped</th>
+              ${locHeaders.map(n => `<th>${n}</th>`).join("")}
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>`;
+  }).filter(Boolean).join("");
+
+  const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" });
+  const customer = esc(run.customer || "");
+  const notes = esc(run.notes || "");
+  const fileName = esc(run.uploadFileName || "");
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Preview Report${customer ? " — " + customer : ""}</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; font-size: 13px; color: #111; padding: 24px; max-width: 960px; margin: 0 auto; }
+    h1 { font-size: 20px; margin-bottom: 4px; }
+    .meta { color: #555; margin-bottom: 16px; font-size: 12px; line-height: 1.6; }
+    .summary { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+    .pill { background: #f2f2f2; border-radius: 20px; padding: 5px 14px; font-size: 13px; font-weight: 600; }
+    .pill.drop { background: #ffe0e0; color: #b00; }
+    .product-block { margin-bottom: 28px; break-inside: avoid; }
+    .product-title { font-weight: 700; font-size: 14px; margin-bottom: 6px; }
+    .handle-lbl { font-weight: 400; color: #777; font-size: 12px; }
+    .product-table { width: 100%; border-collapse: collapse; }
+    .product-table th, .product-table td { border: 1px solid #ddd; padding: 4px 8px; text-align: center; }
+    .product-table th { background: #f5f5f5; font-weight: 600; }
+    .product-table .size-lbl { font-weight: 600; text-align: left; }
+    .dropped { color: #c00; font-weight: 600; }
+    .print-btn { margin-bottom: 20px; padding: 8px 20px; font-size: 14px; cursor: pointer; background: #111; color: #fff; border: none; border-radius: 6px; }
+    @media print {
+      .print-btn { display: none; }
+      body { padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <button class="print-btn" onclick="window.print()">Print / Save as PDF</button>
+  <h1>Wholesale Preview Report${customer ? " — " + customer : ""}</h1>
+  <div class="meta">
+    ${fileName ? `<div><b>File:</b> ${fileName}</div>` : ""}
+    ${notes ? `<div><b>Notes:</b> ${notes}</div>` : ""}
+    <div><b>Date:</b> ${dateStr}</div>
+    <div><b>Mode:</b> Preview (no order created)</div>
+  </div>
+  <div class="summary">
+    <span class="pill">Requested: ${totalReq}</span>
+    <span class="pill">Allocated: ${totalAlloc}</span>
+    ${totalDrop > 0 ? `<span class="pill drop">Dropped: ${totalDrop}</span>` : `<span class="pill">Dropped: 0</span>`}
+    ${locHeaders.map((n, i) => {
+      let locTotal = 0;
+      for (const h of allHandles) for (const s of SIZES) locTotal += locMap[activeLocIds[i]]?.[h]?.[s] || 0;
+      return `<span class="pill">${n}: ${locTotal}</span>`;
+    }).join("")}
+  </div>
+  ${productSections || "<p>No products in this run.</p>"}
+</body>
+</html>`;
+}
+
+app.get("/api/preview-print", (req, res) => {
+  try {
+    const runId = String(req.query.runId || "");
+    const run = getRun(runId);
+    if (!run) {
+      return res.status(400).send("<h2>Invalid or expired run ID. Run Preview again, then print.</h2>");
+    }
+    const html = buildPreviewPrintHtml(run);
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    res.send(html);
+  } catch (e) {
+    res.status(500).send(`<h2>Error generating print report: ${String(e?.message || e)}</h2>`);
   }
 });
 
@@ -1534,12 +1899,15 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       locationIdsInOrder,
       customer,
       notes,
-      uploadFileName
+      uploadFileName,
+      metaByHandle
     } = result;
 
     const runId = saveRun({
       locationIdToName,
       requestedSeen: report.requestedSeen,
+      availabilitySeen: report.availabilitySeen,
+      metaByHandle,
       locationIdsInOrder: JSON.parse(locationIdsJson || "[]"),
       customer,
       notes,
