@@ -9,6 +9,7 @@
       .box { border: 1px solid #ddd; padding: 12px; border-radius: 10px; }
       button { padding: 8px 12px; cursor: pointer; border-radius: 10px; border: 1px solid #ccc; background: #fff; }
       button.primary { border-color:#111; }
+      button:disabled { opacity: 0.4; cursor: default; }
       input[type="number"], input[type="text"] { padding: 6px; width: 240px; }
       textarea { padding: 6px; width: 520px; height: 80px; }
       .loc { display:flex; gap:10px; align-items:center; padding:6px 0; border-bottom: 1px solid #f2f2f2;}
@@ -19,39 +20,115 @@
       th, td { border: 1px solid #e6e6e6; padding: 6px 8px; font-size: 13px; }
       th { background: #fafafa; text-align: left; }
       .muted { color: #666; font-size: 12px; }
+
+      /* Mode toggle */
+      .mode-btn { border-radius: 10px; }
+      .mode-btn.active-mode { background: #111; color: #fff; border-color: #111; }
+
+      /* Builder section */
+      #searchResultsDropdown {
+        display: none; border: 1px solid #ddd; border-radius: 8px; margin-top: 4px;
+        max-height: 300px; overflow-y: auto; background: #fff;
+        position: absolute; z-index: 200; width: 420px; box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+      }
+      .search-result-item {
+        display: flex; align-items: center; gap: 10px;
+        padding: 8px 12px; cursor: pointer; border-bottom: 1px solid #f0f0f0;
+      }
+      .search-result-item:last-child { border-bottom: none; }
+      .search-result-item:hover { background: #f5f5f5; }
+      .search-result-item img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; flex-shrink: 0; }
+      .search-result-item .sr-img-placeholder { width: 40px; height: 40px; background: #eee; border-radius: 4px; flex-shrink: 0; }
+      #searchWrapper { position: relative; }
+
+      #orderTable { border-collapse: collapse; width: 100%; font-size: 13px; }
+      #orderTable th, #orderTable td { border: 1px solid #e6e6e6; padding: 5px 6px; text-align: center; }
+      #orderTable th { background: #fafafa; font-weight: 600; }
+      #orderTable td.prod-cell { text-align: left; min-width: 160px; }
+      #orderTable input[type="number"].qty-input { width: 46px; padding: 3px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+      #orderTable input[type="number"].qty-input:disabled { background: #f5f5f5; color: #bbb; border-color: #e0e0e0; }
+      #orderTable input.price-input { width: 72px; padding: 3px; text-align: right; border: 1px solid #ccc; border-radius: 4px; }
+      #orderTable input.pct-input { width: 46px; padding: 3px; text-align: center; border: 1px solid #ccc; border-radius: 4px; }
+      .remove-row-btn { background: none; border: none; color: #c00; cursor: pointer; font-size: 16px; padding: 0 4px; }
+      .prod-img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
+      .order-table-wrap { overflow-x: auto; margin-top: 12px; }
+      .total-cell { font-weight: 600; }
     </style>
   </head>
   <body>
     <h1>Wholesale Import</h1>
     <div class="row">
       <span class="pill">Auto-tag: Wholesale</span>
-      <span class="pill">Accepts CSV & XLSX</span>
+      <span class="pill">Accepts CSV &amp; XLSX</span>
       <span class="pill">Completes as Unpaid</span>
       <span class="pill">Moves fulfillment orders to match allocations</span>
       <span class="pill">Final Excel/PDF generated AFTER settlement</span>
     </div>
 
+    <!-- Reserve hours / customer / notes — shared by both modes -->
     <div class="box">
       <div class="row">
         <label><b>Reserve hours</b></label>
         <input id="reserveHours" type="number" value="48" min="0" />
         <small class="muted">(0 disables draft reservation)</small>
       </div>
-
       <div class="row">
         <label style="width:120px;"><b>Customer</b></label>
         <input id="customer" type="text" placeholder="Customer name" />
       </div>
-
       <div class="row">
         <label style="width:120px;"><b>Notes</b></label>
         <textarea id="notes" placeholder="Notes that should appear in the export"></textarea>
       </div>
+    </div>
 
+    <!-- Mode toggle -->
+    <div class="row" style="margin-top:16px;">
+      <label><b>Input mode:</b></label>
+      <button id="modeUploadBtn" class="mode-btn active-mode">Upload Spreadsheet</button>
+      <button id="modeBuilderBtn" class="mode-btn">Build Order Manually</button>
+    </div>
+
+    <!-- Upload mode section -->
+    <div id="uploadSection" class="box">
       <div class="row">
         <label><b>Upload file</b></label>
         <input id="file" type="file" accept=".csv,.xlsx" />
         <small class="muted">Headers: product_handle, unit_price, XXS..XXL</small>
+      </div>
+    </div>
+
+    <!-- Build Order Manually section -->
+    <div id="builderSection" class="box" style="display:none;">
+      <div class="row" style="align-items:flex-start;">
+        <div id="searchWrapper">
+          <div class="row" style="margin-bottom:0;">
+            <input id="productSearch" type="text" placeholder="Search products by name…" style="width:340px;" />
+            <button id="productSearchBtn">Search</button>
+            <span class="muted" id="searchStatus"></span>
+          </div>
+          <div id="searchResultsDropdown"></div>
+        </div>
+      </div>
+
+      <div class="order-table-wrap">
+        <table id="orderTable">
+          <thead>
+            <tr id="orderTableHead">
+              <th style="width:48px;"></th>
+              <th class="prod-cell">Product</th>
+              <th style="width:80px;">Unit Price ($)</th>
+              <th style="width:60px;">% Retail</th>
+              <th>XXS</th><th>XS</th><th>S</th><th>M</th><th>L</th><th>XL</th><th>XXL</th>
+              <th style="width:44px;">Total</th>
+              <th style="width:32px;"></th>
+            </tr>
+          </thead>
+          <tbody id="orderTableBody"></tbody>
+        </table>
+        <div id="builderEmptyMsg" class="muted" style="padding:12px;">
+          Search for products above and add them to the order.
+        </div>
       </div>
     </div>
 
@@ -60,7 +137,8 @@
 
     <div class="row">
       <button id="previewBtn">Preview Only</button>
-      <button id="downloadReportBtn">Download XLSX Report (Preview)</button>
+      <button id="downloadReportBtn" disabled>Download Full Report</button>
+      <button id="printPreviewBtn" disabled>Print Preview Report</button>
       <button id="runBtn" class="primary">Create Order</button>
     </div>
 
@@ -71,13 +149,35 @@
     <pre id="out"></pre>
 
     <script>
+      const SIZES_LIST = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+
       let locations = [];
       let lastRunId = null;
+      let inputMode = "upload"; // "upload" | "builder"
+      let orderRows = [];       // [{ handle, title, imageUrl, retailPrice, availableSizes, unitPrice, sizeQty }]
 
       const out = document.getElementById("out");
       const box = document.getElementById("locationsBox");
       const summaryBox = document.getElementById("summaryBox");
 
+      // ===== Mode toggle =====
+      document.getElementById("modeUploadBtn").addEventListener("click", () => {
+        inputMode = "upload";
+        document.getElementById("uploadSection").style.display = "";
+        document.getElementById("builderSection").style.display = "none";
+        document.getElementById("modeUploadBtn").classList.add("active-mode");
+        document.getElementById("modeBuilderBtn").classList.remove("active-mode");
+      });
+
+      document.getElementById("modeBuilderBtn").addEventListener("click", () => {
+        inputMode = "builder";
+        document.getElementById("uploadSection").style.display = "none";
+        document.getElementById("builderSection").style.display = "";
+        document.getElementById("modeUploadBtn").classList.remove("active-mode");
+        document.getElementById("modeBuilderBtn").classList.add("active-mode");
+      });
+
+      // ===== Locations =====
       function renderLocations() {
         const selected = locations.filter(l => l.selected);
         const unselected = locations.filter(l => !l.selected);
@@ -122,7 +222,6 @@
             if (swapWith < 0 || swapWith >= selectedIds.length) return;
 
             const a = selectedIds[idx], b = selectedIds[swapWith];
-
             const selectedLocs = locations.filter(l => l.selected);
             const unselectedLocs = locations.filter(l => !l.selected);
 
@@ -156,25 +255,41 @@
         renderLocations();
       }
 
+      // ===== Form data (mode-aware) =====
       function getFormData() {
-        const file = document.getElementById("file").files[0];
         const reserveHours = document.getElementById("reserveHours").value;
         const selectedIds = locations.filter(l => l.selected).map(l => l.id);
         const customer = document.getElementById("customer").value || "";
         const notes = document.getElementById("notes").value || "";
 
-        if (!file) throw new Error("Choose a CSV or XLSX file.");
         if (selectedIds.length === 0) throw new Error("Select at least one location.");
 
         const form = new FormData();
-        form.append("file", file);
         form.append("reserveHours", reserveHours);
         form.append("locationIdsJson", JSON.stringify(selectedIds));
         form.append("customer", customer);
         form.append("notes", notes);
+
+        if (inputMode === "upload") {
+          const file = document.getElementById("file").files[0];
+          if (!file) throw new Error("Choose a CSV or XLSX file.");
+          form.append("file", file);
+        } else {
+          if (orderRows.length === 0) throw new Error("Add at least one product to the order.");
+          const hasQty = orderRows.some(r => SIZES_LIST.some(s => (r.sizeQty[s] || 0) > 0));
+          if (!hasQty) throw new Error("Enter at least one unit quantity.");
+          const items = orderRows.map(r => ({
+            handle: r.handle,
+            unitPrice: Number(r.unitPrice) || 0,
+            sizeQty: Object.fromEntries(SIZES_LIST.map(s => [s, r.sizeQty[s] || 0]))
+          }));
+          form.append("orderItemsJson", JSON.stringify(items));
+        }
+
         return form;
       }
 
+      // ===== Summary =====
       function showSummary(json) {
         if (!json || !json.report) { summaryBox.style.display="none"; return; }
         summaryBox.style.display = "block";
@@ -205,10 +320,16 @@
               <tr><th>Location</th><th>Units</th></tr>
               ${Object.entries(ff).map(([k,v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join("")}
             </table>
-          ` : `<div class="muted">Tip: Run “Create Order” to see final fulfillment splits.</div>`}
+          ` : `<div class="muted">Tip: Run "Create Order" to see final fulfillment splits.</div>`}
         `;
       }
 
+      function setPostRunButtons(enabled) {
+        document.getElementById("downloadReportBtn").disabled = !enabled;
+        document.getElementById("printPreviewBtn").disabled = !enabled;
+      }
+
+      // ===== Main submit =====
       async function postJson(endpoint) {
         out.textContent = "Running…";
         summaryBox.style.display = "none";
@@ -219,6 +340,7 @@
           const json = await res.json();
           out.textContent = JSON.stringify(json, null, 2);
           lastRunId = json.runId || null;
+          setPostRunButtons(!!lastRunId);
           showSummary(json);
         } catch (e) {
           out.textContent = String(e.message || e);
@@ -228,14 +350,222 @@
       document.getElementById("previewBtn").addEventListener("click", () => postJson("/api/preview"));
       document.getElementById("runBtn").addEventListener("click", () => postJson("/api/import"));
 
-      document.getElementById("downloadReportBtn").addEventListener("click", async () => {
-        if (!lastRunId) {
-          out.textContent = "Run Preview first, then Download Report.";
-          return;
-        }
+      document.getElementById("downloadReportBtn").addEventListener("click", () => {
+        if (!lastRunId) { out.textContent = "Run Preview first, then Download Report."; return; }
         window.location = `/api/report.xlsx?runId=${encodeURIComponent(lastRunId)}`;
       });
 
+      document.getElementById("printPreviewBtn").addEventListener("click", () => {
+        if (!lastRunId) { out.textContent = "Run Preview first, then Print."; return; }
+        window.open(`/api/preview-print?runId=${encodeURIComponent(lastRunId)}`, "_blank");
+      });
+
+      // ===== Product search =====
+      let searchDebounceTimer = null;
+      const searchInput = document.getElementById("productSearch");
+      const searchDropdown = document.getElementById("searchResultsDropdown");
+      const searchStatus = document.getElementById("searchStatus");
+      let searchProductsCache = {};
+
+      searchInput.addEventListener("input", e => {
+        clearTimeout(searchDebounceTimer);
+        searchDebounceTimer = setTimeout(() => doProductSearch(e.target.value), 300);
+      });
+
+      document.getElementById("productSearchBtn").addEventListener("click", () => {
+        doProductSearch(searchInput.value);
+      });
+
+      searchInput.addEventListener("keydown", e => {
+        if (e.key === "Enter") { e.preventDefault(); doProductSearch(searchInput.value); }
+      });
+
+      document.addEventListener("click", e => {
+        if (!e.target.closest("#searchWrapper")) searchDropdown.style.display = "none";
+      });
+
+      async function doProductSearch(q) {
+        q = q.trim();
+        if (q.length < 2) { searchDropdown.style.display = "none"; return; }
+        searchStatus.textContent = "Searching…";
+        try {
+          const res = await fetch(`/api/products/search?q=${encodeURIComponent(q)}`);
+          const json = await res.json();
+          searchStatus.textContent = "";
+          if (json.error) { searchStatus.textContent = json.error; return; }
+          renderSearchResults(json.products || []);
+        } catch (e) {
+          searchStatus.textContent = "Search failed.";
+        }
+      }
+
+      function renderSearchResults(products) {
+        searchProductsCache = {};
+        if (!products.length) {
+          searchDropdown.innerHTML = `<div style="padding:10px;" class="muted">No products found.</div>`;
+          searchDropdown.style.display = "block";
+          return;
+        }
+        searchDropdown.innerHTML = products.map(p => {
+          searchProductsCache[p.handle] = p;
+          const img = p.imageUrl
+            ? `<img src="${escAttr(p.imageUrl)}?width=80" alt="${escAttr(p.title)}">`
+            : `<div class="sr-img-placeholder"></div>`;
+          const sizesLabel = p.availableSizes.length ? p.availableSizes.join(", ") : "No sizes";
+          return `<div class="search-result-item" data-handle="${escAttr(p.handle)}">
+            ${img}
+            <div>
+              <div style="font-weight:600;">${escHtml(p.title)}</div>
+              <div class="muted">${escHtml(p.handle)} — $${Number(p.retailPrice).toFixed(2)} retail</div>
+              <div class="muted">${escHtml(sizesLabel)}</div>
+            </div>
+          </div>`;
+        }).join("");
+        searchDropdown.style.display = "block";
+
+        searchDropdown.querySelectorAll(".search-result-item").forEach(el => {
+          el.addEventListener("click", () => {
+            const h = el.getAttribute("data-handle");
+            const prod = searchProductsCache[h];
+            if (prod) addProductRow(prod);
+            searchDropdown.style.display = "none";
+            searchInput.value = "";
+          });
+        });
+      }
+
+      // ===== Order matrix =====
+      function addProductRow(product) {
+        if (orderRows.find(r => r.handle === product.handle)) {
+          out.textContent = `"${product.title}" is already in the order.`;
+          return;
+        }
+        const defaultPct = 50;
+        const unitPrice = product.retailPrice > 0
+          ? ((product.retailPrice * defaultPct) / 100).toFixed(2)
+          : "0.00";
+        orderRows.push({
+          handle: product.handle,
+          title: product.title,
+          imageUrl: product.imageUrl,
+          retailPrice: product.retailPrice,
+          availableSizes: product.availableSizes,
+          unitPrice,
+          sizeQty: Object.fromEntries(SIZES_LIST.map(s => [s, 0]))
+        });
+        renderOrderTable();
+      }
+
+      function removeProductRow(handle) {
+        orderRows = orderRows.filter(r => r.handle !== handle);
+        renderOrderTable();
+      }
+
+      function rowTotal(row) {
+        return SIZES_LIST.reduce((s, sz) => s + (row.sizeQty[sz] || 0), 0);
+      }
+
+      function renderOrderTable() {
+        const tbody = document.getElementById("orderTableBody");
+        const emptyMsg = document.getElementById("builderEmptyMsg");
+
+        if (!orderRows.length) {
+          tbody.innerHTML = "";
+          emptyMsg.style.display = "";
+          return;
+        }
+        emptyMsg.style.display = "none";
+
+        tbody.innerHTML = orderRows.map((row, idx) => {
+          const img = row.imageUrl
+            ? `<img class="prod-img" src="${escAttr(row.imageUrl)}?width=80" alt="${escAttr(row.title)}">`
+            : `<div class="prod-img" style="background:#eee;border-radius:4px;"></div>`;
+          const retailPct = row.retailPrice > 0
+            ? Math.round((Number(row.unitPrice) / row.retailPrice) * 100)
+            : 0;
+          const sizeCells = SIZES_LIST.map(s => {
+            const avail = row.availableSizes.includes(s);
+            return `<td><input type="number" class="qty-input" min="0" step="1"
+              value="${row.sizeQty[s] || 0}" data-idx="${idx}" data-size="${s}"
+              ${avail ? "" : 'disabled title="Size not available for this product"'}
+              /></td>`;
+          }).join("");
+          return `<tr data-handle="${escAttr(row.handle)}">
+            <td>${img}</td>
+            <td class="prod-cell">
+              <div style="font-weight:600;font-size:12px;">${escHtml(row.title)}</div>
+              <div class="muted">${escHtml(row.handle)}</div>
+            </td>
+            <td><input type="text" class="price-input" value="${escAttr(row.unitPrice)}" data-idx="${idx}" style="width:72px;" /></td>
+            <td>
+              <input type="number" class="pct-input" min="0" max="999" step="1"
+                value="${retailPct}" data-idx="${idx}" style="width:46px;" />%
+            </td>
+            ${sizeCells}
+            <td class="total-cell">${rowTotal(row)}</td>
+            <td><button class="remove-row-btn" data-handle="${escAttr(row.handle)}" title="Remove">✕</button></td>
+          </tr>`;
+        }).join("");
+
+        // Wire quantity inputs
+        tbody.querySelectorAll(".qty-input").forEach(input => {
+          input.addEventListener("change", e => {
+            const idx = Number(e.target.getAttribute("data-idx"));
+            const size = e.target.getAttribute("data-size");
+            orderRows[idx].sizeQty[size] = Math.max(0, Number(e.target.value) || 0);
+            // Update total cell
+            const row = e.target.closest("tr");
+            const totalCell = row.querySelector(".total-cell");
+            if (totalCell) totalCell.textContent = rowTotal(orderRows[idx]);
+          });
+        });
+
+        // Wire price inputs
+        tbody.querySelectorAll(".price-input").forEach(input => {
+          input.addEventListener("change", e => {
+            const idx = Number(e.target.getAttribute("data-idx"));
+            const price = Math.max(0, Number(e.target.value) || 0);
+            orderRows[idx].unitPrice = price.toFixed(2);
+            e.target.value = orderRows[idx].unitPrice;
+            // Sync pct
+            const retail = orderRows[idx].retailPrice;
+            if (retail > 0) {
+              const pctInput = e.target.closest("tr").querySelector(".pct-input");
+              if (pctInput) pctInput.value = Math.round((price / retail) * 100);
+            }
+          });
+        });
+
+        // Wire % inputs
+        tbody.querySelectorAll(".pct-input").forEach(input => {
+          input.addEventListener("change", e => {
+            const idx = Number(e.target.getAttribute("data-idx"));
+            const pct = Math.max(0, Number(e.target.value) || 0);
+            const retail = orderRows[idx].retailPrice;
+            const price = retail > 0 ? ((retail * pct) / 100).toFixed(2) : "0.00";
+            orderRows[idx].unitPrice = price;
+            const priceInput = e.target.closest("tr").querySelector(".price-input");
+            if (priceInput) priceInput.value = price;
+          });
+        });
+
+        // Wire remove buttons
+        tbody.querySelectorAll(".remove-row-btn").forEach(btn => {
+          btn.addEventListener("click", e => {
+            removeProductRow(e.target.getAttribute("data-handle"));
+          });
+        });
+      }
+
+      // ===== HTML helpers =====
+      function escHtml(s) {
+        return String(s || "")
+          .replace(/&/g, "&amp;").replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+      }
+      function escAttr(s) { return escHtml(s); }
+
+      // ===== Init =====
       loadLocations().catch(e => box.textContent = e.message);
     </script>
   </body>
