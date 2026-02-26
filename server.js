@@ -15,7 +15,7 @@ app.use(express.json());
 app.use(express.static("public"));
 
 const SHOP = process.env.SHOPIFY_SHOP; // must be *.myshopify.com
-const VERSION = process.env.SHOPIFY_API_VERSION || "2025-01";
+const VERSION = process.env.SHOPIFY_API_VERSION || "2025-07";
 
 // ----------------- Email (SendGrid) -----------------
 const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
@@ -85,7 +85,7 @@ if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
 
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 const AUTO_TAGS = ["Wholesale", "Spreadsheet"];
-const DRAFT_LINE_ITEM_LIMIT = 250; // Shopify hard cap per draftOrderCreate/Update
+const DRAFT_LINE_ITEM_LIMIT = 499; // Shopify cap per draftOrderCreate/Update (raised to 499 in API 2025-07)
 
 function chunkArray(arr, size) {
   const chunks = [];
