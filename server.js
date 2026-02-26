@@ -85,6 +85,13 @@ if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
 
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 const AUTO_TAGS = ["Wholesale", "Spreadsheet"];
+const DRAFT_LINE_ITEM_LIMIT = 250; // Shopify hard cap per draftOrderCreate/Update
+
+function chunkArray(arr, size) {
+  const chunks = [];
+  for (let i = 0; i < arr.length; i += size) chunks.push(arr.slice(i, i + size));
+  return chunks;
+}
 
 // Cache product lookups across requests
 const productCache = new Map(); // handle -> productByHandle result or null
@@ -1922,89 +1929,125 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       });
     }
 
-    const draft = await draftOrderCreate({
-      lineItems: draftLineItems,
-      reserveHours: Number(reserveHours)
-    });
-
-    const order = await draftOrderComplete(draft.id);
-
-    // Wait for FOs so moves can be applied reliably
-    await waitForFulfillmentOrders(order.id);
-
-    // Small settle delay reduces Shopify race weirdness
-    await new Promise(r => setTimeout(r, 1000));
-
-    // Rebalance to match allocation plan
+    // Shopify caps draftOrderCreate at 250 line items per call.
+    // Split into batches and create one draft order per batch.
+    const lineItemChunks = chunkArray(draftLineItems, DRAFT_LINE_ITEM_LIMIT);
     const allowedLocationIds = locationIdsInOrder;
-    const rebalance = await enforceFulfillmentLocationsRebalance({
-      orderId: order.id,
-      allocationPlan,
-      allowedLocationIds,
-      drainOrderLocationIds: allowedLocationIds
-    });
-
-    // Wait for Shopify to fully settle to the desired split
-    const settled = await waitForFulfillmentSettlement({
-      orderId: order.id,
-      allocationPlan,
-      maxMs: 60_000,
-      pollMs: 1500,
-      stableChecksRequired: 2
-    });
-
-    // Now fetch FINAL order data (source of truth)
-    const { order: finalOrder, shop: finalShop } = await getOrderPackingData(order.id);
-
-    // Build FINAL Excel from Shopify fulfillmentOrders + lineItems (Option B)
-    const excelBuffer = await buildWorkbookFromFinalOrder({
-      finalOrder,
-      locationIdToName,
-      requestedSeen: report.requestedSeen || [],
-      customer,
-      notes,
-      selectedLocationIds: locationIdsInOrder || []
-    });
-
     const uploadBase = safeFilePart(baseNameNoExt(uploadFileName || "upload"));
-    const excelFilename = `${uploadBase}-fulfillment.xlsx`;
 
-    // Build FINAL packing slip PDF from the same settled order data
-    const packingHtml = buildPackingSlipHtml({ order: finalOrder, shop: finalShop });
-    const { pdfBuffer, reason: pdfReason } = await renderPdfFromHtml(packingHtml);
-    const pdfFilename = `packing-slip-${String(order.name || "order").replaceAll("#", "")}.pdf`;
+    const orderResults = []; // { draftOrderId, orderId, orderName, settled, rebalance, finalFulfillment }
+    const attachments = [];
 
-    const attachments = [
-      {
+    for (let chunkIdx = 0; chunkIdx < lineItemChunks.length; chunkIdx++) {
+      const chunk = lineItemChunks[chunkIdx];
+
+      // Build subset of allocationPlan for only the variants in this chunk
+      const chunkVariantIds = new Set(chunk.map(li => li.variantId));
+      const chunkAllocationPlan = new Map(
+        [...allocationPlan.entries()].filter(([variantId]) => chunkVariantIds.has(variantId))
+      );
+
+      const draft = await draftOrderCreate({
+        lineItems: chunk,
+        reserveHours: Number(reserveHours)
+      });
+
+      const order = await draftOrderComplete(draft.id);
+
+      // Wait for FOs so moves can be applied reliably
+      await waitForFulfillmentOrders(order.id);
+
+      // Small settle delay reduces Shopify race weirdness
+      await new Promise(r => setTimeout(r, 1000));
+
+      // Rebalance to match allocation plan for this chunk's variants
+      const rebalance = await enforceFulfillmentLocationsRebalance({
+        orderId: order.id,
+        allocationPlan: chunkAllocationPlan,
+        allowedLocationIds,
+        drainOrderLocationIds: allowedLocationIds
+      });
+
+      // Wait for Shopify to fully settle to the desired split
+      const settled = await waitForFulfillmentSettlement({
+        orderId: order.id,
+        allocationPlan: chunkAllocationPlan,
+        maxMs: 60_000,
+        pollMs: 1500,
+        stableChecksRequired: 2
+      });
+
+      // Now fetch FINAL order data (source of truth)
+      const { order: finalOrder, shop: finalShop } = await getOrderPackingData(order.id);
+
+      // Label filenames with part number when there are multiple batches
+      const partSuffix = lineItemChunks.length > 1 ? `-part${chunkIdx + 1}` : "";
+
+      // Build FINAL Excel from Shopify fulfillmentOrders + lineItems
+      const excelBuffer = await buildWorkbookFromFinalOrder({
+        finalOrder,
+        locationIdToName,
+        requestedSeen: report.requestedSeen || [],
+        customer,
+        notes,
+        selectedLocationIds: locationIdsInOrder || []
+      });
+      const excelFilename = `${uploadBase}${partSuffix}-fulfillment.xlsx`;
+
+      // Build FINAL packing slip PDF
+      const packingHtml = buildPackingSlipHtml({ order: finalOrder, shop: finalShop });
+      const { pdfBuffer, reason: pdfReason } = await renderPdfFromHtml(packingHtml);
+      const pdfFilename = `packing-slip-${String(order.name || "order").replaceAll("#", "")}${partSuffix}.pdf`;
+
+      attachments.push({
         filename: excelFilename,
         type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         contentBase64: Buffer.from(excelBuffer).toString("base64")
-      }
-    ];
+      });
 
-    if (pdfBuffer) {
-      attachments.push({
-        filename: pdfFilename,
-        type: "application/pdf",
-        contentBase64: Buffer.from(pdfBuffer).toString("base64")
+      if (pdfBuffer) {
+        attachments.push({
+          filename: pdfFilename,
+          type: "application/pdf",
+          contentBase64: Buffer.from(pdfBuffer).toString("base64")
+        });
+      } else {
+        attachments.push({
+          filename: pdfFilename.replace(/\.pdf$/i, ".html"),
+          type: "text/html",
+          contentBase64: Buffer.from(packingHtml, "utf8").toString("base64")
+        });
+        console.warn("Packing slip PDF not generated:", pdfReason);
+      }
+
+      const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
+
+      orderResults.push({
+        draftOrderId: draft.id,
+        orderId: order.id,
+        orderName: order.name,
+        settlement: settled,
+        moveLog: rebalance.moveLog,
+        blockedMoves: rebalance.blocked,
+        finalFulfillment,
+        excelFilename,
+        packingSlipFilename: pdfBuffer ? pdfFilename : pdfFilename.replace(/\.pdf$/i, ".html")
       });
-    } else {
-      attachments.push({
-        filename: pdfFilename.replace(/\.pdf$/i, ".html"),
-        type: "text/html",
-        contentBase64: Buffer.from(packingHtml, "utf8").toString("base64")
-      });
-      console.warn("Packing slip PDF not generated:", pdfReason);
     }
 
-    const finalFulfillment = await summarizeFulfillmentByLocation(order.id);
+    // Use first order's data for top-level fields (backward compat for single-batch case)
+    const firstOrder = orderResults[0];
+    const orderNames = orderResults.map(o => o.orderName).join(", ");
 
-    // Email (only after create order)
-    const subject = `Wholesale Order ${order.name} — Final XLSX + Packing Slip`;
+    // Email (only after all orders created)
+    const subject = lineItemChunks.length > 1
+      ? `Wholesale Orders ${orderNames} — Final XLSX + Packing Slips`
+      : `Wholesale Order ${firstOrder.orderName} — Final XLSX + Packing Slip`;
     const text =
-      `Order: ${order.name}\n` +
+      `Order(s): ${orderNames}\n` +
       `Run ID: ${runId}\n` +
-      `Settlement: ${settled.ok ? "OK" : "Timed out"} (waited ${Math.round(settled.waitedMs / 1000)}s)\n\n` +
+      (lineItemChunks.length > 1 ? `Batches: ${lineItemChunks.length} (>${DRAFT_LINE_ITEM_LIMIT} line items split automatically)\n` : "") +
+      `Settlement: ${firstOrder.settlement.ok ? "OK" : "Timed out"} (waited ${Math.round(firstOrder.settlement.waitedMs / 1000)}s)\n\n` +
       `Requested Units: ${report.requestedUnits}\n` +
       `Fulfillable Units: ${report.allocatedUnits}\n` +
       `Dropped Units: ${report.droppedUnits}\n\n` +
@@ -2023,19 +2066,22 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       ok: true,
       tags: AUTO_TAGS,
       runId,
-      draftOrderId: draft.id,
-      orderId: order.id,
-      orderName: order.name,
-      settlement: settled,
-      moveLog: rebalance.moveLog,
-      blockedMoves: rebalance.blocked,
+      // Top-level fields reflect the first order for backward compatibility
+      draftOrderId: firstOrder.draftOrderId,
+      orderId: firstOrder.orderId,
+      orderName: firstOrder.orderName,
+      settlement: firstOrder.settlement,
+      moveLog: firstOrder.moveLog,
+      blockedMoves: firstOrder.blockedMoves,
       report,
-      finalFulfillment,
+      finalFulfillment: firstOrder.finalFulfillment,
       customer,
       notes,
       emailStatus,
-      excelFilename,
-      packingSlipFilename: pdfBuffer ? pdfFilename : pdfFilename.replace(/\.pdf$/i, ".html")
+      excelFilename: firstOrder.excelFilename,
+      packingSlipFilename: firstOrder.packingSlipFilename,
+      // Full multi-order details when batched
+      orders: orderResults.length > 1 ? orderResults : undefined
     });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
