@@ -1528,30 +1528,39 @@ function buildPackingSlipHtml({ order, shop }) {
 `;
 }
 
-async function renderPdfFromHtml(html) {
-  let puppeteerCore = null;
-  let chromium = null;
-
+// Launch a Chromium browser for PDF rendering.
+// Returns the browser instance or null if unavailable.
+async function launchPdfBrowser() {
   try {
-    puppeteerCore = await import("puppeteer-core");
-    chromium = await import("@sparticuz/chromium");
+    const puppeteerCore = await import("puppeteer-core");
+    const chromium = await import("@sparticuz/chromium");
+    return await puppeteerCore.default.launch({
+      args: chromium.default.args,
+      executablePath: await chromium.default.executablePath(),
+      headless: chromium.default.headless
+    });
   } catch {
-    puppeteerCore = null;
-    chromium = null;
+    return null;
+  }
+}
+
+// Render an HTML string to a PDF buffer.
+// Pass an existing `browser` to reuse it across multiple calls (caller is responsible for closing).
+// If `browser` is omitted, a new one is launched and closed automatically.
+async function renderPdfFromHtml(html, browser = null) {
+  const ownBrowser = !browser;
+
+  if (ownBrowser) {
+    browser = await launchPdfBrowser();
   }
 
-  if (!puppeteerCore || !chromium) {
+  if (!browser) {
     return { pdfBuffer: null, reason: "Missing puppeteer-core and/or @sparticuz/chromium" };
   }
 
-  const browser = await puppeteerCore.default.launch({
-    args: chromium.default.args,
-    executablePath: await chromium.default.executablePath(),
-    headless: chromium.default.headless
-  });
-
+  let page = null;
   try {
-    const page = await browser.newPage();
+    page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
 
     const pdfBuffer = await page.pdf({
@@ -1562,7 +1571,8 @@ async function renderPdfFromHtml(html) {
 
     return { pdfBuffer: Buffer.from(pdfBuffer), reason: null };
   } finally {
-    await browser.close();
+    if (page) try { await page.close(); } catch {}
+    if (ownBrowser) try { await browser.close(); } catch {}
   }
 }
 
@@ -1938,6 +1948,10 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
     const orderResults = []; // { draftOrderId, orderId, orderName, settled, rebalance, finalFulfillment }
     const attachments = [];
 
+    // Launch Chromium once and reuse across all batches to avoid OOM from multiple browser instances.
+    const pdfBrowser = await launchPdfBrowser();
+    try {
+
     for (let chunkIdx = 0; chunkIdx < lineItemChunks.length; chunkIdx++) {
       const chunk = lineItemChunks[chunkIdx];
 
@@ -1996,7 +2010,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
 
       // Build FINAL packing slip PDF
       const packingHtml = buildPackingSlipHtml({ order: finalOrder, shop: finalShop });
-      const { pdfBuffer, reason: pdfReason } = await renderPdfFromHtml(packingHtml);
+      const { pdfBuffer, reason: pdfReason } = await renderPdfFromHtml(packingHtml, pdfBrowser);
       const pdfFilename = `packing-slip-${String(order.name || "order").replaceAll("#", "")}${partSuffix}.pdf`;
 
       attachments.push({
@@ -2033,6 +2047,10 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
         excelFilename,
         packingSlipFilename: pdfBuffer ? pdfFilename : pdfFilename.replace(/\.pdf$/i, ".html")
       });
+    }
+
+    } finally {
+      if (pdfBrowser) try { await pdfBrowser.close(); } catch {}
     }
 
     // Use first order's data for top-level fields (backward compat for single-batch case)
