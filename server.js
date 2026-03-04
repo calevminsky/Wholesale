@@ -1687,8 +1687,24 @@ app.get("/api/report.xlsx", async (req, res) => {
     }
 
     let buf;
-    if (run.metaByHandle && run.availabilitySeen) {
-      // Full multi-tab preview report
+    if (run.orderIds && run.orderIds.length > 0) {
+      // Order was created — fetch actual Shopify fulfillment data (source of truth)
+      const parts = [];
+      for (const orderId of run.orderIds) {
+        const { order: finalOrder } = await getOrderPackingData(orderId);
+        parts.push(await buildWorkbookFromFinalOrder({
+          finalOrder,
+          locationIdToName: run.locationIdToName,
+          requestedSeen: run.requestedSeen || [],
+          customer: run.customer || "",
+          notes: run.notes || "",
+          selectedLocationIds: run.selectedLocationIds || run.locationIdsInOrder || []
+        }));
+      }
+      // If single order, use its buffer directly; multi-order not expected for download
+      buf = parts[0];
+    } else if (run.metaByHandle && run.availabilitySeen) {
+      // Preview only (no order created yet) — use allocation plan
       buf = await buildWorkbookFromPreviewData({
         requestedSeen: run.requestedSeen,
         availabilitySeen: run.availabilitySeen,
@@ -1721,7 +1737,8 @@ app.get("/api/report.xlsx", async (req, res) => {
     }
 
     const base = safeFilePart(baseNameNoExt(run.uploadFileName || "upload"));
-    const outName = `${base}-preview-report.xlsx`;
+    const suffix = run.orderIds && run.orderIds.length > 0 ? "fulfillment-report" : "preview-report";
+    const outName = `${base}-${suffix}.xlsx`;
 
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="${outName}"`);
@@ -2056,6 +2073,13 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
     // Use first order's data for top-level fields (backward compat for single-batch case)
     const firstOrder = orderResults[0];
     const orderNames = orderResults.map(o => o.orderName).join(", ");
+
+    // Save order IDs back to the run so the download endpoint can fetch final Shopify data
+    const savedRun = getRun(runId);
+    if (savedRun) {
+      savedRun.orderIds = orderResults.map(o => o.orderId);
+      savedRun.selectedLocationIds = locationIdsInOrder || [];
+    }
 
     // Email (only after all orders created)
     const subject = lineItemChunks.length > 1
