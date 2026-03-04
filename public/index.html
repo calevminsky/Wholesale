@@ -137,7 +137,6 @@
 
     <div class="row">
       <button id="previewBtn">Preview Only</button>
-      <button id="availabilityBtn" style="background:#e0ffe0; border-color:#090;">Check Availability</button>
       <button id="downloadReportBtn" disabled>Download Full Report</button>
       <button id="printPreviewBtn" disabled>Print Preview Report</button>
       <button id="runBtn" class="primary">Create Order</button>
@@ -154,7 +153,6 @@
 
       let locations = [];
       let lastRunId = null;
-      let lastRunMode = null; // "preview" | "availability-check" | "import"
       let inputMode = "upload"; // "upload" | "builder"
       let orderRows = [];       // [{ handle, title, imageUrl, retailPrice, availableSizes, unitPrice, sizeQty }]
 
@@ -293,30 +291,7 @@
 
       // ===== Summary =====
       function showSummary(json) {
-        if (!json) { summaryBox.style.display="none"; return; }
-
-        // Availability check mode
-        if (json.mode === "availability-check") {
-          summaryBox.style.display = "block";
-          const req = json.totalRequested ?? 0;
-          const avail = json.totalAvailable ?? 0;
-          const short = json.totalShort ?? 0;
-
-          summaryBox.innerHTML = `
-            <div class="row">
-              <span class="pill">Requested: ${req}</span>
-              <span class="pill" style="background:#e0ffe0;">Fulfillable: ${avail}</span>
-              ${short > 0 ? `<span class="pill" style="background:#ffe0e0;color:#b00;">Short: ${short}</span>` : `<span class="pill">Short: 0</span>`}
-              <span class="pill">Mode: Availability Check</span>
-              ${json.runId ? `<span class="pill">Run ID: ${json.runId}</span>` : ""}
-            </div>
-            ${json.missingHandles?.length ? `<div class="muted" style="margin-top:8px; color:#c00;">Missing handles: ${json.missingHandles.join(", ")}</div>` : ""}
-            <div class="muted" style="margin-top:10px;">No order created. Download the report or print preview to see availability per location.</div>
-          `;
-          return;
-        }
-
-        if (!json.report) { summaryBox.style.display="none"; return; }
+        if (!json || !json.report) { summaryBox.style.display="none"; return; }
         summaryBox.style.display = "block";
 
         const r = json.report;
@@ -365,7 +340,6 @@
           const json = await res.json();
           out.textContent = JSON.stringify(json, null, 2);
           lastRunId = json.runId || null;
-          lastRunMode = json.mode || null;
           setPostRunButtons(!!lastRunId);
           showSummary(json);
         } catch (e) {
@@ -374,7 +348,6 @@
       }
 
       document.getElementById("previewBtn").addEventListener("click", () => postJson("/api/preview"));
-      document.getElementById("availabilityBtn").addEventListener("click", () => postJson("/api/availability-check"));
       document.getElementById("runBtn").addEventListener("click", () => postJson("/api/import"));
 
       document.getElementById("downloadReportBtn").addEventListener("click", () => {
@@ -383,11 +356,8 @@
       });
 
       document.getElementById("printPreviewBtn").addEventListener("click", () => {
-        if (!lastRunId) { out.textContent = "Run Preview or Availability Check first, then Print."; return; }
-        const printUrl = lastRunMode === "availability-check"
-          ? `/api/availability-print?runId=${encodeURIComponent(lastRunId)}`
-          : `/api/preview-print?runId=${encodeURIComponent(lastRunId)}`;
-        window.open(printUrl, "_blank");
+        if (!lastRunId) { out.textContent = "Run Preview first, then Print."; return; }
+        window.open(`/api/preview-print?runId=${encodeURIComponent(lastRunId)}`, "_blank");
       });
 
       // ===== Product search =====
