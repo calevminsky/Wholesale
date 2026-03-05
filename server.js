@@ -749,38 +749,6 @@ function makeHandleSizeMapEmpty() {
   return m;
 }
 
-// cache images so the workbook is faster
-const imageCache = new Map(); // url -> { buffer, extension } or null
-
-function guessImageExt(url) {
-  const u = String(url || "").toLowerCase();
-  if (u.includes(".png")) return "png";
-  if (u.includes(".webp")) return "webp";
-  return "jpeg";
-}
-
-async function fetchImageBuffer(url) {
-  const key = String(url || "").trim();
-  if (!key) return null;
-  if (imageCache.has(key)) return imageCache.get(key);
-
-  try {
-    const res = await fetch(key, { redirect: "follow" });
-    if (!res.ok) {
-      imageCache.set(key, null);
-      return null;
-    }
-    const ab = await res.arrayBuffer();
-    const buffer = Buffer.from(ab);
-    const extension = guessImageExt(key);
-    const out = { buffer, extension };
-    imageCache.set(key, out);
-    return out;
-  } catch {
-    imageCache.set(key, null);
-    return null;
-  }
-}
 
 function applyPrintSetup(ws) {
   ws.pageSetup = {
@@ -889,23 +857,9 @@ async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, metaByHandle }
     ws.getRow(rowIndex).height = 64; // better for image proportions
     ws.getRow(rowIndex).alignment = { vertical: "middle" };
 
-    // Place image anchored to the cell bounds (best ExcelJS can do)
+    // Use =IMAGE() formula so Excel loads the image from the URL directly
     if (imageUrl) {
-      const img = await fetchImageBuffer(imageUrl);
-      if (img?.buffer?.length) {
-        const imageId = wb.addImage({ buffer: img.buffer, extension: img.extension });
-
-        // Column C is 3 -> 0-based col=2
-        // Use ext to keep proportions inside that cell
-        ws.addImage(imageId, {
-          tl: { col: 2, row: rowIndex - 1 },
-          ext: { width: 90, height: 90 },
-          editAs: "oneCell"
-        });
-      } else {
-        ws.getCell(rowIndex, 3).value = imageUrl;
-        ws.getCell(rowIndex, 3).font = { color: { argb: "FF0000FF" }, underline: true };
-      }
+      ws.getCell(rowIndex, 3).value = { formula: `IMAGE("${imageUrl}")` };
     }
 
     rowIndex += 1;
