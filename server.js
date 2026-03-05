@@ -859,7 +859,7 @@ async function addHandleRowsWithImages({ wb, ws, handleToSizeMap, metaByHandle }
 
     // Use =IMAGE() formula so Excel loads the image from the URL directly
     if (imageUrl) {
-      ws.getCell(rowIndex, 3).value = { formula: `IMAGE("${imageUrl}")` };
+      ws.getCell(rowIndex, 3).value = { formula: `_xlfn.IMAGE("${imageUrl}")` };
     }
 
     rowIndex += 1;
