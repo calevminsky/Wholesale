@@ -766,6 +766,54 @@
         }
       });
 
+      // Copy handler — copies selected cells as tab-separated text
+      document.addEventListener("copy", e => {
+        if (selectedCells.size === 0) return;
+        const tag = document.activeElement?.tagName;
+        if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT") {
+          if (!document.activeElement.classList.contains("cell-edit")) return;
+        }
+
+        e.preventDefault();
+        commitEdit();
+
+        // Gather all selected cell positions and sort by row then column
+        const positions = [];
+        for (const key of selectedCells) {
+          const [idx, si] = key.split(":").map(Number);
+          positions.push({ idx, si, key });
+        }
+        positions.sort((a, b) => a.idx - b.idx || a.si - b.si);
+
+        // Group by row and build tab-separated lines
+        const rowMap = new Map();
+        for (const p of positions) {
+          if (!rowMap.has(p.idx)) rowMap.set(p.idx, []);
+          rowMap.get(p.idx).push(p);
+        }
+
+        const lines = [];
+        for (const [, cells] of rowMap) {
+          // Fill gaps between columns with empty strings for proper tab alignment
+          const minSi = cells[0].si;
+          const maxSi = cells[cells.length - 1].si;
+          const vals = [];
+          let ci = 0;
+          for (let si = minSi; si <= maxSi; si++) {
+            if (ci < cells.length && cells[ci].si === si) {
+              const cell = getCellAt(cells[ci].idx, cells[ci].si);
+              vals.push(cell ? (cell.querySelector(".cell-value")?.textContent || "0") : "0");
+              ci++;
+            } else {
+              vals.push("");
+            }
+          }
+          lines.push(vals.join("\t"));
+        }
+
+        e.clipboardData.setData("text/plain", lines.join("\n"));
+      });
+
       // Paste handler — supports pasting a grid from a spreadsheet
       document.addEventListener("paste", e => {
         if (selectedCells.size === 0 || !anchorCell) return;
