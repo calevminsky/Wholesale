@@ -315,33 +315,37 @@ async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsIn
 }
 
 // Activate inventory items at a location (required before adjusting quantities there)
+// Shopify's inventoryBulkToggleActivation takes ONE inventoryItemId and multiple location updates
 async function activateInventoryAtLocation(inventoryItemIds, locationId) {
-  // Shopify allows up to 100 items per call
-  const BATCH = 100;
-  for (let i = 0; i < inventoryItemIds.length; i += BATCH) {
-    const batch = inventoryItemIds.slice(i, i + BATCH);
-    const mutation = `
-      mutation ActivateInventory($inventoryItemUpdates: [InventoryBulkToggleActivationInput!]!, $locationId: ID!) {
-        inventoryBulkToggleActivation(
-          inventoryItemUpdates: $inventoryItemUpdates
-          locationId: $locationId
-        ) {
-          userErrors { field message code }
-          inventoryLevels { id }
-        }
+  const mutation = `
+    mutation ActivateInventory($inventoryItemId: ID!, $inventoryItemUpdates: [InventoryBulkToggleActivationInput!]!) {
+      inventoryBulkToggleActivation(
+        inventoryItemId: $inventoryItemId
+        inventoryItemUpdates: $inventoryItemUpdates
+      ) {
+        userErrors { field message code }
+        inventoryLevels { id }
       }
-    `;
-    const inventoryItemUpdates = batch.map(id => ({ inventoryItemId: id, activate: true }));
-    console.log(`inventoryBulkToggleActivation batch ${i / BATCH + 1}: ${batch.length} items at location ${locationId}`);
-    const data = await shopifyGraphQL(mutation, { inventoryItemUpdates, locationId });
-    const result = data.inventoryBulkToggleActivation;
-    const activated = result?.inventoryLevels?.length || 0;
-    const errs = (result?.userErrors || [])
-      .filter(e => e.code !== "ALREADY_ACTIVE");
-    console.log(`  activated: ${activated}, errors (non-ALREADY_ACTIVE): ${errs.length}`);
-    if (errs.length) {
-      console.error("inventoryBulkToggleActivation errors:", JSON.stringify(errs));
-      throw new Error(`inventoryBulkToggleActivation errors: ${JSON.stringify(errs)}`);
+    }
+  `;
+  const inventoryItemUpdates = [{ locationId, activate: true }];
+  const CONCURRENCY = 4;
+  for (let i = 0; i < inventoryItemIds.length; i += CONCURRENCY) {
+    const batch = inventoryItemIds.slice(i, i + CONCURRENCY);
+    console.log(`inventoryBulkToggleActivation ${i + 1}-${i + batch.length} of ${inventoryItemIds.length}`);
+    const results = await Promise.all(batch.map(async (inventoryItemId) => {
+      const data = await shopifyGraphQL(mutation, { inventoryItemId, inventoryItemUpdates });
+      const result = data.inventoryBulkToggleActivation;
+      const errs = (result?.userErrors || [])
+        .filter(e => e.code !== "ALREADY_ACTIVE");
+      if (errs.length) {
+        console.error(`inventoryBulkToggleActivation error for ${inventoryItemId}:`, JSON.stringify(errs));
+      }
+      return { inventoryItemId, errs, activated: result?.inventoryLevels?.length || 0 };
+    }));
+    const failures = results.filter(r => r.errs.length > 0);
+    if (failures.length) {
+      console.error("inventoryBulkToggleActivation failures:", JSON.stringify(failures));
     }
   }
 }
