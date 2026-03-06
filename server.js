@@ -332,11 +332,16 @@ async function activateInventoryAtLocation(inventoryItemIds, locationId) {
       }
     `;
     const inventoryItemUpdates = batch.map(id => ({ inventoryItemId: id, activate: true }));
+    console.log(`inventoryBulkToggleActivation batch ${i / BATCH + 1}: ${batch.length} items at location ${locationId}`);
     const data = await shopifyGraphQL(mutation, { inventoryItemUpdates, locationId });
-    const errs = (data.inventoryBulkToggleActivation.userErrors || [])
-      .filter(e => e.code !== "ALREADY_ACTIVE"); // ignore already-active
+    const result = data.inventoryBulkToggleActivation;
+    const activated = result?.inventoryLevels?.length || 0;
+    const errs = (result?.userErrors || [])
+      .filter(e => e.code !== "ALREADY_ACTIVE");
+    console.log(`  activated: ${activated}, errors (non-ALREADY_ACTIVE): ${errs.length}`);
     if (errs.length) {
-      console.warn("inventoryBulkToggleActivation warnings:", JSON.stringify(errs));
+      console.error("inventoryBulkToggleActivation errors:", JSON.stringify(errs));
+      throw new Error(`inventoryBulkToggleActivation errors: ${JSON.stringify(errs)}`);
     }
   }
 }
@@ -2283,11 +2288,9 @@ app.post("/api/transfer", upload.single("file"), async (req, res) => {
     const allInventoryItemIds = [...new Set(
       [...allocationPlan.values()].map(p => p.inventoryItemId)
     )];
-    try {
-      await activateInventoryAtLocation(allInventoryItemIds, destinationLocationId);
-    } catch (e) {
-      console.warn("activateInventoryAtLocation warning:", e?.message || e);
-    }
+    console.log(`Activating ${allInventoryItemIds.length} inventory items at destination ${destinationLocationId} (${destName})`);
+    await activateInventoryAtLocation(allInventoryItemIds, destinationLocationId);
+    console.log("Activation complete, proceeding with transfers");
 
     // Execute inventory adjustments: for each allocated variant, decrement source + increment destination
     const transferLog = [];
