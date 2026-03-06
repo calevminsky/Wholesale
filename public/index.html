@@ -138,14 +138,26 @@
       </div>
     </div>
 
-    <h2>Pick locations and set drain order</h2>
+    <h2>Pick source locations and set drain order</h2>
     <div class="box" id="locationsBox">Loading locations…</div>
+
+    <h2>Transfer destination <span style="font-size:14px;font-weight:normal;color:#666;">(only needed for transfers)</span></h2>
+    <div class="box" id="destinationBox">
+      <div class="row">
+        <label><b>Transfer to:</b></label>
+        <select id="destinationSelect" style="padding:6px;min-width:240px;border-radius:6px;border:1px solid #ccc;">
+          <option value="">— Select destination —</option>
+        </select>
+        <small class="muted">Where inventory will be moved to</small>
+      </div>
+    </div>
 
     <div class="row">
       <button id="previewBtn">Preview Only</button>
       <button id="downloadReportBtn" disabled>Download Full Report</button>
       <button id="printPreviewBtn" disabled>Print Preview Report</button>
       <button id="runBtn" class="primary">Create Order</button>
+      <button id="transferBtn" style="background:#2563eb;color:#fff;border-color:#1d4ed8;">Transfer Inventory</button>
     </div>
 
     <h2>Quick summary</h2>
@@ -259,6 +271,16 @@
 
         locations = [...selected, ...rest];
         renderLocations();
+
+        // Populate destination dropdown
+        const destSelect = document.getElementById("destinationSelect");
+        destSelect.innerHTML = '<option value="">— Select destination —</option>';
+        for (const loc of json.locations) {
+          const opt = document.createElement("option");
+          opt.value = loc.id;
+          opt.textContent = loc.name;
+          destSelect.appendChild(opt);
+        }
       }
 
       // ===== Form data (mode-aware) =====
@@ -355,6 +377,70 @@
 
       document.getElementById("previewBtn").addEventListener("click", () => postJson("/api/preview"));
       document.getElementById("runBtn").addEventListener("click", () => postJson("/api/import"));
+      document.getElementById("transferBtn").addEventListener("click", () => {
+        const destId = document.getElementById("destinationSelect").value;
+        if (!destId) {
+          out.textContent = "Select a destination location for the transfer.";
+          return;
+        }
+        postTransfer();
+      });
+
+      async function postTransfer() {
+        out.textContent = "Transferring inventory…";
+        summaryBox.style.display = "none";
+
+        try {
+          const form = getFormData();
+          form.append("destinationLocationId", document.getElementById("destinationSelect").value);
+          const res = await fetch("/api/transfer", { method: "POST", body: form });
+          const json = await res.json();
+          out.textContent = JSON.stringify(json, null, 2);
+          lastRunId = json.runId || null;
+          setPostRunButtons(!!lastRunId);
+          showTransferSummary(json);
+        } catch (e) {
+          out.textContent = String(e.message || e);
+        }
+      }
+
+      function showTransferSummary(json) {
+        if (!json || !json.report) { summaryBox.style.display="none"; return; }
+        summaryBox.style.display = "block";
+
+        const r = json.report;
+        const dest = json.destinationLocation?.name || "?";
+        const sources = (json.sourceLocations || []).map(l => l.name).join(" → ");
+
+        summaryBox.innerHTML = `
+          <div class="row">
+            <span class="pill">Requested: ${r.requestedUnits ?? 0}</span>
+            <span class="pill" style="background:#dbeafe;">Transferred: ${json.transferredUnits ?? 0}</span>
+            ${json.failedUnits > 0 ? `<span class="pill" style="background:#fee2e2;color:#b00;">Failed: ${json.failedUnits}</span>` : ""}
+            <span class="pill">Dropped: ${r.droppedUnits ?? 0}</span>
+            <span class="pill">Mode: transfer</span>
+          </div>
+          <div style="margin-top:10px;">
+            <b>Source (drain order):</b> ${sources || "(none)"}<br>
+            <b>Destination:</b> ${dest}
+          </div>
+          ${json.transferLog?.length ? `
+            <div style="margin-top:10px"><b>Transfer details</b></div>
+            <table style="margin-top:6px">
+              <tr><th>From</th><th>To</th><th>Units</th></tr>
+              ${Object.entries(json.transferLog.reduce((acc, t) => {
+                const key = t.fromLocationName;
+                acc[key] = (acc[key] || 0) + t.qty;
+                return acc;
+              }, {})).map(([k,v]) => `<tr><td>${k}</td><td>${dest}</td><td>${v}</td></tr>`).join("")}
+            </table>
+          ` : ""}
+          ${json.transferErrors?.length ? `
+            <div style="margin-top:10px;color:#c00;"><b>Errors</b></div>
+            <pre style="font-size:11px;max-height:160px;">${JSON.stringify(json.transferErrors, null, 2)}</pre>
+          ` : ""}
+        `;
+      }
 
       document.getElementById("downloadReportBtn").addEventListener("click", () => {
         if (!lastRunId) { out.textContent = "Run Preview first, then Download Report."; return; }

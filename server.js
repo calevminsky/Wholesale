@@ -314,6 +314,38 @@ async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsIn
   return { allocations, dropped: remaining };
 }
 
+// Adjust inventory quantities (used for transfers between locations)
+async function inventoryAdjustQuantities({ changes, reason = "movement_created" }) {
+  const mutation = `
+    mutation AdjustQty($input: InventoryAdjustQuantitiesInput!) {
+      inventoryAdjustQuantities(input: $input) {
+        userErrors { field message }
+        inventoryAdjustmentGroup {
+          reason
+          changes {
+            name
+            delta
+            quantityAfterChange
+            item { id }
+            location { id name }
+          }
+        }
+      }
+    }
+  `;
+
+  const input = {
+    name: "available",
+    reason,
+    changes // [{ inventoryItemId, locationId, delta }]
+  };
+
+  const data = await shopifyGraphQL(mutation, { input });
+  const errs = data.inventoryAdjustQuantities.userErrors || [];
+  if (errs.length) throw new Error(`inventoryAdjustQuantities errors: ${JSON.stringify(errs, null, 2)}`);
+  return data.inventoryAdjustQuantities.inventoryAdjustmentGroup;
+}
+
 // Draft create with Wholesale tag + priceOverride + optional reserveInventoryUntil
 async function draftOrderCreate({ lineItems, reserveHours }) {
   const reserveUntilIso =
@@ -1111,6 +1143,88 @@ async function buildWorkbookFromPreviewData({
   return Buffer.from(bufPrev);
 }
 
+// Build a multi-tab workbook for a transfer (from allocation data, no Shopify order)
+async function buildWorkbookFromTransferData({
+  requestedSeen,
+  availabilitySeen,
+  metaByHandle,
+  locationIdToName,
+  locationIdsInOrder,
+  destinationLocationId,
+  customer,
+  notes
+}) {
+  const destName = locationIdToName[destinationLocationId] || destinationLocationId;
+
+  // Build requestedHandleMap
+  const requestedHandleMap = new Map();
+  for (const entry of requestedSeen || []) {
+    const { handle, size, requestedQty } = entry;
+    if (!handle || !size) continue;
+    if (!requestedHandleMap.has(handle)) requestedHandleMap.set(handle, makeHandleSizeMapEmpty());
+    requestedHandleMap.get(handle).set(size,
+      (requestedHandleMap.get(handle).get(size) || 0) + Number(requestedQty || 0)
+    );
+  }
+
+  // Build totalHandleMap (what's being transferred) and per-source-location maps
+  const totalHandleMap = new Map();
+  const locMap = new Map(); // sourceLocId -> Map(handle -> Map(size -> qty))
+
+  for (const entry of availabilitySeen || []) {
+    const { handle, size, allocations } = entry;
+    if (!handle || !size || !allocations?.length) continue;
+    for (const { locationId, qty } of allocations) {
+      if (!qty || qty <= 0) continue;
+      addQtyToMap(totalHandleMap, handle, size, qty);
+      if (!locMap.has(locationId)) locMap.set(locationId, new Map());
+      addQtyToMap(locMap.get(locationId), handle, size, qty);
+    }
+  }
+
+  const wb = new ExcelJS.Workbook();
+  wb.creator = "Wholesale Importer (Transfer)";
+  wb.created = new Date();
+
+  const fullMeta = Object.assign({}, metaByHandle || {});
+  for (const h of requestedHandleMap.keys()) {
+    if (!fullMeta[h]) fullMeta[h] = { title: "", imageUrl: "" };
+  }
+
+  async function addSheet(sheetName, locationLabel, map) {
+    const ws = wb.addWorksheet(safeSheetName(sheetName));
+    writeSheetTop(ws, sheetName, locationLabel, customer || "", notes || "");
+    writeTableHeader(ws);
+    styleSheet(ws);
+    if (!map || map.size === 0) {
+      ws.getRow(7).values = ["(No units)", "", "", ...SIZES.map(() => 0), 0];
+      ws.getRow(7).height = 18;
+      return;
+    }
+    await addHandleRowsWithImages({ wb, ws, handleToSizeMap: map, metaByHandle: fullMeta });
+  }
+
+  // Requested tab
+  await addSheet("Requested", "ALL REQUESTED", requestedHandleMap);
+
+  // Total transferred tab
+  await addSheet(`Transfer to ${destName}`, `TRANSFERRED → ${destName}`, totalHandleMap);
+
+  // Per-source-location tabs (showing what was pulled from each)
+  const locIds = Array.isArray(locationIdsInOrder) && locationIdsInOrder.length
+    ? locationIdsInOrder
+    : Array.from(locMap.keys());
+
+  for (const locId of locIds) {
+    const locName = locationIdToName[locId] || locId;
+    const handleMap = locMap.get(locId) || new Map();
+    await addSheet(`From ${locName}`, `Pulled from ${locName} → ${destName}`, handleMap);
+  }
+
+  const buf = await wb.xlsx.writeBuffer();
+  return Buffer.from(buf);
+}
+
 // ----------------- Shared allocator used by Preview / Import -----------------
 async function runAllocationOnly(req) {
   const { locationIdsJson } = req.body;
@@ -1641,7 +1755,10 @@ app.get("/api/report.xlsx", async (req, res) => {
     }
 
     let buf;
-    if (run.orderIds && run.orderIds.length > 0) {
+    if (run.transferMode && run.transferExcel) {
+      // Transfer run — use pre-built transfer workbook
+      buf = run.transferExcel;
+    } else if (run.orderIds && run.orderIds.length > 0) {
       // Order was created — fetch actual Shopify fulfillment data (source of truth)
       const parts = [];
       for (const orderId of run.orderIds) {
@@ -1691,7 +1808,7 @@ app.get("/api/report.xlsx", async (req, res) => {
     }
 
     const base = safeFilePart(baseNameNoExt(run.uploadFileName || "upload"));
-    const suffix = run.orderIds && run.orderIds.length > 0 ? "fulfillment-report" : "preview-report";
+    const suffix = run.transferMode ? "transfer-report" : run.orderIds && run.orderIds.length > 0 ? "fulfillment-report" : "preview-report";
     const outName = `${base}-${suffix}.xlsx`;
 
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
@@ -2078,6 +2195,167 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       packingSlipFilename: firstOrder.packingSlipFilename,
       // Full multi-order details when batched
       orders: orderResults.length > 1 ? orderResults : undefined
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// Transfer inventory between locations (no order created)
+app.post("/api/transfer", upload.single("file"), async (req, res) => {
+  try {
+    const destinationLocationId = String(req.body.destinationLocationId || "").trim();
+    if (!destinationLocationId) {
+      return res.status(400).json({ error: "Select a destination location for the transfer." });
+    }
+
+    // Run allocation using the same drain logic (source locations)
+    const result = await runAllocationOnly(req);
+    const {
+      report,
+      allocationPlan,
+      locationIdToName,
+      locationIdsInOrder,
+      customer,
+      notes,
+      uploadFileName,
+      metaByHandle
+    } = result;
+
+    if (report.allocatedUnits === 0) {
+      const runId = saveRun({
+        locationIdToName,
+        requestedSeen: report.requestedSeen,
+        availabilitySeen: report.availabilitySeen,
+        metaByHandle,
+        locationIdsInOrder,
+        customer,
+        notes,
+        uploadFileName,
+        transferMode: true,
+        destinationLocationId
+      });
+      return res.status(400).json({
+        error: "Nothing available to transfer from selected source locations.",
+        runId,
+        report
+      });
+    }
+
+    const destName = locationIdToName[destinationLocationId] || destinationLocationId;
+
+    // Execute inventory adjustments: for each allocated variant, decrement source + increment destination
+    const transferLog = [];
+    const transferErrors = [];
+
+    for (const [variantId, plan] of allocationPlan.entries()) {
+      const inventoryItemId = plan.inventoryItemId;
+
+      for (const alloc of plan.allocations) {
+        if (alloc.qty <= 0) continue;
+
+        const changes = [
+          { inventoryItemId, locationId: alloc.locationId, delta: -alloc.qty },
+          { inventoryItemId, locationId: destinationLocationId, delta: alloc.qty }
+        ];
+
+        try {
+          const adjustResult = await inventoryAdjustQuantities({ changes });
+          transferLog.push({
+            variantId,
+            inventoryItemId,
+            fromLocationId: alloc.locationId,
+            fromLocationName: locationIdToName[alloc.locationId] || alloc.locationId,
+            toLocationId: destinationLocationId,
+            toLocationName: destName,
+            qty: alloc.qty,
+            ok: true
+          });
+        } catch (e) {
+          transferErrors.push({
+            variantId,
+            inventoryItemId,
+            fromLocationId: alloc.locationId,
+            fromLocationName: locationIdToName[alloc.locationId] || alloc.locationId,
+            toLocationId: destinationLocationId,
+            toLocationName: destName,
+            qty: alloc.qty,
+            error: String(e?.message || e)
+          });
+        }
+      }
+    }
+
+    const transferredUnits = transferLog.reduce((s, t) => s + t.qty, 0);
+    const failedUnits = transferErrors.reduce((s, t) => s + t.qty, 0);
+
+    // Build transfer report workbook
+    const transferExcel = await buildWorkbookFromTransferData({
+      requestedSeen: report.requestedSeen,
+      availabilitySeen: report.availabilitySeen,
+      metaByHandle,
+      locationIdToName,
+      locationIdsInOrder,
+      destinationLocationId,
+      customer,
+      notes
+    });
+
+    const runId = saveRun({
+      locationIdToName,
+      requestedSeen: report.requestedSeen,
+      availabilitySeen: report.availabilitySeen,
+      metaByHandle,
+      locationIdsInOrder,
+      customer,
+      notes,
+      uploadFileName,
+      transferMode: true,
+      destinationLocationId,
+      transferExcel
+    });
+
+    // Email the transfer report
+    const sourceNames = locationIdsInOrder.map(id => locationIdToName[id] || id).join(" + ");
+    const subject = `Inventory Transfer: ${sourceNames} → ${destName}`;
+    const text =
+      `Transfer Report\n` +
+      `Source locations (drain order): ${sourceNames}\n` +
+      `Destination: ${destName}\n\n` +
+      `Requested Units: ${report.requestedUnits}\n` +
+      `Transferred Units: ${transferredUnits}\n` +
+      `Failed Units: ${failedUnits}\n` +
+      `Dropped Units: ${report.droppedUnits}\n\n` +
+      `Customer: ${customer || "(none)"}\n` +
+      `Notes: ${notes || "(none)"}\n`;
+
+    let emailStatus = null;
+    try {
+      const attachments = [{
+        filename: `transfer-report-${safeFilePart(destName)}.xlsx`,
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        contentBase64: Buffer.from(transferExcel).toString("base64")
+      }];
+      emailStatus = await sendEmailWithAttachments({ subject, text, attachments });
+    } catch (e) {
+      emailStatus = { error: String(e?.message || e) };
+      console.error("SendGrid email failed:", e);
+    }
+
+    res.json({
+      ok: true,
+      mode: "transfer",
+      runId,
+      report,
+      transferredUnits,
+      failedUnits,
+      transferLog,
+      transferErrors,
+      sourceLocations: locationIdsInOrder.map(id => ({ id, name: locationIdToName[id] || id })),
+      destinationLocation: { id: destinationLocationId, name: destName },
+      customer,
+      notes,
+      emailStatus
     });
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
