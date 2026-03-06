@@ -2222,6 +2222,14 @@ app.post("/api/transfer", upload.single("file"), async (req, res) => {
       metaByHandle
     } = result;
 
+    // Prevent transferring to a location that's also a source
+    if (locationIdsInOrder.includes(destinationLocationId)) {
+      const destName = locationIdToName[destinationLocationId] || destinationLocationId;
+      return res.status(400).json({
+        error: `Destination "${destName}" is also in the source locations. Remove it from the source list or pick a different destination.`
+      });
+    }
+
     if (report.allocatedUnits === 0) {
       const runId = saveRun({
         locationIdToName,
