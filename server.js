@@ -314,6 +314,33 @@ async function allocateVariantQty({ inventoryItemId, requestedQty, locationIdsIn
   return { allocations, dropped: remaining };
 }
 
+// Activate inventory items at a location (required before adjusting quantities there)
+async function activateInventoryAtLocation(inventoryItemIds, locationId) {
+  // Shopify allows up to 100 items per call
+  const BATCH = 100;
+  for (let i = 0; i < inventoryItemIds.length; i += BATCH) {
+    const batch = inventoryItemIds.slice(i, i + BATCH);
+    const mutation = `
+      mutation ActivateInventory($inventoryItemUpdates: [InventoryBulkToggleActivationInput!]!, $locationId: ID!) {
+        inventoryBulkToggleActivation(
+          inventoryItemUpdates: $inventoryItemUpdates
+          locationId: $locationId
+        ) {
+          userErrors { field message code }
+          inventoryLevels { id }
+        }
+      }
+    `;
+    const inventoryItemUpdates = batch.map(id => ({ inventoryItemId: id, activate: true }));
+    const data = await shopifyGraphQL(mutation, { inventoryItemUpdates, locationId });
+    const errs = (data.inventoryBulkToggleActivation.userErrors || [])
+      .filter(e => e.code !== "ALREADY_ACTIVE"); // ignore already-active
+    if (errs.length) {
+      console.warn("inventoryBulkToggleActivation warnings:", JSON.stringify(errs));
+    }
+  }
+}
+
 // Adjust inventory quantities (used for transfers between locations)
 async function inventoryAdjustQuantities({ changes, reason = "movement_created" }) {
   const mutation = `
@@ -2251,6 +2278,16 @@ app.post("/api/transfer", upload.single("file"), async (req, res) => {
     }
 
     const destName = locationIdToName[destinationLocationId] || destinationLocationId;
+
+    // Activate all inventory items at the destination location before adjusting
+    const allInventoryItemIds = [...new Set(
+      [...allocationPlan.values()].map(p => p.inventoryItemId)
+    )];
+    try {
+      await activateInventoryAtLocation(allInventoryItemIds, destinationLocationId);
+    } catch (e) {
+      console.warn("activateInventoryAtLocation warning:", e?.message || e);
+    }
 
     // Execute inventory adjustments: for each allocated variant, decrement source + increment destination
     const transferLog = [];
