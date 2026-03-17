@@ -2453,5 +2453,107 @@ app.get("/api/packing-list.pdf", async (req, res) => {
   }
 });
 
+// ===================== Past Orders =====================
+
+app.get("/api/orders", async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 25, 50);
+    const cursor = req.query.cursor || null;
+
+    const q = `
+      query PastOrders($query: String!, $first: Int!, $after: String) {
+        orders(first: $first, after: $after, query: $query, sortKey: CREATED_AT, reverse: true) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            id
+            name
+            createdAt
+            tags
+            totalPriceSet { shopMoney { amount currencyCode } }
+            displayFulfillmentStatus
+            currentSubtotalLineItemsQuantity
+            fulfillmentOrders(first: 50) {
+              nodes {
+                assignedLocation { location { id name } }
+                lineItems(first: 250) {
+                  nodes { remainingQuantity }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await shopifyGraphQL(q, {
+      query: "tag:Wholesale tag:Spreadsheet",
+      first: limit,
+      after: cursor || null
+    });
+
+    const orders = (data.orders.nodes || []).map(o => {
+      // Build per-location unit summary
+      const locSummary = {};
+      for (const fo of o.fulfillmentOrders?.nodes || []) {
+        const locName = fo.assignedLocation?.location?.name || "Unknown";
+        const qty = (fo.lineItems?.nodes || []).reduce((s, li) => s + (li.remainingQuantity || 0), 0);
+        if (qty > 0) locSummary[locName] = (locSummary[locName] || 0) + qty;
+      }
+      return {
+        id: o.id,
+        name: o.name,
+        createdAt: o.createdAt,
+        tags: o.tags,
+        total: o.totalPriceSet?.shopMoney?.amount || "0",
+        currency: o.totalPriceSet?.shopMoney?.currencyCode || "USD",
+        fulfillmentStatus: o.displayFulfillmentStatus,
+        totalUnits: o.currentSubtotalLineItemsQuantity || 0,
+        locationSummary: locSummary
+      };
+    });
+
+    res.json({
+      ok: true,
+      orders,
+      pageInfo: data.orders.pageInfo
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+app.get("/api/orders/:orderId/report.xlsx", async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    if (!orderId || !orderId.startsWith("gid://shopify/Order/")) {
+      return res.status(400).json({ error: "Invalid orderId." });
+    }
+
+    const { order: finalOrder } = await getOrderPackingData(orderId);
+    if (!finalOrder) return res.status(404).json({ error: "Order not found." });
+
+    // Build locationIdToName from all locations
+    const allLocs = await getAllLocations();
+    const locationIdToName = {};
+    for (const loc of allLocs) locationIdToName[loc.id] = loc.name;
+
+    const buf = await buildWorkbookFromFinalOrder({
+      finalOrder,
+      locationIdToName,
+      requestedSeen: [],
+      customer: "",
+      notes: "",
+      selectedLocationIds: allLocs.map(l => l.id)
+    });
+
+    const safeName = String(finalOrder.name || "order").replaceAll("#", "").replaceAll("/", "-");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="order-${safeName}-fulfillment.xlsx"`);
+    res.send(buf);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
 const port = process.env.PORT || 3000;
 app.listen(port, () => console.log(`Wholesale importer running on http://localhost:${port}`));
