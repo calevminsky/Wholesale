@@ -959,8 +959,10 @@ async function buildWorkbookFromFinalOrder({
   notes,
   selectedLocationIds    // drain order (for sheet order)
 }) {
-  // Build mapping: lineItemId -> location {id,name} based on fulfillmentOrders lineItems
-  const lineItemLoc = new Map();
+  // Build mapping: lineItemId -> [{locId, locName, qty}, ...] based on fulfillmentOrders lineItems.
+  // A single order lineItem can be split across multiple fulfillment orders (locations),
+  // so we must track the quantity per location rather than a single location per lineItem.
+  const lineItemLocQty = new Map();
   for (const fo of finalOrder.fulfillmentOrders.nodes || []) {
     const loc = fo.assignedLocation?.location;
     const locId = loc?.id || "unassigned";
@@ -968,7 +970,11 @@ async function buildWorkbookFromFinalOrder({
 
     for (const n of fo.lineItems.nodes || []) {
       const liId = n.lineItem?.id;
-      if (liId) lineItemLoc.set(liId, { id: locId, name: locName });
+      const qty = n.remainingQuantity || 0;
+      if (liId && qty > 0) {
+        if (!lineItemLocQty.has(liId)) lineItemLocQty.set(liId, []);
+        lineItemLocQty.get(liId).push({ id: locId, name: locName, qty });
+      }
     }
   }
 
@@ -1007,23 +1013,23 @@ async function buildWorkbookFromFinalOrder({
   const totalHandleMap = new Map();
 
   for (const li of finalOrder.lineItems.nodes || []) {
-    const qty = Number(li.quantity || 0);
-    if (!qty) continue;
-
     const handle = li?.product?.handle || "";
     if (!handle) continue;
 
     const size = getSizeFromLineItem(li);
     if (!size) continue;
 
-    const loc = lineItemLoc.get(li.id) || { id: "unassigned", name: "Unassigned" };
-    const locId = loc.id;
+    const locEntries = lineItemLocQty.get(li.id);
+    if (!locEntries || locEntries.length === 0) continue;
 
-    if (!locMap.has(locId)) locMap.set(locId, new Map());
-    addQtyToMap(locMap.get(locId), handle, size, qty);
+    for (const { id: locId, qty } of locEntries) {
+      if (!qty) continue;
+      if (!locMap.has(locId)) locMap.set(locId, new Map());
+      addQtyToMap(locMap.get(locId), handle, size, qty);
 
-    if (!totalHandleMap.has(handle)) totalHandleMap.set(handle, makeHandleSizeMapEmpty());
-    addQtyToMap(totalHandleMap, handle, size, qty);
+      if (!totalHandleMap.has(handle)) totalHandleMap.set(handle, makeHandleSizeMapEmpty());
+      addQtyToMap(totalHandleMap, handle, size, qty);
+    }
   }
 
   // Total Warehouse (Bogota + Warehouse)
@@ -1506,24 +1512,33 @@ function formatUSD(amountStr) {
 }
 
 function buildPackingSlipHtml({ order, shop }) {
-  // Map lineItemId -> location
-  const lineItemLoc = new Map();
+  // Map lineItemId -> [{locId, locName, qty}, ...] from fulfillment orders.
+  // A single order lineItem can be split across multiple fulfillment orders (locations).
+  const lineItemLocQty = new Map();
   for (const fo of order.fulfillmentOrders.nodes || []) {
     const loc = fo.assignedLocation?.location;
     const locId = loc?.id || "unassigned";
     const locName = loc?.name || "Unassigned";
     for (const n of fo.lineItems.nodes || []) {
       const liId = n.lineItem?.id;
-      if (liId) lineItemLoc.set(liId, { id: locId, name: locName });
+      const qty = n.remainingQuantity || 0;
+      if (liId && qty > 0) {
+        if (!lineItemLocQty.has(liId)) lineItemLocQty.set(liId, []);
+        lineItemLocQty.get(liId).push({ id: locId, name: locName, qty });
+      }
     }
   }
 
-  // Group order lineItems by location id (using final fulfillment mapping)
+  // Group order lineItems by location id, using per-location quantities from fulfillment orders
   const byLoc = new Map();
   for (const li of order.lineItems.nodes || []) {
-    const loc = lineItemLoc.get(li.id) || { id: "unassigned", name: "Unassigned" };
-    if (!byLoc.has(loc.id)) byLoc.set(loc.id, { name: loc.name, items: [] });
-    byLoc.get(loc.id).items.push(li);
+    const locEntries = lineItemLocQty.get(li.id);
+    if (!locEntries || locEntries.length === 0) continue;
+    for (const { id: locId, name: locName, qty } of locEntries) {
+      if (!qty) continue;
+      if (!byLoc.has(locId)) byLoc.set(locId, { name: locName, items: [] });
+      byLoc.get(locId).items.push({ ...li, quantity: qty });
+    }
   }
 
   const pages = [];
@@ -2433,6 +2448,108 @@ app.get("/api/packing-list.pdf", async (req, res) => {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="packing-list-${safeName}.pdf"`);
     return res.send(Buffer.from(pdfBuffer));
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// ===================== Past Orders =====================
+
+app.get("/api/orders", async (req, res) => {
+  try {
+    const limit = Math.min(Number(req.query.limit) || 25, 50);
+    const cursor = req.query.cursor || null;
+
+    const q = `
+      query PastOrders($query: String!, $first: Int!, $after: String) {
+        orders(first: $first, after: $after, query: $query, sortKey: CREATED_AT, reverse: true) {
+          pageInfo { hasNextPage endCursor }
+          nodes {
+            id
+            name
+            createdAt
+            tags
+            totalPriceSet { shopMoney { amount currencyCode } }
+            displayFulfillmentStatus
+            currentSubtotalLineItemsQuantity
+            fulfillmentOrders(first: 50) {
+              nodes {
+                assignedLocation { location { id name } }
+                lineItems(first: 250) {
+                  nodes { remainingQuantity }
+                }
+              }
+            }
+          }
+        }
+      }
+    `;
+
+    const data = await shopifyGraphQL(q, {
+      query: "tag:Wholesale tag:Spreadsheet",
+      first: limit,
+      after: cursor || null
+    });
+
+    const orders = (data.orders.nodes || []).map(o => {
+      // Build per-location unit summary
+      const locSummary = {};
+      for (const fo of o.fulfillmentOrders?.nodes || []) {
+        const locName = fo.assignedLocation?.location?.name || "Unknown";
+        const qty = (fo.lineItems?.nodes || []).reduce((s, li) => s + (li.remainingQuantity || 0), 0);
+        if (qty > 0) locSummary[locName] = (locSummary[locName] || 0) + qty;
+      }
+      return {
+        id: o.id,
+        name: o.name,
+        createdAt: o.createdAt,
+        tags: o.tags,
+        total: o.totalPriceSet?.shopMoney?.amount || "0",
+        currency: o.totalPriceSet?.shopMoney?.currencyCode || "USD",
+        fulfillmentStatus: o.displayFulfillmentStatus,
+        totalUnits: o.currentSubtotalLineItemsQuantity || 0,
+        locationSummary: locSummary
+      };
+    });
+
+    res.json({
+      ok: true,
+      orders,
+      pageInfo: data.orders.pageInfo
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+app.get("/api/orders/:orderId/report.xlsx", async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    if (!orderId || !orderId.startsWith("gid://shopify/Order/")) {
+      return res.status(400).json({ error: "Invalid orderId." });
+    }
+
+    const { order: finalOrder } = await getOrderPackingData(orderId);
+    if (!finalOrder) return res.status(404).json({ error: "Order not found." });
+
+    // Build locationIdToName from all locations
+    const allLocs = await getAllLocations();
+    const locationIdToName = {};
+    for (const loc of allLocs) locationIdToName[loc.id] = loc.name;
+
+    const buf = await buildWorkbookFromFinalOrder({
+      finalOrder,
+      locationIdToName,
+      requestedSeen: [],
+      customer: "",
+      notes: "",
+      selectedLocationIds: allLocs.map(l => l.id)
+    });
+
+    const safeName = String(finalOrder.name || "order").replaceAll("#", "").replaceAll("/", "-");
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="order-${safeName}-fulfillment.xlsx"`);
+    res.send(buf);
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }

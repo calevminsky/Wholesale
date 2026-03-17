@@ -166,6 +166,16 @@
     <h2>Raw output</h2>
     <pre id="out"></pre>
 
+    <h2>Past Orders</h2>
+    <div class="box" id="pastOrdersBox">
+      <div class="row">
+        <button id="loadOrdersBtn">Load Recent Orders</button>
+        <span class="muted" id="pastOrdersStatus"></span>
+      </div>
+      <div id="pastOrdersTable" style="margin-top:10px;"></div>
+      <div id="pastOrdersPaging" style="margin-top:8px;"></div>
+    </div>
+
     <script>
       const SIZES_LIST = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 
@@ -955,6 +965,90 @@
           .replace(/>/g, "&gt;").replace(/"/g, "&quot;");
       }
       function escAttr(s) { return escHtml(s); }
+
+      // ===== Past Orders =====
+      let pastOrdersCursor = null;
+
+      document.getElementById("loadOrdersBtn").addEventListener("click", () => {
+        pastOrdersCursor = null;
+        loadPastOrders();
+      });
+
+      async function loadPastOrders(cursor) {
+        const status = document.getElementById("pastOrdersStatus");
+        const tableDiv = document.getElementById("pastOrdersTable");
+        const pagingDiv = document.getElementById("pastOrdersPaging");
+        status.textContent = "Loading…";
+
+        try {
+          const params = new URLSearchParams({ limit: 25 });
+          if (cursor) params.set("cursor", cursor);
+          const res = await fetch("/api/orders?" + params);
+          const json = await res.json();
+          if (json.error) throw new Error(json.error);
+
+          const orders = json.orders || [];
+          if (orders.length === 0) {
+            tableDiv.innerHTML = '<span class="muted">No wholesale orders found.</span>';
+            pagingDiv.innerHTML = "";
+            status.textContent = "";
+            return;
+          }
+
+          let html = `<table>
+            <tr>
+              <th>Order</th>
+              <th>Date</th>
+              <th>Units</th>
+              <th>Total</th>
+              <th>Status</th>
+              <th>By Location</th>
+              <th>Actions</th>
+            </tr>`;
+
+          for (const o of orders) {
+            const date = new Date(o.createdAt).toLocaleDateString("en-US", { year:"numeric", month:"short", day:"numeric" });
+            const locParts = Object.entries(o.locationSummary || {}).map(([k,v]) => `${escHtml(k)}: ${v}`).join(", ") || "—";
+            const status = (o.fulfillmentStatus || "").replace(/_/g, " ");
+            html += `<tr>
+              <td><b>${escHtml(o.name)}</b></td>
+              <td>${date}</td>
+              <td>${o.totalUnits}</td>
+              <td>$${Number(o.total).toFixed(2)}</td>
+              <td>${escHtml(status)}</td>
+              <td style="font-size:12px;">${locParts}</td>
+              <td>
+                <button onclick="downloadOrderXlsx('${escAttr(o.id)}', '${escAttr(o.name)}')" style="font-size:12px;padding:4px 8px;">Excel</button>
+                <button onclick="downloadOrderPdf('${escAttr(o.id)}', '${escAttr(o.name)}')" style="font-size:12px;padding:4px 8px;">Packing Slip</button>
+              </td>
+            </tr>`;
+          }
+          html += "</table>";
+          tableDiv.innerHTML = html;
+
+          // Paging
+          if (json.pageInfo?.hasNextPage) {
+            pagingDiv.innerHTML = `<button id="pastOrdersNextBtn">Load More</button>`;
+            document.getElementById("pastOrdersNextBtn").addEventListener("click", () => {
+              loadPastOrders(json.pageInfo.endCursor);
+            });
+          } else {
+            pagingDiv.innerHTML = "";
+          }
+
+          status.textContent = "";
+        } catch (e) {
+          status.textContent = "Error: " + e.message;
+        }
+      }
+
+      function downloadOrderXlsx(orderId, orderName) {
+        window.open("/api/orders/" + encodeURIComponent(orderId) + "/report.xlsx", "_blank");
+      }
+
+      function downloadOrderPdf(orderId, orderName) {
+        window.open("/api/packing-list.pdf?orderId=" + encodeURIComponent(orderId), "_blank");
+      }
 
       // ===== Init =====
       loadLocations().catch(e => box.textContent = e.message);
