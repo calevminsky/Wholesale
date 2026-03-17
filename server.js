@@ -959,8 +959,10 @@ async function buildWorkbookFromFinalOrder({
   notes,
   selectedLocationIds    // drain order (for sheet order)
 }) {
-  // Build mapping: lineItemId -> location {id,name} based on fulfillmentOrders lineItems
-  const lineItemLoc = new Map();
+  // Build mapping: lineItemId -> [{locId, locName, qty}, ...] based on fulfillmentOrders lineItems.
+  // A single order lineItem can be split across multiple fulfillment orders (locations),
+  // so we must track the quantity per location rather than a single location per lineItem.
+  const lineItemLocQty = new Map();
   for (const fo of finalOrder.fulfillmentOrders.nodes || []) {
     const loc = fo.assignedLocation?.location;
     const locId = loc?.id || "unassigned";
@@ -968,7 +970,11 @@ async function buildWorkbookFromFinalOrder({
 
     for (const n of fo.lineItems.nodes || []) {
       const liId = n.lineItem?.id;
-      if (liId) lineItemLoc.set(liId, { id: locId, name: locName });
+      const qty = n.remainingQuantity || 0;
+      if (liId && qty > 0) {
+        if (!lineItemLocQty.has(liId)) lineItemLocQty.set(liId, []);
+        lineItemLocQty.get(liId).push({ id: locId, name: locName, qty });
+      }
     }
   }
 
@@ -1007,23 +1013,23 @@ async function buildWorkbookFromFinalOrder({
   const totalHandleMap = new Map();
 
   for (const li of finalOrder.lineItems.nodes || []) {
-    const qty = Number(li.quantity || 0);
-    if (!qty) continue;
-
     const handle = li?.product?.handle || "";
     if (!handle) continue;
 
     const size = getSizeFromLineItem(li);
     if (!size) continue;
 
-    const loc = lineItemLoc.get(li.id) || { id: "unassigned", name: "Unassigned" };
-    const locId = loc.id;
+    const locEntries = lineItemLocQty.get(li.id);
+    if (!locEntries || locEntries.length === 0) continue;
 
-    if (!locMap.has(locId)) locMap.set(locId, new Map());
-    addQtyToMap(locMap.get(locId), handle, size, qty);
+    for (const { id: locId, qty } of locEntries) {
+      if (!qty) continue;
+      if (!locMap.has(locId)) locMap.set(locId, new Map());
+      addQtyToMap(locMap.get(locId), handle, size, qty);
 
-    if (!totalHandleMap.has(handle)) totalHandleMap.set(handle, makeHandleSizeMapEmpty());
-    addQtyToMap(totalHandleMap, handle, size, qty);
+      if (!totalHandleMap.has(handle)) totalHandleMap.set(handle, makeHandleSizeMapEmpty());
+      addQtyToMap(totalHandleMap, handle, size, qty);
+    }
   }
 
   // Total Warehouse (Bogota + Warehouse)
@@ -1506,24 +1512,33 @@ function formatUSD(amountStr) {
 }
 
 function buildPackingSlipHtml({ order, shop }) {
-  // Map lineItemId -> location
-  const lineItemLoc = new Map();
+  // Map lineItemId -> [{locId, locName, qty}, ...] from fulfillment orders.
+  // A single order lineItem can be split across multiple fulfillment orders (locations).
+  const lineItemLocQty = new Map();
   for (const fo of order.fulfillmentOrders.nodes || []) {
     const loc = fo.assignedLocation?.location;
     const locId = loc?.id || "unassigned";
     const locName = loc?.name || "Unassigned";
     for (const n of fo.lineItems.nodes || []) {
       const liId = n.lineItem?.id;
-      if (liId) lineItemLoc.set(liId, { id: locId, name: locName });
+      const qty = n.remainingQuantity || 0;
+      if (liId && qty > 0) {
+        if (!lineItemLocQty.has(liId)) lineItemLocQty.set(liId, []);
+        lineItemLocQty.get(liId).push({ id: locId, name: locName, qty });
+      }
     }
   }
 
-  // Group order lineItems by location id (using final fulfillment mapping)
+  // Group order lineItems by location id, using per-location quantities from fulfillment orders
   const byLoc = new Map();
   for (const li of order.lineItems.nodes || []) {
-    const loc = lineItemLoc.get(li.id) || { id: "unassigned", name: "Unassigned" };
-    if (!byLoc.has(loc.id)) byLoc.set(loc.id, { name: loc.name, items: [] });
-    byLoc.get(loc.id).items.push(li);
+    const locEntries = lineItemLocQty.get(li.id);
+    if (!locEntries || locEntries.length === 0) continue;
+    for (const { id: locId, name: locName, qty } of locEntries) {
+      if (!qty) continue;
+      if (!byLoc.has(locId)) byLoc.set(locId, { name: locName, items: [] });
+      byLoc.get(locId).items.push({ ...li, quantity: qty });
+    }
   }
 
   const pages = [];
