@@ -1017,9 +1017,11 @@
               <td>$${Number(o.total).toFixed(2)}</td>
               <td>${escHtml(status)}</td>
               <td style="font-size:12px;">${locParts}</td>
-              <td>
+              <td style="white-space:nowrap;">
                 <button onclick="downloadOrderXlsx('${escAttr(o.id)}', '${escAttr(o.name)}')" style="font-size:12px;padding:4px 8px;">Excel</button>
                 <button onclick="downloadOrderPdf('${escAttr(o.id)}', '${escAttr(o.name)}')" style="font-size:12px;padding:4px 8px;">Packing Slip</button>
+                <button onclick="downloadOrderInvoice('${escAttr(o.id)}', '${escAttr(o.name)}')" style="font-size:12px;padding:4px 8px;">Invoice</button>
+                <button onclick="downloadOrderImages('${escAttr(o.id)}', '${escAttr(o.name)}')" style="font-size:12px;padding:4px 8px;">Images</button>
               </td>
             </tr>`;
           }
@@ -1048,6 +1050,14 @@
 
       function downloadOrderPdf(orderId, orderName) {
         window.open("/api/packing-list.pdf?orderId=" + encodeURIComponent(orderId), "_blank");
+      }
+
+      function downloadOrderInvoice(orderId, orderName) {
+        window.open("/api/orders/" + encodeURIComponent(orderId) + "/invoice.pdf", "_blank");
+      }
+
+      function downloadOrderImages(orderId, orderName) {
+        window.open("/api/orders/" + encodeURIComponent(orderId) + "/images.zip", "_blank");
       }
 
       // ===== Init =====

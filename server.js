@@ -7,6 +7,7 @@ import path from "path";
 import crypto from "crypto";
 import ExcelJS from "exceljs";
 import sgMail from "@sendgrid/mail";
+import archiver from "archiver";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -2550,6 +2551,208 @@ app.get("/api/orders/:orderId/report.xlsx", async (req, res) => {
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="order-${safeName}-fulfillment.xlsx"`);
     res.send(buf);
+  } catch (e) {
+    res.status(500).json({ error: String(e?.message || e) });
+  }
+});
+
+// ===================== Order Images ZIP =====================
+
+app.get("/api/orders/:orderId/images.zip", async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    if (!orderId || !orderId.startsWith("gid://shopify/Order/")) {
+      return res.status(400).json({ error: "Invalid orderId." });
+    }
+
+    // Fetch order line items to get product GIDs
+    const orderQuery = `
+      query OrderProducts($id: ID!) {
+        order(id: $id) {
+          name
+          lineItems(first: 250) {
+            nodes {
+              product { id }
+            }
+          }
+        }
+      }
+    `;
+    const orderData = await shopifyGraphQL(orderQuery, { id: orderId });
+    const order = orderData.order;
+    if (!order) return res.status(404).json({ error: "Order not found." });
+
+    const productGids = [...new Set(
+      (order.lineItems.nodes || [])
+        .map(li => li.product?.id)
+        .filter(Boolean)
+    )];
+
+    if (productGids.length === 0) {
+      return res.status(404).json({ error: "No products found in order." });
+    }
+
+    // Fetch product titles + images in batches of 20
+    const products = []; // [{ title, images: [url, ...] }]
+    for (let i = 0; i < productGids.length; i += 20) {
+      const batch = productGids.slice(i, i + 20);
+      const nodesQuery = `
+        query ProductImages($ids: [ID!]!) {
+          nodes(ids: $ids) {
+            ... on Product {
+              id
+              title
+              images(first: 20) { nodes { url } }
+            }
+          }
+        }
+      `;
+      const nodesData = await shopifyGraphQL(nodesQuery, { ids: batch });
+      for (const node of nodesData.nodes || []) {
+        if (node?.id && node?.title) {
+          products.push({
+            title: node.title,
+            images: (node.images?.nodes || []).map(n => n.url).filter(Boolean)
+          });
+        }
+      }
+    }
+
+    // Stream a ZIP archive with product images
+    const safeName = String(order.name || "order").replaceAll("#", "").replaceAll("/", "-");
+    res.setHeader("Content-Type", "application/zip");
+    res.setHeader("Content-Disposition", `attachment; filename="order-${safeName}-images.zip"`);
+
+    const archive = archiver("zip", { zlib: { level: 5 } });
+    archive.on("error", err => { throw err; });
+    archive.pipe(res);
+
+    const safeFolderName = name => name.replace(/[<>:"/\\|?*]/g, "-").trim();
+
+    for (const prod of products) {
+      if (!prod.images.length) continue;
+      const folder = safeFolderName(prod.title);
+      for (let j = 0; j < prod.images.length; j++) {
+        const imageUrl = prod.images[j];
+        try {
+          const ext = path.extname(new URL(imageUrl).pathname).split("?")[0].toLowerCase() || ".jpg";
+          const imgRes = await fetch(imageUrl);
+          if (!imgRes.ok) continue;
+          const arrayBuf = await imgRes.arrayBuffer();
+          archive.append(Buffer.from(arrayBuf), { name: `${folder}/${j + 1}${ext}` });
+        } catch {
+          // Skip failed images
+        }
+      }
+    }
+
+    await archive.finalize();
+  } catch (e) {
+    if (!res.headersSent) {
+      res.status(500).json({ error: String(e?.message || e) });
+    }
+  }
+});
+
+// ===================== Invoice PDF =====================
+
+app.get("/api/orders/:orderId/invoice.pdf", async (req, res) => {
+  try {
+    const orderId = req.params.orderId;
+    if (!orderId || !orderId.startsWith("gid://shopify/Order/")) {
+      return res.status(400).json({ error: "Invalid orderId." });
+    }
+
+    const query = `
+      query InvoiceOrder($id: ID!) {
+        order(id: $id) {
+          name
+          createdAt
+          lineItems(first: 250) {
+            nodes {
+              name
+              currentQuantity
+              discountedUnitPriceAfterAllDiscountsSet {
+                shopMoney { amount currencyCode }
+              }
+            }
+          }
+        }
+      }
+    `;
+    const data = await shopifyGraphQL(query, { id: orderId });
+    const order = data.order;
+    if (!order) return res.status(404).json({ error: "Order not found." });
+
+    const lines = (order.lineItems.nodes || [])
+      .filter(li => li.currentQuantity > 0)
+      .map(li => {
+        const unitPrice = Number(li.discountedUnitPriceAfterAllDiscountsSet?.shopMoney?.amount || 0);
+        const qty = li.currentQuantity;
+        return {
+          name: li.name,
+          qty,
+          unitPrice,
+          total: unitPrice * qty
+        };
+      });
+
+    const grandTotal = lines.reduce((s, l) => s + l.total, 0);
+    const orderDate = new Date(order.createdAt).toLocaleDateString("en-US", {
+      year: "numeric", month: "long", day: "numeric"
+    });
+
+    const esc = s => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    const money = v => `$${Number(v).toFixed(2)}`;
+
+    const html = `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    @page { margin: 40px; }
+    body { font-family: Arial, sans-serif; font-size: 12px; margin: 0; padding: 40px; }
+    h1 { font-size: 22px; margin: 0 0 4px 0; }
+    .meta { color: #555; margin-bottom: 20px; font-size: 13px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th { text-align: left; border-bottom: 2px solid #000; padding: 6px 8px; font-size: 12px; }
+    td { padding: 5px 8px; border-bottom: 1px solid #ddd; font-size: 12px; }
+    .num { text-align: right; }
+    .total-row td { border-top: 2px solid #000; font-weight: bold; font-size: 13px; padding-top: 8px; }
+  </style>
+</head>
+<body>
+  <h1>Invoice — ${esc(order.name)}</h1>
+  <div class="meta">Date: ${esc(orderDate)}</div>
+  <table>
+    <tr><th>Product</th><th class="num">Qty</th><th class="num">Unit Price</th><th class="num">Total</th></tr>
+    ${lines.map(l => `
+      <tr>
+        <td>${esc(l.name)}</td>
+        <td class="num">${l.qty}</td>
+        <td class="num">${money(l.unitPrice)}</td>
+        <td class="num">${money(l.total)}</td>
+      </tr>
+    `).join("")}
+    <tr class="total-row">
+      <td colspan="3">Order Total</td>
+      <td class="num">${money(grandTotal)}</td>
+    </tr>
+  </table>
+</body>
+</html>`;
+
+    const { pdfBuffer } = await renderPdfFromHtml(html);
+
+    if (!pdfBuffer) {
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      return res.send(html);
+    }
+
+    const safeName = String(order.name || "order").replaceAll("#", "").replaceAll("/", "-");
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="invoice-${safeName}.pdf"`);
+    return res.send(Buffer.from(pdfBuffer));
   } catch (e) {
     res.status(500).json({ error: String(e?.message || e) });
   }
