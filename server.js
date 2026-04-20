@@ -8,6 +8,10 @@ import crypto from "crypto";
 import ExcelJS from "exceljs";
 import sgMail from "@sendgrid/mail";
 import archiver from "archiver";
+import fs from "fs";
+import { fileURLToPath } from "url";
+import { createLineSheetsRouter } from "./src/linesheets/routes.js";
+import { pgAvailable, query as pgQuery } from "./src/pg.js";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
@@ -1761,6 +1765,7 @@ app.get("/api/products/search", async (req, res) => {
       const retailPrice = Number(p.priceRangeV2?.minVariantPrice?.amount || 0);
 
       return {
+        id: p.id,
         handle: p.handle,
         title: p.title,
         imageUrl: p.featuredImage?.url?.split("?")[0] || "",
@@ -2758,5 +2763,26 @@ app.get("/api/orders/:orderId/invoice.pdf", async (req, res) => {
   }
 });
 
+// ----------------- Line Sheet Builder -----------------
+app.use(createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }));
+
+async function runLineSheetsMigration() {
+  if (!pgAvailable()) {
+    console.warn("Line sheets: REPORTING_DATABASE_URL not set — skipping migration.");
+    return;
+  }
+  try {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const sql = fs.readFileSync(path.join(here, "migrations/001_line_sheets.sql"), "utf8");
+    await pgQuery(sql);
+    console.log("Line sheets: migration applied.");
+  } catch (err) {
+    console.error("Line sheets migration failed:", err.message);
+  }
+}
+
 const port = process.env.PORT || 3000;
-app.listen(port, () => console.log(`Wholesale importer running on http://localhost:${port}`));
+app.listen(port, async () => {
+  console.log(`Wholesale importer running on http://localhost:${port}`);
+  await runLineSheetsMigration();
+});
