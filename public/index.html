@@ -59,10 +59,43 @@
       .prod-img { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; }
       .order-table-wrap { overflow-x: auto; margin-top: 12px; }
       .total-cell { font-weight: 600; }
+
+      /* App tabs */
+      .app-tabs { display:flex; gap:6px; margin: 8px 0 18px 0; border-bottom: 2px solid #eee; padding-bottom: 0; }
+      .app-tab { background:#fff; border:1px solid #ccc; border-bottom: none; border-radius: 10px 10px 0 0; padding: 8px 16px; cursor:pointer; font-size:14px; }
+      .app-tab.active-tab { background:#111; color:#fff; border-color:#111; }
+
+      /* Line sheets */
+      #lineSheetsPage { }
+      #lineSheetsPage .ls-tbl { width:100%; border-collapse: collapse; font-size:12px; }
+      #lineSheetsPage .ls-tbl th, #lineSheetsPage .ls-tbl td { border:1px solid #eee; padding:4px 6px; vertical-align: middle; }
+      #lineSheetsPage .ls-tbl thead th { position: sticky; top: 0; background:#fafafa; z-index: 10; }
+      #lineSheetsPage .ls-tbl td.num { text-align: right; }
+      #lineSheetsPage .ls-tbl tr.ls-excluded td { background: #f5f5f5; color:#888; }
+      #lineSheetsPage .ls-tbl td.ls-prod { min-width: 180px; font-weight: 500; }
+      #lineSheetsPage .ls-tbl td .muted { font-size: 11px; color:#777; }
+      #lineSheetsPage .ls-tbl td.ls-zero { color:#ccc; }
+      #lineSheetsPage .ls-cond { display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding:4px 0; }
+      #lineSheetsPage .ls-group { border:1px solid #e5e5e5; border-radius:8px; padding:10px; margin:8px 0; background:#fafafa; }
+      #lineSheetsPage .ls-group-hd { margin-bottom:6px; }
+      #lineSheetsPage .ls-globals { border:1px dashed #ccc; border-radius:8px; padding:10px; margin-top:8px; background:#fffaf0; }
+      #lineSheetsPage .ls-add { margin-top:6px; font-size:12px; }
+      #lineSheetsPage .ls-add-group { margin-top:6px; }
+      #lineSheetsPage .ls-x { background:none; border:none; color:#c00; cursor:pointer; padding:2px 6px; }
+      #lineSheetsPage .ls-chip-wrap { display:inline-flex; gap:4px; align-items:center; flex-wrap:wrap; }
+      #lineSheetsPage .ls-chip { display:inline-flex; align-items:center; gap:4px; background:#eef; border-radius:12px; padding:2px 8px; font-size:12px; }
+      #lineSheetsPage .ls-chip button { background:none; border:none; cursor:pointer; padding:0; color:#446; }
     </style>
   </head>
   <body>
-    <h1>Wholesale Import</h1>
+    <h1>Wholesale Tools</h1>
+
+    <div class="app-tabs">
+      <button class="app-tab active-tab" data-page="import">Wholesale Import</button>
+      <button class="app-tab" data-page="linesheets">Line Sheets</button>
+    </div>
+
+    <div id="wholesaleImportPage">
     <div class="row">
       <span class="pill">Auto-tag: Wholesale</span>
       <span class="pill">Accepts CSV &amp; XLSX</span>
@@ -175,6 +208,40 @@
       <div id="pastOrdersTable" style="margin-top:10px;"></div>
       <div id="pastOrdersPaging" style="margin-top:8px;"></div>
     </div>
+    </div><!-- /wholesaleImportPage -->
+
+    <div id="lineSheetsPage" style="display:none;">
+      <div id="lsListRoot"></div>
+      <div id="lsEditorRoot" style="display:none;"></div>
+    </div>
+
+    <script src="/linesheets/filter-builder.js"></script>
+    <script src="/linesheets/pricing-bar.js"></script>
+    <script src="/linesheets/editor.js"></script>
+    <script src="/linesheets/list.js"></script>
+    <script>
+      // ===== Top-level tab switching =====
+      (function () {
+        const tabs = document.querySelectorAll(".app-tab");
+        const pages = {
+          import: document.getElementById("wholesaleImportPage"),
+          linesheets: document.getElementById("lineSheetsPage")
+        };
+        let lsInitialized = false;
+        tabs.forEach((t) => t.addEventListener("click", async () => {
+          tabs.forEach((x) => x.classList.remove("active-tab"));
+          t.classList.add("active-tab");
+          const p = t.getAttribute("data-page");
+          for (const [k, el] of Object.entries(pages)) el.style.display = (k === p) ? "" : "none";
+          if (p === "linesheets" && !lsInitialized) {
+            lsInitialized = true;
+            await window.LineSheets.showList();
+          } else if (p === "linesheets") {
+            await window.LineSheets.showList();
+          }
+        }));
+      })();
+    </script>
 
     <script>
       const SIZES_LIST = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
