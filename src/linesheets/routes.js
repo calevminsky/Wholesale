@@ -171,38 +171,32 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
 
   // ------- Meta (for dropdowns) -------
   r.get("/api/linesheets/meta", async (_req, res) => {
-    try {
-      const seasons = await distinct("season");
-      const classes = await distinct("class");
-      const types   = await distinct("product_type");
+    // Run each sub-query in isolation so a single fragile query can't starve
+    // the whole response. Partial results are better than none.
+    const warnings = [];
+    const safe = async (label, fn) => {
+      try { return await fn(); }
+      catch (e) { warnings.push(`${label}: ${e?.message || e}`); return null; }
+    };
 
-      const fabrics = ["KNIT", "WOVEN"];
-      const sleeves = ["Long Sleeve", "Short Sleeve", "Sleeveless"];
+    const [seasons, classes, types, lengths, locations] = await Promise.all([
+      safe("seasons",      () => distinct("season")),
+      safe("classes",      () => distinct("class")),
+      safe("product_types",() => distinct("product_type")),
+      safe("lengths",      () => distinctLengths()),
+      safe("locations",    () => distinctLocations())
+    ]);
 
-      const { rows: lengthRows } = await query(`
-        SELECT DISTINCT (substring(t FROM '^Length:\\s*([0-9]+)'))::int AS len
-          FROM inventory_items ii,
-               LATERAL jsonb_array_elements_text(
-                 CASE WHEN ii.tags IS NOT NULL AND ii.tags <> '' THEN ii.tags::jsonb ELSE '[]'::jsonb END
-               ) t
-         WHERE t ~* '^Length:\\s*[0-9]+'
-         ORDER BY len
-      `);
-
-      const { rows: locRows } = await query(`
-        SELECT DISTINCT location_id AS id, location_name AS name
-          FROM inventory_levels
-         WHERE location_id IS NOT NULL
-         ORDER BY location_name
-      `);
-
-      res.json({
-        seasons, classes, product_types: types,
-        fabrics, sleeves,
-        lengths: lengthRows.map(r => r.len).filter(Boolean),
-        locations: locRows
-      });
-    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+    res.json({
+      seasons:       seasons  || [],
+      classes:       classes  || [],
+      product_types: types    || [],
+      fabrics:       ["KNIT", "WOVEN"],
+      sleeves:       ["Long Sleeve", "Short Sleeve", "Sleeveless"],
+      lengths:       (lengths || []).filter(Boolean),
+      locations:     locations || [],
+      warnings
+    });
   });
 
   return r;
@@ -213,6 +207,43 @@ async function distinct(col) {
     `SELECT DISTINCT ${col} AS v FROM inventory_items WHERE ${col} IS NOT NULL AND ${col} <> '' ORDER BY ${col}`
   );
   return rows.map((r) => r.v);
+}
+
+async function distinctLengths() {
+  // Two guards:
+  //  1. Only consider rows whose tags start with '[' (valid JSON array); otherwise
+  //     ::jsonb would throw on legacy rows with non-JSON tag strings.
+  //  2. Do the integer cast as text→numeric→int with NULLIF/regex, so any
+  //     non-digit match (even an edge case in the POSIX regex) becomes NULL
+  //     instead of failing the whole query.
+  const { rows } = await query(`
+    WITH raw AS (
+      SELECT jsonb_array_elements_text(ii.tags::jsonb) AS t
+        FROM inventory_items ii
+       WHERE ii.tags IS NOT NULL
+         AND ii.tags LIKE '[%'
+    ),
+    parsed AS (
+      SELECT NULLIF(regexp_replace(t, '^[Ll]ength:[[:space:]]*([0-9]+).*$', '\\1'), t) AS raw_digits
+        FROM raw
+       WHERE t ~* '^length:[[:space:]]*[0-9]+'
+    )
+    SELECT DISTINCT raw_digits::int AS len
+      FROM parsed
+     WHERE raw_digits ~ '^[0-9]+$'
+     ORDER BY len
+  `);
+  return rows.map((r) => r.len);
+}
+
+async function distinctLocations() {
+  const { rows } = await query(`
+    SELECT DISTINCT location_id AS id, location_name AS name
+      FROM inventory_levels
+     WHERE location_id IS NOT NULL
+     ORDER BY location_name
+  `);
+  return rows;
 }
 
 async function computePreview(sheet) {

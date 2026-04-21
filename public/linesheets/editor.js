@@ -64,7 +64,8 @@
       counts: {},
       capped: false,
       loading: false,
-      metaError: null
+      metaError: null,
+      previewError: null
     };
   }
 
@@ -283,6 +284,12 @@
         document.createTextNode(state.metaError + " — filters will work once the reporting DB is connected.")
       ]));
     }
+    if (state.previewError) {
+      wrap.appendChild(el("div", { class: "ls-warn" }, [
+        el("b", null, "Couldn't load products. "),
+        document.createTextNode(state.previewError)
+      ]));
+    }
 
     const bar = el("div", { class: "lsf-bar" });
     w.LineSheets.renderFilterBar(bar, state.filter_tree, meta, () => {
@@ -396,7 +403,9 @@
     if (all.length === 0) {
       const emptyMsg = state.metaError
         ? "Connect the reporting DB to load products."
-        : "No products match the current filters. Try removing a filter or clicking + Add filter above.";
+        : state.previewError
+          ? "A database error prevented loading. See the banner above."
+          : "No products match the current filters. Try removing a filter or clicking + Add filter above.";
       wrap.appendChild(el("div", { class: "ls-empty" }, [
         el("div", { class: "ls-empty-title" }, "No products"),
         el("div", { class: "muted" }, emptyMsg)
@@ -736,14 +745,19 @@
       });
       if (token !== inflightPreview) return;
       if (!r.ok) {
-        const txt = await r.text();
+        let errMsg = `HTTP ${r.status}`;
+        try {
+          const j = await r.json();
+          errMsg = j.error || errMsg;
+        } catch { try { errMsg = await r.text(); } catch {} }
         state.loading = false;
-        state.metaError = state.metaError || txt;
+        state.previewError = errMsg;
         state.products = [];
         state.counts = {};
         renderTableBody();
         return;
       }
+      state.previewError = null;
       const j = await r.json();
       state.products = j.products || [];
       state.counts = j.counts || {};
