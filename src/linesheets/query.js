@@ -145,6 +145,16 @@ export function compileFilterTree(tree) {
   const globalExprs = globals.map((g) => emitCondition(g, c)).filter(Boolean);
   const globalExpr = globalExprs.length ? globalExprs.join(" AND ") : "TRUE";
 
+  // Notes on the defensive bits below:
+  //  * tags_json: guard the ::jsonb cast on legacy rows where tags isn't a
+  //    JSON array (would otherwise throw "cannot extract elements from a scalar"
+  //    or an invalid-JSON error and kill the whole query).
+  //  * size / length: use regexp_match (scalar) inside COALESCE; the previous
+  //    regexp_matches is set-returning and rejected inside COALESCE on newer
+  //    Postgres. Use [[:space:]] instead of \\s so this is POSIX-clean.
+  //  * length_val: guard the ::int cast by verifying the captured group is
+  //    all digits; any non-digit slipping through (e.g. legacy "Length: NaN"
+  //    tag) becomes NULL rather than throwing.
   const sql = `
     WITH variant_inv AS (
       SELECT
@@ -160,27 +170,31 @@ export function compileFilterTree(tree) {
         ii.class,
         ii.tags,
         CASE
-          WHEN ii.tags IS NOT NULL AND ii.tags <> ''
+          WHEN ii.tags IS NOT NULL AND ii.tags LIKE '[%'
             THEN ii.tags::jsonb
           ELSE '[]'::jsonb
         END AS tags_json,
         ii.price::numeric AS price,
         ii.compare_at_price::numeric AS compare_at_price,
-        -- Size: prefer "Size: X" style tag, else parse common size tokens from variant_title
+        -- Size: prefer "Size: X" tag, else parse a size token from variant_title.
         COALESCE(
-          (SELECT substring(t FROM '^Size:\\s*(.+)$')
+          (SELECT (regexp_match(t, '^[Ss]ize:[[:space:]]*(.+)$'))[1]
              FROM jsonb_array_elements_text(
-                    CASE WHEN ii.tags IS NOT NULL AND ii.tags <> '' THEN ii.tags::jsonb ELSE '[]'::jsonb END
+                    CASE WHEN ii.tags IS NOT NULL AND ii.tags LIKE '[%' THEN ii.tags::jsonb ELSE '[]'::jsonb END
                   ) t
-            WHERE t ~* '^Size:\\s*' LIMIT 1),
-          (regexp_matches(COALESCE(ii.variant_title,''), '(?:^|[^A-Za-z])(XXS|XS|S|M|L|XL|XXL)(?:[^A-Za-z]|$)'))[1]
+            WHERE t ~* '^size:[[:space:]]*' LIMIT 1),
+          (regexp_match(COALESCE(ii.variant_title,''), '(?:^|[^A-Za-z])(XXS|XS|S|M|L|XL|XXL)(?:[^A-Za-z]|$)'))[1]
         ) AS size,
-        -- Length parsed from "Length: NN" tag
-        (SELECT NULLIF(substring(t FROM '^Length:\\s*([0-9]+)'), '')::int
-           FROM jsonb_array_elements_text(
-                  CASE WHEN ii.tags IS NOT NULL AND ii.tags <> '' THEN ii.tags::jsonb ELSE '[]'::jsonb END
-                ) t
-          WHERE t ~* '^Length:\\s*[0-9]+' LIMIT 1) AS length_val,
+        -- Length parsed from "Length: NN" tag.
+        (SELECT CASE WHEN cap ~ '^[0-9]+$' THEN cap::int ELSE NULL END
+           FROM (
+             SELECT (regexp_match(t, '^[Ll]ength:[[:space:]]*([0-9]+)'))[1] AS cap
+               FROM jsonb_array_elements_text(
+                      CASE WHEN ii.tags IS NOT NULL AND ii.tags LIKE '[%' THEN ii.tags::jsonb ELSE '[]'::jsonb END
+                    ) t
+              WHERE t ~* '^length:[[:space:]]*[0-9]+'
+              LIMIT 1
+           ) sub) AS length_val,
         COALESCE(SUM(il.available), 0)::int AS variant_total_inv,
         COALESCE(SUM(il.available) FILTER (WHERE il.location_id = ANY(${filterLocsParam}::text[])), 0)::int AS variant_filtered_inv
       FROM inventory_items ii
