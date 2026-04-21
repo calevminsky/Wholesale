@@ -171,32 +171,44 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
 
   // ------- Meta (for dropdowns) -------
   r.get("/api/linesheets/meta", async (_req, res) => {
-    // Run each sub-query in isolation so a single fragile query can't starve
-    // the whole response. Partial results are better than none.
     const warnings = [];
     const safe = async (label, fn) => {
       try { return await fn(); }
       catch (e) { warnings.push(`${label}: ${e?.message || e}`); return null; }
     };
+    try {
+      const [seasons, classes, types, lengths, locations] = await Promise.all([
+        safe("seasons",       () => distinct("season")),
+        safe("classes",       () => distinct("class")),
+        safe("product_types", () => distinct("product_type")),
+        safe("lengths",       () => distinctLengths()),
+        safe("locations",     () => distinctLocations())
+      ]);
 
-    const [seasons, classes, types, lengths, locations] = await Promise.all([
-      safe("seasons",      () => distinct("season")),
-      safe("classes",      () => distinct("class")),
-      safe("product_types",() => distinct("product_type")),
-      safe("lengths",      () => distinctLengths()),
-      safe("locations",    () => distinctLocations())
-    ]);
-
-    res.json({
-      seasons:       seasons  || [],
-      classes:       classes  || [],
-      product_types: types    || [],
-      fabrics:       ["KNIT", "WOVEN"],
-      sleeves:       ["Long Sleeve", "Short Sleeve", "Sleeveless"],
-      lengths:       (lengths || []).filter(Boolean),
-      locations:     locations || [],
-      warnings
-    });
+      res.json({
+        _v: "meta-v2",
+        seasons:       seasons  || [],
+        classes:       classes  || [],
+        product_types: types    || [],
+        fabrics:       ["KNIT", "WOVEN"],
+        sleeves:       ["Long Sleeve", "Short Sleeve", "Sleeveless"],
+        lengths:       (lengths || []).filter(Boolean),
+        locations:     locations || [],
+        warnings
+      });
+    } catch (e) {
+      // Safety net — should be unreachable since safe() never throws, but
+      // if some unexpected thing slips through, return a 200 with empty
+      // lists and a warning rather than a 500.
+      res.json({
+        _v: "meta-v2-fallback",
+        seasons: [], classes: [], product_types: [],
+        fabrics: ["KNIT", "WOVEN"],
+        sleeves: ["Long Sleeve", "Short Sleeve", "Sleeveless"],
+        lengths: [], locations: [],
+        warnings: [`fatal: ${e?.message || e}`]
+      });
+    }
   });
 
   return r;
