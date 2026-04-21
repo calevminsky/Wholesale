@@ -120,8 +120,16 @@
       .lsf-addopt:hover { background:#f3f3f3; }
 
       /* Controls row */
-      .ls-controls { display:flex; align-items:center; gap:12px; padding:4px 0; }
+      .ls-controls { display:flex; align-items:center; gap:12px; padding:4px 0; flex-wrap:wrap; }
       .ls-sort { padding:6px 8px; border-radius:8px; border:1px solid #ccc; background:#fff; font-size:13px; }
+
+      /* ATS locations picker */
+      .ls-ats { position:relative; }
+      .ls-ats-btn { padding:6px 12px; border-radius:8px; border:1px solid #ccc; background:#fff; font-size:13px; cursor:pointer; }
+      .ls-ats-btn:hover { border-color:#333; }
+      .ls-ats-pop { display:none; position:absolute; top:calc(100% + 4px); left:0; background:#fff; border:1px solid #d8d8d8; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.14); padding:10px 12px; min-width:240px; max-width:320px; z-index:90; }
+      .ls-ats-hdr { margin-bottom:8px; }
+      .ls-ats-list { display:flex; flex-direction:column; max-height:240px; overflow:auto; border:1px solid #eee; border-radius:6px; padding:4px; background:#fafafa; }
       .ls-counts { font-size:13px; color:#555; }
       .ls-addprod { position:relative; }
       .ls-addprod-inp { width:240px; padding:6px 10px; border:1px solid #ccc; border-radius:8px; font-size:13px; }
@@ -133,8 +141,10 @@
 
       /* Table */
       .ls-table-wrap { overflow-x:auto; border:1px solid #eee; border-radius:10px; background:#fff; }
-      .ls-tbl { width:100%; border-collapse: collapse; font-size:13px; }
-      .ls-tbl th, .ls-tbl td { border-bottom:1px solid #f0f0f0; padding:8px 10px; vertical-align: middle; text-align:left; }
+      .ls-tbl { width:100%; border-collapse: collapse; font-size:13px; table-layout: fixed; }
+      .ls-tbl th, .ls-tbl td { border-bottom:1px solid #f0f0f0; padding:8px 10px; vertical-align: middle; text-align:left; overflow:hidden; }
+      .ls-tbl td.ls-prod { overflow:visible; white-space:normal; }
+      .ls-tbl .num { white-space:nowrap; }
       .ls-tbl thead th { position: sticky; top: 0; background:#fafafa; z-index: 5; font-weight:600; color:#333; border-bottom:1px solid #e4e4e4; }
       .ls-tbl td.num, .ls-tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
       .ls-tbl tr.ls-row { transition: background 0.1s; }
@@ -154,8 +164,8 @@
       .ls-badge-ex { background:#f3f3f3; color:#999; }
       .ls-badge-off { background:#ffe0e0; color:#8a1a1a; }
       .ls-tbl td.ls-zero { color:#ccc; }
-      .ls-tbl input.ls-price-inp { width:78px; padding:4px 6px; border:1px solid #ddd; border-radius:5px; text-align:right; font-variant-numeric: tabular-nums; }
-      .ls-tbl input.ls-price-inp.has-override { background:#fff7e0; font-weight:700; }
+      .ls-tbl td.ls-price { font-weight:600; color:#111; }
+      .ls-tbl td.ls-price.has-override { background:#fff7e0; }
       .ls-tbl td.ls-act { white-space:nowrap; text-align:center; }
       .ls-iconbtn { border:none; background:transparent; cursor:pointer; font-size:14px; padding:4px 6px; border-radius:4px; }
       .ls-iconbtn:hover { background:#eee; }

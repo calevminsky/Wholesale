@@ -59,7 +59,7 @@
       pins: [],
       excludes: [],
       pricing: { default_mode: "pct_off_compare_at", default_value: 50, overrides: {} },
-      display_opts: { exclude_nada_ignore: true },
+      display_opts: { exclude_nada_ignore: true, ats_locations: [] },
       products: [],
       counts: {},
       capped: false,
@@ -143,7 +143,7 @@
       pins: l.pins || [],
       excludes: l.excludes || [],
       pricing: Object.assign({ default_mode: "pct_off_compare_at", default_value: 50, overrides: {} }, l.pricing || {}),
-      display_opts: Object.assign({ exclude_nada_ignore: true }, l.display_opts || {}),
+      display_opts: Object.assign({ exclude_nada_ignore: true, ats_locations: [] }, l.display_opts || {}),
       products: j.products || [],
       counts: j.counts || {},
       capped: !!j.capped,
@@ -318,6 +318,9 @@
     sortSel.addEventListener("change", () => { sortMode = sortSel.value; renderTableBody(); });
     row.appendChild(sortSel);
 
+    // ATS locations (which warehouses count toward inventory numbers)
+    row.appendChild(renderAtsLocationsPicker());
+
     // Add product by name (pin)
     const pinWrap = el("div", { class: "ls-addprod" });
     const pinInput = el("input", { type: "search", placeholder: "+ Add product by name…", class: "ls-addprod-inp" });
@@ -416,6 +419,7 @@
     const rows = all.slice(0, rowLimit);
 
     const tbl = el("table", { class: "ls-tbl" });
+    tbl.appendChild(renderColgroup());
     tbl.appendChild(renderTableHead(all));
     const tbody = document.createElement("tbody");
     for (const p of rows) tbody.appendChild(renderTableRow(p));
@@ -438,22 +442,52 @@
     }
   }
 
+  // Column widths (px). Kept in one place so <colgroup>, <thead>, and
+  // <tbody> stay aligned when we change the layout. Changes here are the
+  // single source of truth — the actual <th>/<td> get no explicit width.
+  const COL_WIDTHS = {
+    chk:   36,
+    img:   60,
+    prod:  260,
+    type:  90,
+    msrp:  80,
+    price: 88,
+    size:  48,
+    total: 64,
+    act:   74
+  };
+
+  function renderColgroup() {
+    const g = document.createElement("colgroup");
+    const add = (w) => g.appendChild(Object.assign(document.createElement("col"), { style: `width:${w}px` }));
+    add(COL_WIDTHS.chk);
+    add(COL_WIDTHS.img);
+    add(COL_WIDTHS.prod);
+    add(COL_WIDTHS.type);
+    add(COL_WIDTHS.msrp);
+    add(COL_WIDTHS.price);
+    for (let i = 0; i < SIZE_COLS.length; i++) add(COL_WIDTHS.size);
+    add(COL_WIDTHS.total);
+    add(COL_WIDTHS.act);
+    return g;
+  }
+
   function renderTableHead(all) {
     const cols = [
-      { key: "_chk", label: selectAllCell(all) },
-      { key: "image", label: "" },
-      { key: "style_name", label: "Product" },
-      { key: "product_type", label: "Type" },
-      { key: "compare_at_price", label: "MSRP" },
-      { key: "effective_price", label: "Price" }
+      { key: "_chk", label: selectAllCell(all), align: "center" },
+      { key: "image", label: "", align: "center" },
+      { key: "style_name", label: "Product", align: "left" },
+      { key: "product_type", label: "Type", align: "left" },
+      { key: "compare_at_price", label: "MSRP", align: "right" },
+      { key: "effective_price", label: "Price", align: "right" }
     ];
-    for (const s of SIZE_COLS) cols.push({ key: `sz_${s}`, label: s });
-    cols.push({ key: "inventory_total", label: "Total" });
-    cols.push({ key: "_act", label: "" });
+    for (const s of SIZE_COLS) cols.push({ key: `sz_${s}`, label: s, align: "center" });
+    cols.push({ key: "inventory_total", label: "Total", align: "right" });
+    cols.push({ key: "_act", label: "", align: "center" });
 
     const tr = el("tr");
     for (const c of cols) {
-      const th = el("th", null);
+      const th = el("th", { style: `text-align:${c.align}` });
       if (typeof c.label === "string") th.textContent = c.label; else th.appendChild(c.label);
       tr.appendChild(th);
     }
@@ -512,18 +546,9 @@
     tr.appendChild(el("td", null, p.product_type || ""));
     tr.appendChild(el("td", { class: "num" }, fmtMoney(p.compare_at_price || p.current_price)));
 
-    // editable price
-    const priceInp = el("input", {
-      type: "number", step: "0.01", value: p.effective_price ?? "",
-      class: "ls-price-inp" + (p.has_override ? " has-override" : "")
-    });
-    priceInp.addEventListener("change", () => {
-      const v = priceInp.value.trim();
-      if (v === "" || v === "=") delete state.pricing.overrides[p.product_id];
-      else state.pricing.overrides[p.product_id] = Number(v);
-      debouncePreview();
-    });
-    tr.appendChild(el("td", { class: "num" }, [priceInp]));
+    // Price: display-only. Bulk override via the Pricing drawer.
+    tr.appendChild(el("td", { class: "num ls-price" + (p.has_override ? " has-override" : "") },
+      fmtMoney(p.effective_price ?? 0)));
 
     for (const s of SIZE_COLS) {
       const qty = Number(p.inventory_by_size?.[s] || 0);
@@ -592,6 +617,74 @@
   function productAge(p) {
     const m = String(p.product_id || "").match(/(\d+)$/);
     return m ? Number(m[1]) : 0;
+  }
+
+  function renderAtsLocationsPicker() {
+    const wrap = el("div", { class: "ls-ats" });
+    const locs = (meta && meta.locations) || [];
+    const selectedIds = new Set((state.display_opts.ats_locations || []).map(String));
+    const label = (() => {
+      if (selectedIds.size === 0) return "All locations";
+      if (selectedIds.size === 1) {
+        const id = [...selectedIds][0];
+        return (locs.find(l => String(l.id) === id)?.name) || "1 location";
+      }
+      return `${selectedIds.size} locations`;
+    })();
+
+    const btn = el("button", { class: "ls-ats-btn" }, `Available at: ${label} ▾`);
+    const pop = el("div", { class: "ls-ats-pop" });
+
+    function closePop() { pop.style.display = "none"; document.removeEventListener("click", outside, true); }
+    function outside(ev) { if (!wrap.contains(ev.target)) closePop(); }
+
+    btn.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      const opening = pop.style.display !== "block";
+      pop.style.display = opening ? "block" : "none";
+      if (opening) setTimeout(() => document.addEventListener("click", outside, true), 0);
+      else document.removeEventListener("click", outside, true);
+    });
+
+    if (locs.length === 0) {
+      pop.appendChild(el("div", { class: "muted", style: "padding:6px;" }, "No locations available."));
+    } else {
+      const header = el("div", { class: "ls-ats-hdr" }, [
+        el("b", null, "Count inventory from:"),
+        el("div", { class: "muted", style: "font-size:11px;" }, "Empty = all locations")
+      ]);
+      pop.appendChild(header);
+
+      const list = el("div", { class: "ls-ats-list" });
+      for (const l of locs) {
+        const id = "ats_" + l.id;
+        const cb = el("input", { type: "checkbox", id });
+        cb.checked = selectedIds.has(String(l.id));
+        cb.addEventListener("change", () => {
+          if (cb.checked) selectedIds.add(String(l.id));
+          else selectedIds.delete(String(l.id));
+          state.display_opts.ats_locations = [...selectedIds];
+          rowLimit = PAGE_SIZE;
+          debouncePreview();
+        });
+        list.appendChild(el("label", { class: "lsf-opt", for: id }, [cb, document.createTextNode(" " + (l.name || l.id))]));
+      }
+      pop.appendChild(list);
+
+      const actions = el("div", { class: "lsf-pop-actions" }, [
+        el("button", { onclick: () => {
+          selectedIds.clear();
+          state.display_opts.ats_locations = [];
+          debouncePreview();
+          closePop();
+        } }, "All locations")
+      ]);
+      pop.appendChild(actions);
+    }
+
+    wrap.appendChild(btn);
+    wrap.appendChild(pop);
+    return wrap;
   }
 
   function renderBulkBar() {

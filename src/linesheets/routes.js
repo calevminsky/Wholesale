@@ -283,14 +283,17 @@ async function computePreview(sheet) {
   const pricing = { ...defaultPricing(), ...(sheet.pricing || {}) };
   const opts = sheet.display_opts || {};
 
-  let matched = await runFilter(filterTree);
+  const runOpts = {
+    atsLocations: Array.isArray(opts.ats_locations) ? opts.ats_locations : []
+  };
+  let matched = await runFilter(filterTree, runOpts);
   const excludeNadaIgnore = opts.exclude_nada_ignore !== false;
   if (excludeNadaIgnore) {
     matched = matched.filter((p) => !(p.tags || []).includes("nada-ignore"));
   }
 
   let pinned = [];
-  if ((sheet.pins || []).length) pinned = await loadProductsByIds(sheet.pins);
+  if ((sheet.pins || []).length) pinned = await loadProductsByIds(sheet.pins, runOpts);
 
   const matchedIds = new Set(matched.map((p) => p.product_id));
   const excludeSet = new Set(sheet.excludes || []);

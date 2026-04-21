@@ -122,20 +122,29 @@ function emitGroup(group, c) {
   return `(${conds.join(" AND ")})`;
 }
 
-export function compileFilterTree(tree) {
+export function compileFilterTree(tree, opts = {}) {
   const c = ctx();
   const include = Array.isArray(tree?.include) ? tree.include : [];
   const globals = Array.isArray(tree?.globals) ? tree.globals : [];
 
-  // Inventory_min with locations needs pushdown into the CTE to populate
-  // `filtered_inventory`. We use the first inventory_min.locations we find.
+  // Locations drive both:
+  //   (a) the filtered_inventory column used by the inventory_min filter
+  //       (kept for legacy use), and
+  //   (b) when `opts.atsLocations` is set, which locations count toward
+  //       the *displayed* inventory totals — i.e. the ATS view.
+  // Pick atsLocations first (if any), else the inventory_min.locations fallback.
   let filterLocations = null;
-  for (const g of globals) {
-    if (g?.field === "inventory_min" && Array.isArray(g.locations) && g.locations.length) {
-      filterLocations = g.locations.map(String);
-      break;
+  if (Array.isArray(opts.atsLocations) && opts.atsLocations.length) {
+    filterLocations = opts.atsLocations.map(String);
+  } else {
+    for (const g of globals) {
+      if (g?.field === "inventory_min" && Array.isArray(g.locations) && g.locations.length) {
+        filterLocations = g.locations.map(String);
+        break;
+      }
     }
   }
+  const useAtsOverride = Array.isArray(opts.atsLocations) && opts.atsLocations.length > 0;
   const filterLocsParam = c.push(filterLocations || []);
 
   const includeExpr = include.length === 0
@@ -195,7 +204,9 @@ export function compileFilterTree(tree) {
               WHERE t ~* '^length:[[:space:]]*[0-9]+'
               LIMIT 1
            ) sub) AS length_val,
-        COALESCE(SUM(il.available), 0)::int AS variant_total_inv,
+        ${useAtsOverride
+          ? `COALESCE(SUM(il.available) FILTER (WHERE il.location_id = ANY(${filterLocsParam}::text[])), 0)::int AS variant_total_inv,`
+          : `COALESCE(SUM(il.available), 0)::int AS variant_total_inv,`}
         COALESCE(SUM(il.available) FILTER (WHERE il.location_id = ANY(${filterLocsParam}::text[])), 0)::int AS variant_filtered_inv
       FROM inventory_items ii
       LEFT JOIN inventory_levels il ON il.inventory_item_id = ii.inventory_item_id
@@ -249,20 +260,19 @@ export function compileFilterTree(tree) {
 }
 
 // Run a filter tree and return aggregated product rows.
-export async function runFilter(tree) {
-  const { sql, params } = compileFilterTree(tree || { include: [], globals: [] });
+export async function runFilter(tree, opts = {}) {
+  const { sql, params } = compileFilterTree(tree || { include: [], globals: [] }, opts);
   const { rows } = await query(sql, params);
   return rows.map(normalizeRow);
 }
 
 // Load extra products by explicit product_id (used for pins).
-export async function loadProductsByIds(productIds) {
+export async function loadProductsByIds(productIds, opts = {}) {
   if (!productIds || productIds.length === 0) return [];
-  // Build a minimal-include-everything query and intersect with the ids.
   const { sql, params } = compileFilterTree({
     include: [{ conditions: [{ field: "product", op: "any_of", value: productIds }] }],
     globals: []
-  });
+  }, opts);
   const { rows } = await query(sql, params);
   return rows.map(normalizeRow);
 }
