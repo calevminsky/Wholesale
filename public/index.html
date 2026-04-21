@@ -5,6 +5,7 @@
     <title>Wholesale Import</title>
     <style>
       body { font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif; margin: 24px; max-width: 1100px; }
+      body.ls-active { max-width: 1600px; margin: 16px 24px; }
       .row { display: flex; gap: 12px; margin-bottom: 10px; align-items: center; flex-wrap: wrap; }
       .box { border: 1px solid #ddd; padding: 12px; border-radius: 10px; }
       button { padding: 8px 12px; cursor: pointer; border-radius: 10px; border: 1px solid #ccc; background: #fff; }
@@ -65,26 +66,122 @@
       .app-tab { background:#fff; border:1px solid #ccc; border-bottom: none; border-radius: 10px 10px 0 0; padding: 8px 16px; cursor:pointer; font-size:14px; }
       .app-tab.active-tab { background:#111; color:#fff; border-color:#111; }
 
-      /* Line sheets */
-      #lineSheetsPage { }
-      #lineSheetsPage .ls-tbl { width:100%; border-collapse: collapse; font-size:12px; }
-      #lineSheetsPage .ls-tbl th, #lineSheetsPage .ls-tbl td { border:1px solid #eee; padding:4px 6px; vertical-align: middle; }
-      #lineSheetsPage .ls-tbl thead th { position: sticky; top: 0; background:#fafafa; z-index: 10; }
-      #lineSheetsPage .ls-tbl td.num { text-align: right; }
-      #lineSheetsPage .ls-tbl tr.ls-excluded td { background: #f5f5f5; color:#888; }
-      #lineSheetsPage .ls-tbl td.ls-prod { min-width: 180px; font-weight: 500; }
-      #lineSheetsPage .ls-tbl td .muted { font-size: 11px; color:#777; }
-      #lineSheetsPage .ls-tbl td.ls-zero { color:#ccc; }
-      #lineSheetsPage .ls-cond { display:flex; gap:6px; align-items:center; flex-wrap:wrap; padding:4px 0; }
-      #lineSheetsPage .ls-group { border:1px solid #e5e5e5; border-radius:8px; padding:10px; margin:8px 0; background:#fafafa; }
-      #lineSheetsPage .ls-group-hd { margin-bottom:6px; }
-      #lineSheetsPage .ls-globals { border:1px dashed #ccc; border-radius:8px; padding:10px; margin-top:8px; background:#fffaf0; }
-      #lineSheetsPage .ls-add { margin-top:6px; font-size:12px; }
-      #lineSheetsPage .ls-add-group { margin-top:6px; }
-      #lineSheetsPage .ls-x { background:none; border:none; color:#c00; cursor:pointer; padding:2px 6px; }
-      #lineSheetsPage .ls-chip-wrap { display:inline-flex; gap:4px; align-items:center; flex-wrap:wrap; }
-      #lineSheetsPage .ls-chip { display:inline-flex; align-items:center; gap:4px; background:#eef; border-radius:12px; padding:2px 8px; font-size:12px; }
-      #lineSheetsPage .ls-chip button { background:none; border:none; cursor:pointer; padding:0; color:#446; }
+      /* ============= Line sheets ============= */
+      #lineSheetsPage { max-width: none; }
+      #lsEditorRoot.ls-page { display:flex; flex-direction:column; gap:10px; }
+
+      /* Header */
+      .ls-hd { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #eee; position:sticky; top:0; background:#fff; z-index:50; }
+      .ls-hd-l { display:flex; align-items:center; gap:10px; min-width:0; }
+      .ls-hd-r { display:flex; align-items:center; gap:6px; margin-left:auto; }
+      .ls-hd-title { font-weight:600; font-size:16px; color:#222; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:360px; }
+      .ls-dirty { color:#d58500; font-weight:700; }
+      .ls-views { padding:6px 8px; border-radius:8px; border:1px solid #ccc; background:#fff; font-size:13px; max-width:280px; }
+
+      .ls-more { position:relative; }
+      .ls-more-btn { padding:6px 10px; font-weight:700; }
+      .ls-more-menu { display:none; position:absolute; right:0; top:100%; margin-top:4px; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 6px 20px rgba(0,0,0,0.08); min-width:200px; z-index:200; padding:4px; }
+      .ls-more-menu.open { display:flex; flex-direction:column; }
+      .ls-more-menu button { text-align:left; border:none; background:transparent; padding:8px 10px; border-radius:6px; }
+      .ls-more-menu button:hover { background:#f3f3f3; }
+
+      /* Filter bar */
+      .ls-filter-area { padding: 4px 0; }
+      .ls-warn { background:#fff7e0; border:1px solid #f2d58c; color:#7a5800; padding:8px 10px; border-radius:8px; margin-bottom:8px; font-size:13px; }
+      .lsf-bar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; min-height:36px; }
+      .lsf-chip { display:inline-flex; align-items:center; gap:6px; padding:5px 10px; border:1px solid #c9d2ff; background:#eef1ff; color:#1a2a7a; border-radius:999px; font-size:13px; cursor:pointer; }
+      .lsf-chip:hover { background:#e3e8ff; }
+      .lsf-chip-x { display:inline-flex; align-items:center; justify-content:center; width:18px; height:18px; border-radius:50%; background:rgba(0,0,0,0.04); color:#556; font-size:14px; line-height:1; }
+      .lsf-chip-x:hover { background:rgba(0,0,0,0.1); }
+      .lsf-chip-incomplete { border-color:#f2b800; background:#fff7e0; color:#7a5800; }
+      .lsf-chip-adv { background:#ffe5e5; color:#8a1a1a; border-color:#f5b3b3; }
+      .lsf-add, .lsf-clear { padding:5px 10px; border:1px dashed #bbb; background:#fff; color:#333; border-radius:999px; font-size:13px; cursor:pointer; }
+      .lsf-add:hover { border-color:#333; }
+      .lsf-clear { border-style:solid; border-color:#ddd; color:#777; }
+
+      /* Filter popover */
+      .lsf-pop { background:#fff; border:1px solid #d8d8d8; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.14); padding:10px 12px; min-width:260px; max-width:340px; font-size:13px; }
+      .lsf-pop-hd { display:flex; align-items:center; gap:6px; margin-bottom:8px; }
+      .lsf-pop-del { background:transparent; border:none; color:#b33; cursor:pointer; font-size:12px; padding:2px 4px; }
+      .lsf-pop-del:hover { text-decoration:underline; }
+      .lsf-pop-row { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+      .lsf-pop-body { display:flex; flex-direction:column; gap:6px; }
+      .lsf-pop-sub { font-size:11px; margin:2px 0; }
+      .lsf-pop-list { display:flex; flex-direction:column; max-height:240px; overflow:auto; border:1px solid #eee; border-radius:6px; padding:4px; background:#fafafa; }
+      .lsf-pop-actions { display:flex; gap:6px; margin-top:6px; }
+      .lsf-pop-actions button { padding:4px 10px; font-size:12px; border-radius:6px; border:1px solid #ddd; background:#fff; }
+      .lsf-search { width:100%; padding:6px 8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; }
+      .lsf-num { width:90px; padding:5px 8px; border:1px solid #ddd; border-radius:6px; }
+      .lsf-text { width:100%; padding:6px 8px; border:1px solid #ddd; border-radius:6px; box-sizing:border-box; }
+      .lsf-opt { display:flex; align-items:center; gap:4px; padding:4px 6px; cursor:pointer; border-radius:4px; }
+      .lsf-opt:hover { background:#eef; }
+      .lsf-addmenu .lsf-pop-list { background:#fff; border:none; padding:0; }
+      .lsf-addopt { text-align:left; background:#fff; border:none; padding:6px 8px; border-radius:6px; cursor:pointer; }
+      .lsf-addopt:hover { background:#f3f3f3; }
+
+      /* Controls row */
+      .ls-controls { display:flex; align-items:center; gap:12px; padding:4px 0; }
+      .ls-sort { padding:6px 8px; border-radius:8px; border:1px solid #ccc; background:#fff; font-size:13px; }
+      .ls-counts { font-size:13px; color:#555; }
+      .ls-addprod { position:relative; }
+      .ls-addprod-inp { width:240px; padding:6px 10px; border:1px solid #ccc; border-radius:8px; font-size:13px; }
+      .ls-addprod-res { position:absolute; top:34px; left:0; background:#fff; border:1px solid #ddd; border-radius:8px; box-shadow:0 8px 20px rgba(0,0,0,0.08); min-width:300px; max-height:300px; overflow:auto; display:none; z-index:60; }
+      .ls-addprod-row { display:flex; align-items:center; gap:8px; padding:6px 8px; cursor:pointer; }
+      .ls-addprod-row:hover { background:#f4f4f4; }
+      .ls-addprod-row img { width:32px; height:32px; object-fit:cover; border-radius:4px; }
+      .ls-addprod-noimg { width:32px; height:32px; background:#eee; border-radius:4px; }
+
+      /* Table */
+      .ls-table-wrap { overflow-x:auto; border:1px solid #eee; border-radius:10px; background:#fff; }
+      .ls-tbl { width:100%; border-collapse: collapse; font-size:13px; }
+      .ls-tbl th, .ls-tbl td { border-bottom:1px solid #f0f0f0; padding:8px 10px; vertical-align: middle; text-align:left; }
+      .ls-tbl thead th { position: sticky; top: 0; background:#fafafa; z-index: 5; font-weight:600; color:#333; border-bottom:1px solid #e4e4e4; }
+      .ls-tbl td.num, .ls-tbl th.num { text-align: right; font-variant-numeric: tabular-nums; }
+      .ls-tbl tr.ls-row { transition: background 0.1s; }
+      .ls-tbl tr.ls-row:hover td { background: #f8f9ff; }
+      .ls-tbl tr.ls-excluded td { background: #fafafa; color:#aaa; text-decoration: line-through; }
+      .ls-tbl tr.ls-pinned td { border-left:none; }
+      .ls-tbl tr.ls-pinned td:first-child { border-left:3px solid #d4a300; }
+      .ls-tbl td.ls-chk { width:28px; text-align:center; padding-left:8px; }
+      .ls-tbl td.ls-img { width:56px; text-align:center; padding:4px; }
+      .ls-tbl td.ls-img img { width:44px; height:52px; object-fit:cover; border-radius:5px; display:block; margin:auto; }
+      .ls-tbl td.ls-prod { min-width: 220px; }
+      .ls-tbl td.ls-prod .ls-prod-title { font-weight: 600; color:#111; }
+      .ls-tbl td.ls-prod .muted { font-size:11px; color:#888; }
+      .ls-tbl td.ls-prod .ls-prod-badges { display:flex; gap:4px; margin-top:2px; flex-wrap:wrap; }
+      .ls-badge { display:inline-block; font-size:10px; padding:1px 7px; border-radius:999px; background:#eee; color:#555; }
+      .ls-badge-pin { background:#fff4cc; color:#7a5800; border:1px solid #f0d98a; }
+      .ls-badge-ex { background:#f3f3f3; color:#999; }
+      .ls-badge-off { background:#ffe0e0; color:#8a1a1a; }
+      .ls-tbl td.ls-zero { color:#ccc; }
+      .ls-tbl input.ls-price-inp { width:78px; padding:4px 6px; border:1px solid #ddd; border-radius:5px; text-align:right; font-variant-numeric: tabular-nums; }
+      .ls-tbl input.ls-price-inp.has-override { background:#fff7e0; font-weight:700; }
+      .ls-tbl td.ls-act { white-space:nowrap; text-align:center; }
+      .ls-iconbtn { border:none; background:transparent; cursor:pointer; font-size:14px; padding:4px 6px; border-radius:4px; }
+      .ls-iconbtn:hover { background:#eee; }
+      .ls-more-row { padding:10px; text-align:center; border-top:1px solid #f0f0f0; background:#fcfcfc; }
+      .ls-empty { padding:40px 20px; text-align:center; }
+      .ls-empty-title { font-size:16px; font-weight:600; margin-bottom:6px; color:#333; }
+
+      /* Bulk action bar */
+      .ls-bulk { position:fixed; left:50%; transform:translateX(-50%) translateY(80px); bottom:20px; display:flex; align-items:center; gap:8px; background:#111; color:#fff; padding:10px 14px; border-radius:999px; box-shadow:0 10px 30px rgba(0,0,0,0.2); transition: transform 0.2s; z-index:100; opacity:0; pointer-events:none; }
+      .ls-bulk.active { transform:translateX(-50%) translateY(0); opacity:1; pointer-events:auto; }
+      .ls-bulk button { background:transparent; border:1px solid rgba(255,255,255,0.3); color:#fff; padding:6px 12px; border-radius:999px; font-size:13px; }
+      .ls-bulk button:hover { background:rgba(255,255,255,0.1); }
+      .ls-bulk-count { font-weight:600; }
+      .ls-bulk .ls-bulk-x { border-color:transparent; color:#aaa; }
+
+      /* Advanced drawers */
+      .ls-adv { margin-top:8px; }
+      .ls-adv details { border:1px solid #eee; border-radius:8px; padding:8px 12px; background:#fafafa; margin-bottom:6px; }
+      .ls-adv summary { cursor:pointer; font-weight:600; color:#333; }
+      .ls-adv-body { margin-top:10px; }
+      .ls-chkbox { display:inline-flex; align-items:center; gap:4px; margin-right:16px; font-size:13px; }
+      .ls-row { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+
+      /* Toast */
+      .ls-flash { position:fixed; bottom:30px; right:30px; background:#111; color:#fff; padding:10px 18px; border-radius:8px; opacity:0; transform:translateY(10px); transition: all 0.2s; z-index:2000; }
+      .ls-flash.show { opacity:1; transform:translateY(0); }
     </style>
   </head>
   <body>
@@ -211,11 +308,10 @@
     </div><!-- /wholesaleImportPage -->
 
     <div id="lineSheetsPage" style="display:none;">
-      <div id="lsListRoot"></div>
-      <div id="lsEditorRoot" style="display:none;"></div>
+      <div id="lsEditorRoot"></div>
     </div>
 
-    <script src="/linesheets/filter-builder.js"></script>
+    <script src="/linesheets/filter-bar.js"></script>
     <script src="/linesheets/pricing-bar.js"></script>
     <script src="/linesheets/editor.js"></script>
     <script src="/linesheets/list.js"></script>
@@ -233,11 +329,12 @@
           t.classList.add("active-tab");
           const p = t.getAttribute("data-page");
           for (const [k, el] of Object.entries(pages)) el.style.display = (k === p) ? "" : "none";
+          document.body.classList.toggle("ls-active", p === "linesheets");
           if (p === "linesheets" && !lsInitialized) {
             lsInitialized = true;
             await window.LineSheets.showList();
           } else if (p === "linesheets") {
-            await window.LineSheets.showList();
+            // Already initialized; no reload on tab switch.
           }
         }));
       })();

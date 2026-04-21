@@ -1,14 +1,21 @@
-// Line sheet editor (Screen 2).
+// Line sheet editor — single unified page.
+// Top: view switcher + save/export actions. Below: filter pill-bar, sort+counts,
+// product table (paginated), collapsible pricing & display options.
 (function () {
   const w = window;
   w.LineSheets = w.LineSheets || {};
 
   const SIZE_COLS = ["XS", "S", "M", "L", "XL"];
+  const PAGE_SIZE = 100;
+
   let meta = null;
+  let savedSheets = [];
   let state = null;
+  let initialState = null;
   let previewTimer = null;
-  let sortKey = "style_name";
-  let sortDir = "asc";
+  let inflightPreview = 0;
+  let sortMode = "newest";
+  let rowLimit = PAGE_SIZE;
   let selected = new Set();
 
   function el(tag, attrs, children) {
@@ -27,208 +34,287 @@
     return e;
   }
 
-  function escHtml(s) {
-    return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  function fmtMoney(v) {
+    const n = Number(v);
+    if (!Number.isFinite(n) || n === 0) return "—";
+    return "$" + n.toFixed(2);
+  }
+
+  function defaultFilterTree() {
+    return {
+      include: [{ conditions: [{ field: "season", op: "in", value: ["Spring 2026"] }] }],
+      globals: []
+    };
+  }
+
+  function defaultState() {
+    return {
+      id: null,
+      name: "",
+      customer: "",
+      description: "",
+      filter_tree: defaultFilterTree(),
+      saved_filter_id: null,
+      saved_filter_name: null,
+      pins: [],
+      excludes: [],
+      pricing: { default_mode: "pct_off_compare_at", default_value: 50, overrides: {} },
+      display_opts: { exclude_nada_ignore: true },
+      products: [],
+      counts: {},
+      capped: false,
+      loading: false,
+      metaError: null
+    };
   }
 
   async function loadMeta() {
-    if (meta) return meta;
     const r = await fetch("/api/linesheets/meta");
-    meta = r.ok ? await r.json() : { seasons: [], classes: [], product_types: [], locations: [], fabrics: [], sleeves: [] };
-    meta.tag_suggestions = ["KNIT", "WOVEN", "Long Sleeve", "Short Sleeve", "Sleeveless", "nada-ignore"];
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      meta = { seasons: [], classes: [], product_types: [], locations: [], fabrics: [], sleeves: [] };
+      state && (state.metaError = j.error || `Meta unavailable (HTTP ${r.status})`);
+    } else {
+      meta = await r.json();
+    }
+    meta.tag_suggestions = Array.from(new Set([
+      "KNIT", "WOVEN", "Long Sleeve", "Short Sleeve", "Sleeveless", "nada-ignore",
+      ...(meta.tag_suggestions || [])
+    ]));
     return meta;
   }
 
-  async function open(sheetId, opts = {}) {
-    await loadMeta();
-    const container = document.getElementById("lsEditorRoot");
-    container.innerHTML = "<div class=\"muted\">Loading…</div>";
-
-    if (sheetId) {
-      const r = await fetch(`/api/linesheets/${sheetId}`);
+  async function loadSavedSheets() {
+    try {
+      const r = await fetch("/api/linesheets");
+      if (!r.ok) return [];
       const j = await r.json();
-      state = {
-        id: j.linesheet.id,
-        name: j.linesheet.name,
-        customer: j.linesheet.customer || "",
-        description: j.linesheet.description || "",
-        filter_tree: j.linesheet.filter_tree || { include: [], globals: [] },
-        saved_filter_id: j.linesheet.saved_filter_id || null,
-        saved_filter_name: j.linesheet.saved_filter_name || null,
-        pins: j.linesheet.pins || [],
-        excludes: j.linesheet.excludes || [],
-        pricing: Object.assign({ default_mode: "pct_off_compare_at", default_value: 50, overrides: {} }, j.linesheet.pricing || {}),
-        display_opts: j.linesheet.display_opts || {},
-        products: j.products || [],
-        counts: j.counts || {}
-      };
-    } else {
-      const base = opts.savedFilter || null;
-      state = {
-        id: null,
-        name: "",
-        customer: "",
-        description: "",
-        filter_tree: base?.filter_tree || { include: [], globals: [] },
-        saved_filter_id: base?.id || null,
-        saved_filter_name: base?.name || null,
-        pins: [],
-        excludes: [],
-        pricing: { default_mode: "pct_off_compare_at", default_value: 50, overrides: {} },
-        display_opts: {},
-        products: [],
-        counts: {}
-      };
-      await refreshPreview();
-    }
-
-    renderAll();
+      savedSheets = j.linesheets || [];
+    } catch { savedSheets = []; }
+    return savedSheets;
   }
 
-  function renderAll() {
-    const root = document.getElementById("lsEditorRoot");
-    root.innerHTML = "";
-    root.appendChild(renderMetaBox());
-    root.appendChild(renderFilterBox());
-    root.appendChild(renderPricingBox());
-    root.appendChild(renderCountsBar());
-    root.appendChild(renderProductTable());
-    root.appendChild(renderDisplayOpts());
-    root.appendChild(renderFooter());
+  async function bootstrap(container) {
+    if (!container) return;
+    container.innerHTML = "<div class=\"muted\" style=\"padding:20px;\">Loading…</div>";
+
+    state = defaultState();
+    await Promise.all([loadMeta(), loadSavedSheets()]);
+
+    initialState = snapshot(state);
+    selected = new Set();
+    rowLimit = PAGE_SIZE;
+
+    renderShell(container);
+    await refreshPreview();
   }
 
-  function renderMetaBox() {
-    const nameInp = el("input", { type: "text", value: state.name, placeholder: "Line sheet name", style: "width:260px;" });
-    nameInp.addEventListener("input", () => state.name = nameInp.value);
-    const custInp = el("input", { type: "text", value: state.customer, placeholder: "Customer", style: "width:240px;" });
-    custInp.addEventListener("input", () => state.customer = custInp.value);
-    const descInp = el("input", { type: "text", value: state.description, placeholder: "Description", style: "width:320px;" });
-    descInp.addEventListener("input", () => state.description = descInp.value);
-
-    return el("div", { class: "box" }, [
-      el("div", { class: "row" }, [
-        el("label", null, [el("b", null, "Name ")]), nameInp,
-        el("label", { style: "margin-left:12px;" }, [el("b", null, "Customer ")]), custInp,
-        el("label", { style: "margin-left:12px;" }, [el("b", null, "Description ")]), descInp
-      ])
-    ]);
-  }
-
-  function renderFilterBox() {
-    const box = el("div", { class: "box" });
-    const hdr = el("div", { class: "row" }, [
-      el("b", null, "Filter "),
-      state.saved_filter_name ? el("span", { class: "pill" }, `Using: ${state.saved_filter_name}`) : el("span", { class: "muted" }, "(ad-hoc)")
-    ]);
-    box.appendChild(hdr);
-
-    if (state.saved_filter_name) {
-      hdr.appendChild(el("button", {
-        style: "margin-left:8px;",
-        onclick: () => {
-          if (confirm(`Unlink from saved filter "${state.saved_filter_name}"? The filter will stay in this line sheet but won't be tied to the saved filter.`)) {
-            state.saved_filter_id = null; state.saved_filter_name = null; renderAll();
-          }
-        }
-      }, "Unlink"));
-      hdr.appendChild(el("button", {
-        style: "margin-left:6px;",
-        onclick: async () => {
-          const name = prompt("Save current filter as new saved filter. Name:");
-          if (!name) return;
-          const r = await fetch("/api/saved-filters", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, filter_tree: state.filter_tree })
-          });
-          if (!r.ok) return alert("Failed: " + (await r.text()));
-          const j = await r.json();
-          state.saved_filter_id = j.saved_filter.id;
-          state.saved_filter_name = j.saved_filter.name;
-          renderAll();
-        }
-      }, "Save as new filter"));
-      hdr.appendChild(el("button", {
-        style: "margin-left:6px;",
-        onclick: async () => {
-          if (!confirm(`Overwrite saved filter "${state.saved_filter_name}" with the current filter? This affects every line sheet linked to it.`)) return;
-          const r = await fetch(`/api/saved-filters/${state.saved_filter_id}`, {
-            method: "PUT", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ filter_tree: state.filter_tree })
-          });
-          if (!r.ok) return alert("Failed: " + (await r.text()));
-          alert("Saved filter updated.");
-        }
-      }, `Update "${state.saved_filter_name}"`));
-    } else {
-      hdr.appendChild(el("button", {
-        style: "margin-left:8px;",
-        onclick: async () => {
-          const name = prompt("Name for new saved filter:");
-          if (!name) return;
-          const r = await fetch("/api/saved-filters", {
-            method: "POST", headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, filter_tree: state.filter_tree })
-          });
-          if (!r.ok) return alert("Failed: " + (await r.text()));
-          const j = await r.json();
-          state.saved_filter_id = j.saved_filter.id;
-          state.saved_filter_name = j.saved_filter.name;
-          renderAll();
-        }
-      }, "Save as filter"));
-    }
-
-    const builder = el("div", { class: "ls-fb" });
-    box.appendChild(builder);
-    const rebuild = () => {
-      w.LineSheets.renderFilterBuilder(builder, state.filter_tree, meta, () => { rebuild(); debouncePreview(); });
-    };
-    rebuild();
-
-    return box;
-  }
-
-  function renderPricingBox() {
-    const box = el("div", { class: "box" });
-    const bar = el("div", { class: "row" });
-    box.appendChild(bar);
-    const overrideCount = Object.keys(state.pricing.overrides || {}).length;
-    w.LineSheets.renderPricingBar(bar, state.pricing, {
-      onChange: () => debouncePreview(),
-      onApplyAll: () => {
-        if (overrideCount && !confirm(`Clear ${overrideCount} hand-edited override(s) and apply default to all?`)) return;
-        state.pricing.overrides = {};
-        debouncePreview();
-      },
-      onResetOverrides: () => { state.pricing.overrides = {}; debouncePreview(); },
-      overrideCount
+  function snapshot(s) {
+    return JSON.stringify({
+      id: s.id, name: s.name, customer: s.customer, description: s.description,
+      filter_tree: s.filter_tree, pins: s.pins, excludes: s.excludes,
+      pricing: s.pricing, display_opts: s.display_opts
     });
-    return box;
   }
 
-  function renderCountsBar() {
-    const c = state.counts || {};
-    const bar = el("div", { class: "row", style: "margin-top:12px;" }, [
-      el("span", { class: "pill" }, `Matched: ${c.matched ?? 0}`),
-      el("span", { class: "pill" }, `Pinned: ${c.pinned ?? 0}`),
-      el("span", { class: "pill" }, `Excluded: ${c.excluded ?? 0}`),
-      el("span", { class: "pill" }, `Final: ${c.final ?? 0}`)
-    ]);
-    const bulk = el("button", {
-      style: "margin-left:12px;",
-      onclick: () => {
-        if (selected.size === 0) return alert("Select rows first.");
-        for (const id of selected) if (!state.excludes.includes(id)) state.excludes.push(id);
-        selected.clear();
-        debouncePreview();
-      }
-    }, "Exclude selected");
-    bar.appendChild(bulk);
+  function isDirty() {
+    return initialState !== snapshot(state);
+  }
 
-    // Typeahead for pin
-    const pinWrap = el("span", { style: "position:relative; margin-left:12px;" });
-    const pinInput = el("input", { type: "text", placeholder: "+ Add product by name…", style: "width:260px;" });
-    const pinResults = el("div", { style: "position:absolute; top:28px; left:0; background:#fff; border:1px solid #ddd; border-radius:6px; max-height:260px; overflow:auto; display:none; z-index:1000; min-width:280px;" });
+  async function openSaved(id) {
+    const container = document.getElementById("lsEditorRoot");
+    container.innerHTML = "<div class=\"muted\" style=\"padding:20px;\">Loading…</div>";
+    const r = await fetch(`/api/linesheets/${id}`);
+    if (!r.ok) {
+      container.innerHTML = "<div class=\"muted\">Failed to load.</div>";
+      return;
+    }
+    const j = await r.json();
+    const l = j.linesheet;
+    state = {
+      id: l.id,
+      name: l.name,
+      customer: l.customer || "",
+      description: l.description || "",
+      filter_tree: l.filter_tree || defaultFilterTree(),
+      saved_filter_id: l.saved_filter_id || null,
+      saved_filter_name: l.saved_filter_name || null,
+      pins: l.pins || [],
+      excludes: l.excludes || [],
+      pricing: Object.assign({ default_mode: "pct_off_compare_at", default_value: 50, overrides: {} }, l.pricing || {}),
+      display_opts: Object.assign({ exclude_nada_ignore: true }, l.display_opts || {}),
+      products: j.products || [],
+      counts: j.counts || {},
+      capped: !!j.capped,
+      loading: false,
+      metaError: null
+    };
+    if (state.display_opts.sort) sortMode = state.display_opts.sort;
+    initialState = snapshot(state);
+    selected = new Set();
+    rowLimit = PAGE_SIZE;
+    renderShell(container);
+  }
+
+  function newDraft() {
+    const container = document.getElementById("lsEditorRoot");
+    state = defaultState();
+    initialState = snapshot(state);
+    selected = new Set();
+    rowLimit = PAGE_SIZE;
+    renderShell(container);
+    refreshPreview();
+  }
+
+  // --- DOM ---
+
+  function renderShell(root) {
+    root.innerHTML = "";
+    root.classList.add("ls-page");
+
+    root.appendChild(renderHeader());
+    root.appendChild(renderFilterArea());
+    root.appendChild(renderControlsRow());
+    root.appendChild(renderTableArea());
+    root.appendChild(renderAdvancedArea());
+    root.appendChild(renderBulkBar()); // fixed footer, only shows when selection
+  }
+
+  function renderHeader() {
+    const hdr = el("div", { class: "ls-hd" });
+
+    // Left: view switcher + name
+    const left = el("div", { class: "ls-hd-l" });
+
+    const viewSel = el("select", { class: "ls-views" });
+    viewSel.appendChild(el("option", { value: "__new__" }, "+ New view"));
+    if (savedSheets.length) viewSel.appendChild(el("option", { value: "", disabled: "disabled" }, "── Saved views ──"));
+    for (const s of savedSheets) {
+      const label = s.customer ? `${s.name} · ${s.customer}` : s.name;
+      viewSel.appendChild(el("option", { value: String(s.id) }, label));
+    }
+    viewSel.value = state.id ? String(state.id) : "__new__";
+    viewSel.addEventListener("change", async () => {
+      if (isDirty() && !confirm("Discard unsaved changes to this view?")) {
+        viewSel.value = state.id ? String(state.id) : "__new__";
+        return;
+      }
+      if (viewSel.value === "__new__") newDraft();
+      else openSaved(Number(viewSel.value));
+    });
+    left.appendChild(viewSel);
+
+    const nameLabel = el("div", { class: "ls-hd-title" }, [
+      document.createTextNode(state.name || "Untitled view"),
+      isDirty() ? el("span", { class: "ls-dirty", title: "Unsaved changes" }, " •") : null
+    ]);
+    left.appendChild(nameLabel);
+
+    hdr.appendChild(left);
+
+    // Right: actions
+    const right = el("div", { class: "ls-hd-r" });
+
+    right.appendChild(el("button", {
+      onclick: () => editNameDialog()
+    }, state.name ? "Rename" : "Name view"));
+
+    right.appendChild(el("button", {
+      class: "primary",
+      onclick: () => save({ rename: false })
+    }, state.id ? "Save" : "Save view"));
+
+    right.appendChild(el("button", {
+      onclick: () => save({ saveAs: true })
+    }, "Save as…"));
+
+    right.appendChild(el("button", {
+      class: "primary",
+      onclick: exportPdf
+    }, "Export PDF"));
+
+    // Overflow menu
+    const more = el("div", { class: "ls-more" });
+    const moreBtn = el("button", { class: "ls-more-btn", title: "More actions" }, "⋯");
+    const moreMenu = el("div", { class: "ls-more-menu" });
+    moreMenu.appendChild(el("button", {
+      onclick: async () => {
+        if (!state.id) return alert("Save the view first.");
+        const r = await fetch(`/api/linesheets/${state.id}/duplicate`, { method: "POST" });
+        if (!r.ok) return alert("Duplicate failed");
+        const j = await r.json();
+        await loadSavedSheets();
+        openSaved(j.linesheet.id);
+      }
+    }, "Duplicate view"));
+    moreMenu.appendChild(el("button", {
+      onclick: async () => {
+        if (!state.id) return alert("This view isn't saved yet.");
+        if (!confirm(`Archive "${state.name}"?`)) return;
+        const r = await fetch(`/api/linesheets/${state.id}`, { method: "DELETE" });
+        if (!r.ok) return alert("Archive failed");
+        await loadSavedSheets();
+        newDraft();
+      }
+    }, "Archive view"));
+    moreMenu.appendChild(el("button", {
+      onclick: () => { if (state.id) window.open(`/api/linesheets/${state.id}/render.html`, "_blank"); else alert("Save the view first."); }
+    }, "Preview in browser"));
+    moreBtn.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      moreMenu.classList.toggle("open");
+    });
+    document.addEventListener("click", () => moreMenu.classList.remove("open"));
+    more.appendChild(moreBtn);
+    more.appendChild(moreMenu);
+    right.appendChild(more);
+
+    hdr.appendChild(right);
+
+    return hdr;
+  }
+
+  function renderFilterArea() {
+    const wrap = el("div", { class: "ls-filter-area" });
+
+    if (state.metaError) {
+      wrap.appendChild(el("div", { class: "ls-warn" }, [
+        el("b", null, "Filter options unavailable. "),
+        document.createTextNode(state.metaError + " — filters will work once the reporting DB is connected.")
+      ]));
+    }
+
+    const bar = el("div", { class: "lsf-bar" });
+    w.LineSheets.renderFilterBar(bar, state.filter_tree, meta, () => {
+      rowLimit = PAGE_SIZE; // reset pagination on filter change
+      debouncePreview();
+    });
+    wrap.appendChild(bar);
+
+    return wrap;
+  }
+
+  function renderControlsRow() {
+    const row = el("div", { class: "ls-controls" });
+
+    // Sort
+    const sortSel = el("select", { class: "ls-sort" }, [
+      el("option", { value: "newest" }, "Sort: Newest first"),
+      el("option", { value: "style_asc" }, "Sort: Style name (A→Z)"),
+      el("option", { value: "style_desc" }, "Sort: Style name (Z→A)"),
+      el("option", { value: "price_asc" }, "Sort: Price (low→high)"),
+      el("option", { value: "price_desc" }, "Sort: Price (high→low)"),
+      el("option", { value: "inventory_desc" }, "Sort: Inventory (most)"),
+      el("option", { value: "inventory_asc" }, "Sort: Inventory (least)")
+    ]);
+    sortSel.value = sortMode;
+    sortSel.addEventListener("change", () => { sortMode = sortSel.value; renderTableBody(); });
+    row.appendChild(sortSel);
+
+    // Add product by name (pin)
+    const pinWrap = el("div", { class: "ls-addprod" });
+    const pinInput = el("input", { type: "search", placeholder: "+ Add product by name…", class: "ls-addprod-inp" });
+    const pinResults = el("div", { class: "ls-addprod-res" });
     pinWrap.appendChild(pinInput); pinWrap.appendChild(pinResults);
 
     let searchT = null;
@@ -238,211 +324,374 @@
       if (q.length < 2) { pinResults.style.display = "none"; return; }
       searchT = setTimeout(async () => {
         const r = await fetch("/api/products/search?q=" + encodeURIComponent(q));
+        if (!r.ok) { pinResults.style.display = "none"; return; }
         const j = await r.json();
         pinResults.innerHTML = "";
         for (const p of j.products || []) {
-          const row = el("div", {
-            style: "display:flex; gap:8px; align-items:center; padding:6px; cursor:pointer; border-bottom:1px solid #f0f0f0;",
+          const rr = el("div", {
+            class: "ls-addprod-row",
             onclick: () => {
               pinResults.style.display = "none";
               pinInput.value = "";
-              const productId = p.id;
-              if (!productId) { alert("Product id unavailable"); return; }
-              if (!state.pins.includes(productId)) state.pins.push(productId);
+              if (!p.id) { alert("Product id unavailable"); return; }
+              if (!state.pins.includes(p.id)) state.pins.push(p.id);
               debouncePreview();
             }
           }, [
-            p.imageUrl ? el("img", { src: p.imageUrl + "?width=40", style: "width:32px;height:32px;object-fit:cover;border-radius:4px;" }) : el("div", { style: "width:32px;height:32px;background:#eee;border-radius:4px;" }),
+            p.imageUrl ? el("img", { src: p.imageUrl + "?width=40" }) : el("div", { class: "ls-addprod-noimg" }),
             el("span", null, p.title)
           ]);
-          pinResults.appendChild(row);
+          pinResults.appendChild(rr);
         }
         pinResults.style.display = (j.products || []).length ? "block" : "none";
       }, 220);
     });
-    bar.appendChild(pinWrap);
+    pinInput.addEventListener("blur", () => setTimeout(() => pinResults.style.display = "none", 180));
+    row.appendChild(pinWrap);
 
-    return bar;
+    // Counts
+    const spacer = el("div", { style: "flex:1;" });
+    row.appendChild(spacer);
+
+    const c = state.counts || {};
+    const countText = state.loading ? "Loading…" :
+      `${c.final ?? 0} in view` +
+      (c.excluded ? ` · ${c.excluded} excluded` : "") +
+      (c.pinned ? ` · ${c.pinned} pinned` : "") +
+      (state.capped ? " · capped at 500" : "");
+    row.appendChild(el("div", { class: "ls-counts" }, countText));
+
+    return row;
   }
 
-  function renderProductTable() {
-    const wrap = el("div", { class: "box", style: "overflow-x:auto; margin-top:8px;" });
-
-    if (!state.products || state.products.length === 0) {
-      wrap.appendChild(el("div", { class: "muted" }, "No products match this filter."));
-      return wrap;
-    }
-
-    const tbl = el("table", { class: "ls-tbl" });
-    tbl.appendChild(buildHeader());
-    tbl.appendChild(buildBody());
-    wrap.appendChild(tbl);
+  function renderTableArea() {
+    const wrap = el("div", { class: "ls-table-wrap", id: "lsTableWrap" });
+    renderTableBodyInto(wrap);
     return wrap;
   }
 
-  function buildHeader() {
-    const cells = [
-      { key: "_chk", label: "" },
+  function renderTableBody() {
+    const wrap = document.getElementById("lsTableWrap");
+    if (!wrap) return;
+    renderTableBodyInto(wrap);
+    // Also refresh counts/header dependent bits
+    const shell = document.getElementById("lsEditorRoot");
+    const controls = shell.querySelector(".ls-controls");
+    if (controls) controls.replaceWith(renderControlsRow());
+    const bulkOld = shell.querySelector(".ls-bulk");
+    if (bulkOld) bulkOld.replaceWith(renderBulkBar());
+    const hdrOld = shell.querySelector(".ls-hd");
+    if (hdrOld) hdrOld.replaceWith(renderHeader());
+  }
+
+  function renderTableBodyInto(wrap) {
+    wrap.innerHTML = "";
+
+    if (state.loading) {
+      wrap.appendChild(el("div", { class: "muted", style: "padding:20px;text-align:center;" }, "Loading products…"));
+      return;
+    }
+
+    const all = sortProducts(state.products || []);
+    if (all.length === 0) {
+      const emptyMsg = state.metaError
+        ? "Connect the reporting DB to load products."
+        : "No products match the current filters. Try removing a filter or clicking + Add filter above.";
+      wrap.appendChild(el("div", { class: "ls-empty" }, [
+        el("div", { class: "ls-empty-title" }, "No products"),
+        el("div", { class: "muted" }, emptyMsg)
+      ]));
+      return;
+    }
+
+    const rows = all.slice(0, rowLimit);
+
+    const tbl = el("table", { class: "ls-tbl" });
+    tbl.appendChild(renderTableHead(all));
+    const tbody = document.createElement("tbody");
+    for (const p of rows) tbody.appendChild(renderTableRow(p));
+    tbl.appendChild(tbody);
+    wrap.appendChild(tbl);
+
+    if (all.length > rowLimit) {
+      const more = el("div", { class: "ls-more-row" }, [
+        el("button", {
+          onclick: () => {
+            rowLimit = Math.min(rowLimit + PAGE_SIZE, all.length);
+            renderTableBody();
+          }
+        }, `Show ${Math.min(PAGE_SIZE, all.length - rowLimit)} more`),
+        el("span", { class: "muted", style: "margin-left:12px;" }, `Showing ${rowLimit} of ${all.length}`)
+      ]);
+      wrap.appendChild(more);
+    } else if (all.length > PAGE_SIZE) {
+      wrap.appendChild(el("div", { class: "muted", style: "padding:8px 2px;" }, `Showing all ${all.length}`));
+    }
+  }
+
+  function renderTableHead(all) {
+    const cols = [
+      { key: "_chk", label: selectAllCell(all) },
       { key: "image", label: "" },
-      { key: "style_name", label: "Product", sortable: true },
-      { key: "product_type", label: "Type", sortable: true },
-      { key: "compare_at_price", label: "MSRP", sortable: true },
-      { key: "effective_price", label: "Price", sortable: true }
+      { key: "style_name", label: "Product" },
+      { key: "product_type", label: "Type" },
+      { key: "compare_at_price", label: "MSRP" },
+      { key: "effective_price", label: "Price" }
     ];
-    for (const s of SIZE_COLS) cells.push({ key: `sz_${s}`, label: s });
-    cells.push({ key: "inventory_total", label: "Total", sortable: true });
-    cells.push({ key: "_act", label: "" });
+    for (const s of SIZE_COLS) cols.push({ key: `sz_${s}`, label: s });
+    cols.push({ key: "inventory_total", label: "Total" });
+    cols.push({ key: "_act", label: "" });
 
     const tr = el("tr");
-    for (const c of cells) {
-      const th = el("th", {
-        style: c.sortable ? "cursor:pointer;" : "",
-        onclick: c.sortable ? () => {
-          if (sortKey === c.key) sortDir = sortDir === "asc" ? "desc" : "asc";
-          else { sortKey = c.key; sortDir = "asc"; }
-          renderAll();
-        } : null
-      }, c.label + (sortKey === c.key ? (sortDir === "asc" ? " ▲" : " ▼") : ""));
+    for (const c of cols) {
+      const th = el("th", null);
+      if (typeof c.label === "string") th.textContent = c.label; else th.appendChild(c.label);
       tr.appendChild(th);
     }
     return el("thead", null, tr);
   }
 
-  function buildBody() {
-    const products = sortProducts(state.products);
-    const tb = document.createElement("tbody");
+  function selectAllCell(all) {
+    const cb = el("input", { type: "checkbox", title: "Select all shown" });
+    const visibleIds = all.slice(0, rowLimit).map(p => p.product_id);
+    cb.checked = visibleIds.length > 0 && visibleIds.every(id => selected.has(id));
+    cb.addEventListener("change", () => {
+      if (cb.checked) visibleIds.forEach(id => selected.add(id));
+      else visibleIds.forEach(id => selected.delete(id));
+      renderTableBody();
+    });
+    return cb;
+  }
 
-    for (const p of products) {
-      const isExcluded = !!p.excluded;
-      const isPinned = p.source === "pinned" || state.pins.includes(p.product_id);
-      const tr = el("tr", { class: "ls-row" + (isExcluded ? " ls-excluded" : "") });
+  function renderTableRow(p) {
+    const isExcluded = !!p.excluded;
+    const isPinned = p.source === "pinned" || state.pins.includes(p.product_id);
+    const classes = ["ls-row"];
+    if (isExcluded) classes.push("ls-excluded");
+    if (isPinned)   classes.push("ls-pinned");
 
-      // checkbox
-      const cb = el("input", { type: "checkbox" });
-      cb.checked = selected.has(p.product_id);
-      cb.addEventListener("change", () => {
-        if (cb.checked) selected.add(p.product_id);
-        else selected.delete(p.product_id);
-      });
-      tr.appendChild(el("td", { style: "text-align:center;" }, [cb]));
+    const tr = el("tr", { class: classes.join(" ") });
 
-      // image
-      tr.appendChild(el("td", { style: "text-align:center;" },
-        p.image ? [el("img", { src: p.image + "?width=80", style: "width:40px;height:48px;object-fit:cover;border-radius:4px;" })] : ""));
+    // checkbox
+    const cb = el("input", { type: "checkbox" });
+    cb.checked = selected.has(p.product_id);
+    cb.addEventListener("change", () => {
+      if (cb.checked) selected.add(p.product_id);
+      else selected.delete(p.product_id);
+      // refresh bulk bar
+      const shell = document.getElementById("lsEditorRoot");
+      const bulkOld = shell.querySelector(".ls-bulk");
+      if (bulkOld) bulkOld.replaceWith(renderBulkBar());
+    });
+    tr.appendChild(el("td", { class: "ls-chk" }, [cb]));
 
-      // product title + sub
-      tr.appendChild(el("td", { class: "ls-prod" }, [
-        el("div", null, p.title || ""),
-        p.style_name && p.style_name !== p.title ? el("div", { class: "muted" }, p.style_name) : null,
-        isPinned ? el("span", { class: "pill", style: "margin-top:2px;font-size:10px;" }, "pinned") : null
-      ]));
+    // image
+    tr.appendChild(el("td", { class: "ls-img" },
+      p.image ? [el("img", { src: p.image + "?width=80" })] : ""));
 
-      tr.appendChild(el("td", null, p.product_type || ""));
-      tr.appendChild(el("td", { class: "num" }, fmtMoney(p.compare_at_price || p.current_price)));
+    // title
+    tr.appendChild(el("td", { class: "ls-prod" }, [
+      el("div", { class: "ls-prod-title" }, p.title || ""),
+      p.style_name && p.style_name !== p.title ? el("div", { class: "muted" }, p.style_name) : null,
+      el("div", { class: "ls-prod-badges" }, [
+        isPinned ? el("span", { class: "ls-badge ls-badge-pin" }, "pinned") : null,
+        isExcluded ? el("span", { class: "ls-badge ls-badge-ex" }, "excluded") : null,
+        p.price_tier === "off_price" ? el("span", { class: "ls-badge ls-badge-off" }, "off price") : null
+      ])
+    ]));
 
-      // editable price
-      const priceInp = el("input", {
-        type: "number", step: "0.01", value: p.effective_price ?? "",
-        style: "width:80px;text-align:right;" + (p.has_override ? "font-weight:700;" : "")
-      });
-      priceInp.addEventListener("change", () => {
-        const v = priceInp.value.trim();
-        if (v === "" || v === "=") {
-          delete state.pricing.overrides[p.product_id];
-        } else {
-          state.pricing.overrides[p.product_id] = Number(v);
-        }
-        debouncePreview();
-      });
-      tr.appendChild(el("td", { class: "num" }, [priceInp]));
+    tr.appendChild(el("td", null, p.product_type || ""));
+    tr.appendChild(el("td", { class: "num" }, fmtMoney(p.compare_at_price || p.current_price)));
 
-      // sizes
-      for (const s of SIZE_COLS) {
-        const qty = Number(p.inventory_by_size?.[s] || 0);
-        tr.appendChild(el("td", { class: "num" + (qty === 0 ? " ls-zero" : "") }, qty ? String(qty) : ""));
-      }
-      tr.appendChild(el("td", { class: "num" }, String(p.inventory_total || 0)));
+    // editable price
+    const priceInp = el("input", {
+      type: "number", step: "0.01", value: p.effective_price ?? "",
+      class: "ls-price-inp" + (p.has_override ? " has-override" : "")
+    });
+    priceInp.addEventListener("change", () => {
+      const v = priceInp.value.trim();
+      if (v === "" || v === "=") delete state.pricing.overrides[p.product_id];
+      else state.pricing.overrides[p.product_id] = Number(v);
+      debouncePreview();
+    });
+    tr.appendChild(el("td", { class: "num" }, [priceInp]));
 
-      // actions
-      const actCell = el("td", { style: "text-align:center;" });
-      if (isExcluded) {
-        actCell.appendChild(el("button", {
-          title: "Un-exclude",
-          onclick: () => { state.excludes = state.excludes.filter(id => id !== p.product_id); debouncePreview(); }
-        }, "↺"));
-      } else {
-        actCell.appendChild(el("button", {
-          title: "Exclude",
-          onclick: () => { if (!state.excludes.includes(p.product_id)) state.excludes.push(p.product_id); debouncePreview(); }
-        }, "✕"));
-        if (!isPinned) {
-          actCell.appendChild(el("button", {
-            title: "Pin",
-            style: "margin-left:4px;",
-            onclick: () => { if (!state.pins.includes(p.product_id)) state.pins.push(p.product_id); debouncePreview(); }
-          }, "⭐"));
-        } else {
-          actCell.appendChild(el("button", {
-            title: "Unpin",
-            style: "margin-left:4px;",
-            onclick: () => { state.pins = state.pins.filter(id => id !== p.product_id); debouncePreview(); }
-          }, "☆"));
-        }
-      }
-      tr.appendChild(actCell);
-
-      tb.appendChild(tr);
+    for (const s of SIZE_COLS) {
+      const qty = Number(p.inventory_by_size?.[s] || 0);
+      tr.appendChild(el("td", { class: "num" + (qty === 0 ? " ls-zero" : "") }, qty ? String(qty) : ""));
     }
-    return tb;
+    tr.appendChild(el("td", { class: "num" }, String(p.inventory_total || 0)));
+
+    // actions
+    const act = el("td", { class: "ls-act" });
+    if (isExcluded) {
+      act.appendChild(iconBtn("↺", "Un-exclude", () => {
+        state.excludes = state.excludes.filter(id => id !== p.product_id);
+        debouncePreview();
+      }));
+    } else {
+      act.appendChild(iconBtn("✕", "Exclude", () => {
+        if (!state.excludes.includes(p.product_id)) state.excludes.push(p.product_id);
+        debouncePreview();
+      }));
+      act.appendChild(iconBtn(isPinned ? "☆" : "⭐", isPinned ? "Unpin" : "Pin", () => {
+        if (isPinned) state.pins = state.pins.filter(id => id !== p.product_id);
+        else if (!state.pins.includes(p.product_id)) state.pins.push(p.product_id);
+        debouncePreview();
+      }));
+    }
+    tr.appendChild(act);
+
+    return tr;
+  }
+
+  function iconBtn(sym, title, onclick) {
+    return el("button", { class: "ls-iconbtn", title, onclick }, sym);
   }
 
   function sortProducts(arr) {
-    const dir = sortDir === "desc" ? -1 : 1;
     const copy = [...arr];
+    // Stable primary partitioning: pinned first, excluded last
+    const pinSet = new Set(state.pins || []);
+    const exSet = new Set(state.excludes || []);
     copy.sort((a, b) => {
-      let av, bv;
-      if (sortKey === "style_name") { av = a.style_name || a.title || ""; bv = b.style_name || b.title || ""; return dir * String(av).localeCompare(String(bv)); }
-      if (sortKey === "product_type") return dir * String(a.product_type || "").localeCompare(String(b.product_type || ""));
-      if (sortKey === "compare_at_price") return dir * ((a.compare_at_price || 0) - (b.compare_at_price || 0));
-      if (sortKey === "effective_price") return dir * ((a.effective_price || 0) - (b.effective_price || 0));
-      if (sortKey === "inventory_total") return dir * ((a.inventory_total || 0) - (b.inventory_total || 0));
-      return 0;
+      const aPin = pinSet.has(a.product_id) ? 1 : 0;
+      const bPin = pinSet.has(b.product_id) ? 1 : 0;
+      if (aPin !== bPin) return bPin - aPin;
+      const aEx = exSet.has(a.product_id) ? 1 : 0;
+      const bEx = exSet.has(b.product_id) ? 1 : 0;
+      if (aEx !== bEx) return aEx - bEx;
+      return compareBy(a, b);
     });
     return copy;
   }
 
-  function renderDisplayOpts() {
+  function compareBy(a, b) {
+    switch (sortMode) {
+      case "newest": return productAge(b) - productAge(a);
+      case "style_asc":  return String(a.style_name || a.title || "").localeCompare(String(b.style_name || b.title || ""));
+      case "style_desc": return String(b.style_name || b.title || "").localeCompare(String(a.style_name || a.title || ""));
+      case "price_asc":  return (a.effective_price ?? a.current_price ?? 0) - (b.effective_price ?? b.current_price ?? 0);
+      case "price_desc": return (b.effective_price ?? b.current_price ?? 0) - (a.effective_price ?? a.current_price ?? 0);
+      case "inventory_desc": return (b.inventory_total || 0) - (a.inventory_total || 0);
+      case "inventory_asc":  return (a.inventory_total || 0) - (b.inventory_total || 0);
+      default: return 0;
+    }
+  }
+
+  // Shopify numeric product IDs are monotonically increasing; use them as newness proxy.
+  function productAge(p) {
+    const m = String(p.product_id || "").match(/(\d+)$/);
+    return m ? Number(m[1]) : 0;
+  }
+
+  function renderBulkBar() {
+    const bar = el("div", { class: "ls-bulk" + (selected.size > 0 ? " active" : "") });
+    if (selected.size === 0) return bar;
+
+    bar.appendChild(el("span", { class: "ls-bulk-count" }, `${selected.size} selected`));
+    bar.appendChild(el("button", {
+      onclick: () => {
+        for (const id of selected) if (!state.excludes.includes(id)) state.excludes.push(id);
+        selected.clear();
+        debouncePreview();
+      }
+    }, "Exclude"));
+    bar.appendChild(el("button", {
+      onclick: () => {
+        for (const id of selected) if (!state.pins.includes(id)) state.pins.push(id);
+        selected.clear();
+        debouncePreview();
+      }
+    }, "Pin"));
+    bar.appendChild(el("button", {
+      onclick: () => {
+        state.excludes = state.excludes.filter(id => !selected.has(id));
+        selected.clear();
+        debouncePreview();
+      }
+    }, "Un-exclude"));
+    bar.appendChild(el("button", {
+      class: "ls-bulk-x",
+      onclick: () => { selected.clear(); renderTableBody(); }
+    }, "Clear"));
+    return bar;
+  }
+
+  function renderAdvancedArea() {
+    const box = el("div", { class: "ls-adv" });
+
+    // Pricing
+    const pricingDet = el("details", null);
+    pricingDet.appendChild(el("summary", null, priceSummary()));
+    const pb = el("div", { class: "ls-adv-body" });
+    pricingDet.appendChild(pb);
+    const overrideCount = Object.keys(state.pricing.overrides || {}).length;
+    w.LineSheets.renderPricingBar(pb, state.pricing, {
+      onChange: () => debouncePreview(),
+      onApplyAll: () => {
+        if (overrideCount && !confirm(`Clear ${overrideCount} hand-edited override(s) and apply default to all?`)) return;
+        state.pricing.overrides = {};
+        debouncePreview();
+      },
+      onResetOverrides: () => { state.pricing.overrides = {}; debouncePreview(); },
+      overrideCount
+    });
+    box.appendChild(pricingDet);
+
+    // Display options
+    const dispDet = el("details", null);
+    dispDet.appendChild(el("summary", null, "Display options"));
+    dispDet.appendChild(renderDisplayOptsBody());
+    box.appendChild(dispDet);
+
+    // Metadata (customer, description)
+    const metaDet = el("details", null);
+    metaDet.appendChild(el("summary", null, "Customer & description"));
+    const mb = el("div", { class: "ls-adv-body" });
+    const cust = el("input", { type: "text", value: state.customer, placeholder: "Customer (e.g. 'Boutique A')" });
+    cust.addEventListener("input", () => state.customer = cust.value);
+    const desc = el("input", { type: "text", value: state.description, placeholder: "Internal description" });
+    desc.addEventListener("input", () => state.description = desc.value);
+    mb.appendChild(el("div", { class: "ls-row" }, [el("label", null, "Customer: "), cust]));
+    mb.appendChild(el("div", { class: "ls-row", style: "margin-top:8px;" }, [el("label", null, "Description: "), desc]));
+    metaDet.appendChild(mb);
+    box.appendChild(metaDet);
+
+    return box;
+  }
+
+  function priceSummary() {
+    const m = state.pricing.default_mode;
+    const v = state.pricing.default_value;
+    const count = Object.keys(state.pricing.overrides || {}).length;
+    const label = m === "fixed" ? `Fixed $${v}` :
+                  m === "pct_off_current" ? `${v}% off current` :
+                  `${v}% off MSRP`;
+    return `Pricing: ${label}${count ? ` · ${count} overrides` : ""}`;
+  }
+
+  function renderDisplayOptsBody() {
     const opts = state.display_opts;
-    const box = el("div", { class: "box", style: "margin-top:8px;" });
-    const details = el("details", null);
-    details.appendChild(el("summary", null, "Display options"));
+    const body = el("div", { class: "ls-adv-body" });
 
     const makeCheckbox = (key, label, defaultVal) => {
       const id = "opt_" + key;
       const inp = el("input", { type: "checkbox", id });
       inp.checked = opts[key] ?? defaultVal;
       inp.addEventListener("change", () => { opts[key] = inp.checked; });
-      return el("label", { for: id, style: "margin-right:16px;" }, [inp, document.createTextNode(" " + label)]);
+      return el("label", { for: id, class: "ls-chkbox" }, [inp, document.createTextNode(" " + label)]);
     };
 
-    const row1 = el("div", { class: "row" }, [
-      makeCheckbox("show_inventory", "Show inventory columns on PDF", true),
+    body.appendChild(el("div", { class: "ls-row" }, [
+      makeCheckbox("show_inventory", "Show inventory on PDF", true),
       makeCheckbox("show_msrp", "Show MSRP on PDF", true),
-      makeCheckbox("exclude_nada_ignore", "Exclude nada-ignore", true)
-    ]);
+      makeCheckbox("exclude_nada_ignore", "Hide products tagged nada-ignore", true)
+    ]));
 
     const groupSel = el("select", null, ["none", "season", "product_type", "class"].map(v => el("option", { value: v }, v)));
     groupSel.value = opts.group_by || "none";
     groupSel.addEventListener("change", () => { opts.group_by = groupSel.value === "none" ? null : groupSel.value; });
-
-    const sortSel = el("select", null, [
-      el("option", { value: "style_name" }, "style_name"),
-      el("option", { value: "title" }, "title"),
-      el("option", { value: "price_asc" }, "price asc"),
-      el("option", { value: "price_desc" }, "price desc")
-    ]);
-    sortSel.value = opts.sort || "style_name";
-    sortSel.addEventListener("change", () => { opts.sort = sortSel.value; });
 
     const minInv = el("input", { type: "number", value: opts.min_live_inventory ?? 1, style: "width:60px;" });
     minInv.addEventListener("change", () => { opts.min_live_inventory = Number(minInv.value); });
@@ -451,41 +700,28 @@
     staleSel.value = opts.stale_behavior || "drop";
     staleSel.addEventListener("change", () => { opts.stale_behavior = staleSel.value; });
 
-    const row2 = el("div", { class: "row" }, [
+    body.appendChild(el("div", { class: "ls-row", style: "margin-top:8px;" }, [
       el("label", null, "Group by: "), groupSel,
-      el("label", { style: "margin-left:12px;" }, "Sort: "), sortSel,
       el("label", { style: "margin-left:12px;" }, "Min live inv: "), minInv,
-      el("label", { style: "margin-left:12px;" }, "Stale: "), staleSel
-    ]);
+      el("label", { style: "margin-left:12px;" }, "Stale behavior: "), staleSel
+    ]));
 
-    details.appendChild(row1);
-    details.appendChild(row2);
-    box.appendChild(details);
-    return box;
+    return body;
   }
 
-  function renderFooter() {
-    const row = el("div", { class: "row", style: "margin-top:12px;" });
-    row.appendChild(el("button", { onclick: () => w.LineSheets.showList() }, "Cancel"));
-    row.appendChild(el("button", { class: "primary", style: "margin-left:auto;", onclick: () => save(false) }, "Save"));
-    row.appendChild(el("button", { class: "primary", style: "margin-left:6px;", onclick: () => save(true) }, "Save & Render PDF"));
-    return row;
-  }
-
-  function fmtMoney(v) {
-    const n = Number(v);
-    if (!Number.isFinite(n) || n === 0) return "—";
-    return "$" + n.toFixed(2);
-  }
+  // --- Actions ---
 
   function debouncePreview() {
-    // Re-render non-table chrome immediately so the UI reflects state changes.
-    renderAll();
     clearTimeout(previewTimer);
-    previewTimer = setTimeout(refreshPreview, 250);
+    // Repaint chrome that reflects state (dirty, counts, badges)
+    renderTableBody();
+    previewTimer = setTimeout(refreshPreview, 220);
   }
 
   async function refreshPreview() {
+    state.loading = true;
+    renderTableBody();
+    const token = ++inflightPreview;
     try {
       const r = await fetch("/api/linesheets/preview", {
         method: "POST",
@@ -498,20 +734,42 @@
           display_opts: state.display_opts
         })
       });
-      if (!r.ok) { console.warn("preview failed", await r.text()); return; }
+      if (token !== inflightPreview) return;
+      if (!r.ok) {
+        const txt = await r.text();
+        state.loading = false;
+        state.metaError = state.metaError || txt;
+        state.products = [];
+        state.counts = {};
+        renderTableBody();
+        return;
+      }
       const j = await r.json();
       state.products = j.products || [];
       state.counts = j.counts || {};
-      renderAll();
+      state.capped = !!j.capped;
+      state.loading = false;
+      renderTableBody();
     } catch (err) {
-      console.error(err);
+      if (token !== inflightPreview) return;
+      state.loading = false;
+      renderTableBody();
     }
   }
 
-  async function save(thenRender) {
-    if (!state.name.trim()) { alert("Name is required."); return; }
+  async function save({ saveAs = false, silent = false } = {}) {
+    let nameToUse = state.name;
+    if (saveAs || !state.id) {
+      const prompted = prompt(saveAs ? "Save as new view. Name:" : "Name this view:", state.name || seasonSuggestion());
+      if (!prompted || !prompted.trim()) return null;
+      nameToUse = prompted.trim();
+    }
+
+    // Mirror current sort into display_opts so the PDF matches the table.
+    state.display_opts.sort = sortMode;
+
     const body = {
-      name: state.name.trim(),
+      name: nameToUse,
       customer: state.customer || null,
       description: state.description || null,
       filter_tree: state.filter_tree,
@@ -521,22 +779,56 @@
       pricing: state.pricing,
       display_opts: state.display_opts
     };
-    const url = state.id ? `/api/linesheets/${state.id}` : "/api/linesheets";
+    const url = (saveAs || !state.id) ? "/api/linesheets" : `/api/linesheets/${state.id}`;
+    const method = (saveAs || !state.id) ? "POST" : "PUT";
     const r = await fetch(url, {
-      method: state.id ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body)
+      method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
     });
-    if (!r.ok) return alert("Save failed: " + (await r.text()));
+    if (!r.ok) { alert("Save failed: " + (await r.text())); return null; }
     const j = await r.json();
     state.id = j.linesheet.id;
-    if (thenRender) {
-      window.open(`/api/linesheets/${state.id}/render.pdf`, "_blank");
-    } else {
-      alert("Saved.");
-    }
-    w.LineSheets.refreshList?.();
+    state.name = j.linesheet.name;
+    initialState = snapshot(state);
+    await loadSavedSheets();
+    renderShell(document.getElementById("lsEditorRoot"));
+    if (!silent) flash(`Saved "${state.name}"`);
+    return state.id;
   }
 
-  w.LineSheets.openEditor = open;
+  function seasonSuggestion() {
+    const conds = state.filter_tree?.include?.[0]?.conditions || [];
+    const season = conds.find(c => c.field === "season")?.value;
+    if (Array.isArray(season) && season.length === 1) return season[0];
+    return "";
+  }
+
+  async function exportPdf() {
+    let id = state.id;
+    if (!id || isDirty()) {
+      id = await save({ silent: true });
+      if (!id) return;
+    }
+    window.open(`/api/linesheets/${id}/render.pdf`, "_blank");
+  }
+
+  function editNameDialog() {
+    const next = prompt("View name:", state.name);
+    if (next && next.trim() && next !== state.name) {
+      state.name = next.trim();
+      renderShell(document.getElementById("lsEditorRoot"));
+    }
+  }
+
+  function flash(msg) {
+    const f = el("div", { class: "ls-flash" }, msg);
+    document.body.appendChild(f);
+    setTimeout(() => f.classList.add("show"), 10);
+    setTimeout(() => { f.classList.remove("show"); setTimeout(() => f.remove(), 300); }, 1800);
+  }
+
+  // --- Public API ---
+
+  w.LineSheets.bootstrap = bootstrap;
+  w.LineSheets.openSaved = openSaved;
+  w.LineSheets.newDraft = newDraft;
 })();

@@ -32,11 +32,20 @@ function groupBy(products, key) {
 }
 
 function sortProducts(products, sortKey) {
+  const ageOf = (p) => {
+    const m = String(p.product_id || "").match(/(\d+)$/);
+    return m ? Number(m[1]) : 0;
+  };
   const cmp = (a, b) => {
     switch (sortKey) {
-      case "price_asc": return (a.effective_price || 0) - (b.effective_price || 0);
-      case "price_desc": return (b.effective_price || 0) - (a.effective_price || 0);
-      case "title": return String(a.title || "").localeCompare(String(b.title || ""));
+      case "newest":         return ageOf(b) - ageOf(a);
+      case "price_asc":      return (a.effective_price || 0) - (b.effective_price || 0);
+      case "price_desc":     return (b.effective_price || 0) - (a.effective_price || 0);
+      case "style_desc":     return String(b.style_name || b.title || "").localeCompare(String(a.style_name || a.title || ""));
+      case "inventory_desc": return (b.inventory_total || 0) - (a.inventory_total || 0);
+      case "inventory_asc":  return (a.inventory_total || 0) - (b.inventory_total || 0);
+      case "title":          return String(a.title || "").localeCompare(String(b.title || ""));
+      case "style_asc":
       case "style_name":
       default:
         return String(a.style_name || a.title || "").localeCompare(String(b.style_name || b.title || ""));
