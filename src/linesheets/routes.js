@@ -93,39 +93,8 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
-  r.get("/api/linesheets/:id", async (req, res) => {
-    try {
-      const sheet = await db.getLineSheet(Number(req.params.id));
-      if (!sheet) return res.status(404).json({ error: "Not found" });
-      const preview = await computePreview(sheet);
-      res.json({ linesheet: sheet, ...preview });
-    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
-  });
-
-  r.put("/api/linesheets/:id", async (req, res) => {
-    try {
-      const row = await db.updateLineSheet(Number(req.params.id), req.body || {});
-      if (!row) return res.status(404).json({ error: "Not found" });
-      res.json({ linesheet: row });
-    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
-  });
-
-  r.post("/api/linesheets/:id/duplicate", async (req, res) => {
-    try {
-      const row = await db.duplicateLineSheet(Number(req.params.id));
-      if (!row) return res.status(404).json({ error: "Not found" });
-      res.json({ linesheet: row });
-    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
-  });
-
-  r.delete("/api/linesheets/:id", async (req, res) => {
-    try {
-      const ok = await db.archiveLineSheet(Number(req.params.id));
-      res.json({ ok });
-    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
-  });
-
   // ------- Preview (ephemeral, no DB write) -------
+  // Must be registered BEFORE /:id so POST /preview isn't shadowed.
   r.post("/api/linesheets/preview", async (req, res) => {
     try {
       const body = req.body || {};
@@ -140,36 +109,9 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
-  // ------- Render (live-checked) -------
-  r.get("/api/linesheets/:id/render.pdf", async (req, res) => {
-    try {
-      const sheet = await db.getLineSheet(Number(req.params.id));
-      if (!sheet) return res.status(404).json({ error: "Not found" });
-      const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
-      const html = renderHtml(payload);
-      const { pdfBuffer } = await renderPdfFromHtml(html);
-      if (!pdfBuffer) {
-        res.setHeader("Content-Type", "text/html; charset=utf-8");
-        return res.send(html);
-      }
-      const safe = String(sheet.name || "linesheet").replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || "linesheet";
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename="${safe}.pdf"`);
-      res.send(Buffer.from(pdfBuffer));
-    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
-  });
-
-  r.get("/api/linesheets/:id/render.html", async (req, res) => {
-    try {
-      const sheet = await db.getLineSheet(Number(req.params.id));
-      if (!sheet) return res.status(404).json({ error: "Not found" });
-      const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
-      res.setHeader("Content-Type", "text/html; charset=utf-8");
-      res.send(renderHtml(payload));
-    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
-  });
-
   // ------- Meta (for dropdowns) -------
+  // MUST be registered BEFORE /:id, otherwise /meta hits the :id handler
+  // with id="meta" and Number("meta")=NaN, which Postgres rejects.
   r.get("/api/linesheets/meta", async (_req, res) => {
     const warnings = [];
     const safe = async (label, fn) => {
@@ -209,6 +151,84 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
         warnings: [`fatal: ${e?.message || e}`]
       });
     }
+  });
+
+  // ------- Line sheet by id (MUST be after /meta and /preview) -------
+  const parseId = (s) => {
+    const n = Number(s);
+    return Number.isFinite(n) && Number.isInteger(n) ? n : null;
+  };
+
+  r.get("/api/linesheets/:id", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const sheet = await db.getLineSheet(id);
+      if (!sheet) return res.status(404).json({ error: "Not found" });
+      const preview = await computePreview(sheet);
+      res.json({ linesheet: sheet, ...preview });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  r.put("/api/linesheets/:id", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const row = await db.updateLineSheet(id, req.body || {});
+      if (!row) return res.status(404).json({ error: "Not found" });
+      res.json({ linesheet: row });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  r.post("/api/linesheets/:id/duplicate", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const row = await db.duplicateLineSheet(id);
+      if (!row) return res.status(404).json({ error: "Not found" });
+      res.json({ linesheet: row });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  r.delete("/api/linesheets/:id", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const ok = await db.archiveLineSheet(id);
+      res.json({ ok });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  r.get("/api/linesheets/:id/render.pdf", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const sheet = await db.getLineSheet(id);
+      if (!sheet) return res.status(404).json({ error: "Not found" });
+      const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
+      const html = renderHtml(payload);
+      const { pdfBuffer } = await renderPdfFromHtml(html);
+      if (!pdfBuffer) {
+        res.setHeader("Content-Type", "text/html; charset=utf-8");
+        return res.send(html);
+      }
+      const safe = String(sheet.name || "linesheet").replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || "linesheet";
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="${safe}.pdf"`);
+      res.send(Buffer.from(pdfBuffer));
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  r.get("/api/linesheets/:id/render.html", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const sheet = await db.getLineSheet(id);
+      if (!sheet) return res.status(404).json({ error: "Not found" });
+      const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
+      res.setHeader("Content-Type", "text/html; charset=utf-8");
+      res.send(renderHtml(payload));
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
   return r;
