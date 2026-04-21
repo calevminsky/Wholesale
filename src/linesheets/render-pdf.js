@@ -63,12 +63,6 @@ export async function buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck = 
   let pinned = [];
   if ((sheet.pins || []).length) pinned = await loadProductsByIds(sheet.pins);
 
-  // Default: exclude nada-ignore unless display_opts says otherwise
-  const excludeNadaIgnore = opts.exclude_nada_ignore !== false;
-  if (excludeNadaIgnore) {
-    matched = matched.filter((p) => !(p.tags || []).includes("nada-ignore"));
-  }
-
   let products = composeProducts(matched, pinned, sheet.excludes || []);
 
   // Live-check Shopify for current price / inventory

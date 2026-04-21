@@ -287,10 +287,6 @@ async function computePreview(sheet) {
     atsLocations: Array.isArray(opts.ats_locations) ? opts.ats_locations : []
   };
   let matched = await runFilter(filterTree, runOpts);
-  const excludeNadaIgnore = opts.exclude_nada_ignore !== false;
-  if (excludeNadaIgnore) {
-    matched = matched.filter((p) => !(p.tags || []).includes("nada-ignore"));
-  }
 
   let pinned = [];
   if ((sheet.pins || []).length) pinned = await loadProductsByIds(sheet.pins, runOpts);

@@ -59,7 +59,7 @@
       pins: [],
       excludes: [],
       pricing: { default_mode: "pct_off_compare_at", default_value: 50, overrides: {} },
-      display_opts: { exclude_nada_ignore: true, ats_locations: [] },
+      display_opts: { ats_locations: [] },
       products: [],
       counts: {},
       capped: false,
@@ -143,7 +143,7 @@
       pins: l.pins || [],
       excludes: l.excludes || [],
       pricing: Object.assign({ default_mode: "pct_off_compare_at", default_value: 50, overrides: {} }, l.pricing || {}),
-      display_opts: Object.assign({ exclude_nada_ignore: true, ats_locations: [] }, l.display_opts || {}),
+      display_opts: Object.assign({ ats_locations: [] }, l.display_opts || {}),
       products: j.products || [],
       counts: j.counts || {},
       capped: !!j.capped,
@@ -787,8 +787,7 @@
 
     body.appendChild(el("div", { class: "ls-row" }, [
       makeCheckbox("show_inventory", "Show inventory on PDF", true),
-      makeCheckbox("show_msrp", "Show MSRP on PDF", true),
-      makeCheckbox("exclude_nada_ignore", "Hide products tagged nada-ignore", true)
+      makeCheckbox("show_msrp", "Show MSRP on PDF", true)
     ]));
 
     const groupSel = el("select", null, ["none", "season", "product_type", "class"].map(v => el("option", { value: v }, v)));
