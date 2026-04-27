@@ -7,6 +7,7 @@ import { runFilter, loadProductsByIds } from "./query.js";
 import { applyPricing, defaultPricing } from "./pricing.js";
 import { buildRenderedPayload, renderHtml } from "./render-pdf.js";
 import { buildOrderFormXlsx } from "./order-form-xlsx.js";
+import * as customersDb from "../customers/db.js";
 
 export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
   const r = Router();
@@ -82,6 +83,22 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     try {
       const p = req.body || {};
       if (!p.name) return res.status(400).json({ error: "name is required" });
+
+      // If the line sheet is for a customer with a pricing tier and the caller
+      // didn't pass explicit pricing, seed pricing.default_value from the tier.
+      // Manual per-product overrides on the sheet always win.
+      let pricing = p.pricing;
+      if (!pricing && p.customer_id) {
+        const c = await customersDb.getCustomer(p.customer_id);
+        if (c && c.discount_pct_off_msrp != null) {
+          pricing = {
+            default_mode: "pct_off_compare_at",
+            default_value: Number(c.discount_pct_off_msrp),
+            overrides: {}
+          };
+        }
+      }
+
       const row = await db.createLineSheet({
         name: p.name,
         customer: p.customer,
@@ -91,7 +108,7 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
         saved_filter_id: p.saved_filter_id || null,
         pins: p.pins || [],
         excludes: p.excludes || [],
-        pricing: p.pricing || defaultPricing(),
+        pricing: pricing || defaultPricing(),
         display_opts: p.display_opts || {}
       });
       res.json({ linesheet: row });
@@ -266,8 +283,12 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
 }
 
 async function distinct(col) {
+  // Bound the result set to keep meta dropdowns responsive even on large tables.
   const { rows } = await query(
-    `SELECT DISTINCT ${col} AS v FROM inventory_items WHERE ${col} IS NOT NULL AND ${col} <> '' ORDER BY ${col}`
+    `SELECT DISTINCT ${col} AS v FROM inventory_items
+      WHERE ${col} IS NOT NULL AND ${col} <> ''
+      ORDER BY ${col}
+      LIMIT 500`
   );
   return rows.map((r) => r.v);
 }

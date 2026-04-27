@@ -13,12 +13,20 @@ import { fileURLToPath } from "url";
 import { createLineSheetsRouter } from "./src/linesheets/routes.js";
 import { createCustomersRouter } from "./src/customers/routes.js";
 import { createOrdersRouter } from "./src/orders/routes.js";
+import { createBasicAuth } from "./src/auth.js";
 import { pgAvailable, query as pgQuery } from "./src/pg.js";
 
 const app = express();
 const upload = multer({ storage: multer.memoryStorage() });
 
 app.use(express.json());
+
+// Auth gate: opt-in via WHOLESALE_PASSWORD env var. Public paths (none yet, but
+// reserved for a future customer-facing approval link) bypass the gate.
+app.use(createBasicAuth({
+  publicPaths: ["/api/debug/ping", "/api/public"]
+}));
+
 app.use(express.static("public"));
 
 const SHOP = process.env.SHOPIFY_SHOP; // must be *.myshopify.com
