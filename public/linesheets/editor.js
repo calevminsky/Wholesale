@@ -55,6 +55,37 @@
     };
   }
 
+  // Locations to pre-select on a brand-new sheet. Matched against the
+  // location names from /api/linesheets/meta as case-insensitive substrings,
+  // so renaming a location from "Bogota Warehouse" to "Bogotá Hub" still
+  // matches "bogota". Edit this list if the org's defaults change.
+  const DEFAULT_STOCK_LOCATION_PATTERNS = ["bogota", "warehouse"];
+
+  function defaultStockLocationIds() {
+    const locs = (meta && meta.locations) || [];
+    if (!locs.length) return [];
+    const ids = [];
+    for (const pat of DEFAULT_STOCK_LOCATION_PATTERNS) {
+      const hit = locs.find((l) => String(l.name || "").toLowerCase().includes(pat));
+      if (hit && !ids.includes(String(hit.id))) ids.push(String(hit.id));
+    }
+    return ids;
+  }
+
+  // Label for the inventory column header so the user can see at a glance
+  // which locations are being counted in those numbers.
+  function inventoryHeaderLabel() {
+    const ids = (state?.display_opts?.ats_locations || []).map(String);
+    if (!ids.length) return "Total";
+    const locs = (meta && meta.locations) || [];
+    const names = ids
+      .map((id) => locs.find((l) => String(l.id) === id)?.name)
+      .filter(Boolean);
+    if (!names.length) return `Total (${ids.length} locs)`;
+    if (names.length <= 2) return `Total at ${names.join(" + ")}`;
+    return `Total at ${names[0]} + ${names.length - 1} more`;
+  }
+
   function defaultState() {
     return {
       id: null,
@@ -67,7 +98,7 @@
       pins: [],
       excludes: [],
       pricing: { default_mode: "pct_off_compare_at", default_value: 50, overrides: {} },
-      display_opts: { ats_locations: [] },
+      display_opts: { ats_locations: defaultStockLocationIds() },
       products: [],
       counts: {},
       capped: false,
@@ -109,6 +140,12 @@
 
     state = defaultState();
     await Promise.all([loadMeta(), loadSavedSheets()]);
+
+    // defaultState() runs before meta is loaded, so the location-based
+    // defaults can't resolve. Fill them in now that meta is here.
+    if (!state.id && (!state.display_opts.ats_locations || state.display_opts.ats_locations.length === 0)) {
+      state.display_opts.ats_locations = defaultStockLocationIds();
+    }
 
     initialState = snapshot(state);
     selected = new Set();
@@ -217,13 +254,20 @@
       ]));
     }
     const railRoot = el("div");
-    function onRailChange() {
+    const railOpts = {
+      onChange: () => paintRail(),
+      getStockLocations: () => state.display_opts.ats_locations || [],
+      setStockLocations: (arr) => {
+        state.display_opts.ats_locations = arr.map(String);
+        paintRail();
+      }
+    };
+    function paintRail() {
       rowLimit = PAGE_SIZE; // reset pagination on filter change
       debouncePreview();
-      // Re-render the rail so checkbox counts and selected-on-top order reflect.
-      w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, onRailChange);
+      w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, railOpts);
     }
-    w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, onRailChange);
+    w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, railOpts);
     wrap.appendChild(railRoot);
 
     // Advanced filter expandable: kept available for power users.
@@ -386,8 +430,9 @@
     sortSel.addEventListener("change", () => { sortMode = sortSel.value; renderTableBody(); });
     row.appendChild(sortSel);
 
-    // ATS locations (which warehouses count toward inventory numbers)
-    row.appendChild(renderAtsLocationsPicker());
+    // The Stock section in the left rail now controls which locations count
+    // toward the inventory column, so the standalone "Available at:" picker
+    // is no longer needed here.
 
     // Add product by name (pin)
     const pinWrap = el("div", { class: "ls-addprod" });
@@ -550,7 +595,7 @@
       { key: "effective_price", label: "Price", align: "right" }
     ];
     for (const s of SIZE_COLS) cols.push({ key: `sz_${s}`, label: s, align: "center" });
-    cols.push({ key: "inventory_total", label: "Total", align: "right" });
+    cols.push({ key: "inventory_total", label: inventoryHeaderLabel(), align: "right" });
     cols.push({ key: "_act", label: "", align: "center" });
 
     const tr = el("tr");

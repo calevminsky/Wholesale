@@ -80,6 +80,11 @@ function emitCondition(cond, c) {
     case "has_inventory":
       return value ? `total_inventory > 0` : `total_inventory = 0`;
 
+    case "has_image":
+      return value
+        ? `product_image IS NOT NULL AND product_image <> ''`
+        : `(product_image IS NULL OR product_image = '')`;
+
     case "inventory_min": {
       // Handled at global level — pushed down into variant_inv aggregation.
       // Here we express it against product-level aggregate.
