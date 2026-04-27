@@ -188,11 +188,56 @@
     root.classList.add("ls-page");
 
     root.appendChild(renderHeader());
-    root.appendChild(renderFilterArea());
-    root.appendChild(renderControlsRow());
-    root.appendChild(renderTableArea());
-    root.appendChild(renderAdvancedArea());
+
+    // Body: filter rail on the left, main column on the right.
+    const body = el("div", { class: "ls-body" });
+    body.appendChild(renderFilterRail());
+    const main = el("div", { class: "ls-main" });
+    main.appendChild(renderControlsRow());
+    main.appendChild(renderTableArea());
+    main.appendChild(renderAdvancedArea());
+    body.appendChild(main);
+    root.appendChild(body);
+
     root.appendChild(renderBulkBar()); // fixed footer, only shows when selection
+  }
+
+  function renderFilterRail() {
+    const wrap = el("div", { class: "ls-rail-wrap" });
+    if (state.metaError) {
+      wrap.appendChild(el("div", { class: "ls-warn" }, [
+        el("b", null, "Filter options unavailable. "),
+        document.createTextNode(state.metaError + " — filters will work once the reporting DB is connected.")
+      ]));
+    }
+    if (state.previewError) {
+      wrap.appendChild(el("div", { class: "ls-warn" }, [
+        el("b", null, "Couldn't load products. "),
+        document.createTextNode(state.previewError)
+      ]));
+    }
+    const railRoot = el("div");
+    function onRailChange() {
+      rowLimit = PAGE_SIZE; // reset pagination on filter change
+      debouncePreview();
+      // Re-render the rail so checkbox counts and selected-on-top order reflect.
+      w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, onRailChange);
+    }
+    w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, onRailChange);
+    wrap.appendChild(railRoot);
+
+    // Advanced filter expandable: kept available for power users.
+    const advWrap = el("details", { class: "ls-rail-adv" });
+    advWrap.appendChild(el("summary", null, "Advanced filter…"));
+    const advBar = el("div", { class: "lsf-bar" });
+    w.LineSheets.renderFilterBar(advBar, state.filter_tree, meta, () => {
+      rowLimit = PAGE_SIZE;
+      debouncePreview();
+    });
+    advWrap.appendChild(advBar);
+    wrap.appendChild(advWrap);
+
+    return wrap;
   }
 
   function renderHeader() {

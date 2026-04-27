@@ -88,7 +88,36 @@
       .ls-more-menu button { text-align:left; border:none; background:transparent; padding:8px 10px; border-radius:6px; }
       .ls-more-menu button:hover { background:#f3f3f3; }
 
-      /* Filter bar */
+      /* Body layout: rail on the left, main column on the right */
+      .ls-body { display: flex; gap: 16px; align-items: flex-start; }
+      .ls-rail-wrap { flex: 0 0 240px; min-width: 240px; max-width: 240px; position: sticky; top: 56px; max-height: calc(100vh - 80px); overflow-y: auto; padding: 8px 6px 24px 0; border-right: 1px solid #f0f0f0; }
+      .ls-main { flex: 1 1 auto; min-width: 0; }
+
+      /* Filter rail */
+      .ls-rail { display: flex; flex-direction: column; gap: 14px; }
+      .ls-rail-hd { display: flex; align-items: center; justify-content: space-between; padding-bottom: 4px; border-bottom: 1px solid #f0f0f0; }
+      .ls-rail-clear { background: transparent; border: none; color: #666; font-size: 12px; cursor: pointer; padding: 2px 4px; border-radius: 4px; }
+      .ls-rail-clear:hover { background: #f3f3f3; color: #111; }
+      .ls-rail-sec { display: flex; flex-direction: column; gap: 6px; }
+      .ls-rail-sec-hd { display: flex; align-items: baseline; justify-content: space-between; font-size: 12px; color: #555; text-transform: uppercase; letter-spacing: 0.05em; }
+      .ls-rail-sec-title { font-weight: 600; }
+      .ls-rail-sec-count { font-size: 11px; color: #999; }
+      .ls-rail-sec-body { display: flex; flex-direction: column; gap: 4px; }
+      .ls-rail-search { width: 100%; padding: 5px 8px; border: 1px solid #ddd; border-radius: 6px; font-size: 12px; box-sizing: border-box; }
+      .ls-rail-list { display: flex; flex-direction: column; max-height: 200px; overflow-y: auto; }
+      .ls-rail-opt { display: flex; align-items: center; gap: 6px; padding: 3px 4px; font-size: 13px; cursor: pointer; border-radius: 4px; }
+      .ls-rail-opt:hover { background: #f4f6ff; }
+      .ls-rail-opt input[type="checkbox"] { margin: 0; }
+      .ls-rail-row { display: flex; align-items: center; gap: 4px; }
+      .ls-rail-num { width: 70px; padding: 5px 6px; border: 1px solid #ddd; border-radius: 6px; font-size: 13px; }
+      .ls-rail-complex { background: #fff7e0; border: 1px solid #f0d98a; border-radius: 8px; padding: 10px; }
+      .ls-rail-complex-title { font-weight: 600; color: #7a5800; }
+      .ls-rail-adv { margin-top: 16px; padding-top: 8px; border-top: 1px dashed #e0e0e0; font-size: 12px; }
+      .ls-rail-adv summary { cursor: pointer; color: #666; padding: 4px 0; }
+      .ls-rail-adv summary:hover { color: #111; }
+      .ls-rail-adv .lsf-bar { margin-top: 8px; }
+
+      /* Filter bar (advanced) */
       .ls-filter-area { padding: 4px 0; }
       .ls-warn { background:#fff7e0; border:1px solid #f2d58c; color:#7a5800; padding:8px 10px; border-radius:8px; margin-bottom:8px; font-size:13px; }
       .lsf-bar { display:flex; flex-wrap:wrap; align-items:center; gap:6px; min-height:36px; }
@@ -337,6 +366,7 @@
     <div id="customersPage" style="display:none;"></div>
 
     <script src="/linesheets/filter-bar.js"></script>
+    <script src="/linesheets/filter-rail.js"></script>
     <script src="/linesheets/pricing-bar.js"></script>
     <script src="/linesheets/editor.js"></script>
     <script src="/linesheets/list.js"></script>
