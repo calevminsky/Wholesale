@@ -11,6 +11,8 @@ import archiver from "archiver";
 import fs from "fs";
 import { fileURLToPath } from "url";
 import { createLineSheetsRouter } from "./src/linesheets/routes.js";
+import { createCustomersRouter } from "./src/customers/routes.js";
+import { createOrdersRouter } from "./src/orders/routes.js";
 import { pgAvailable, query as pgQuery } from "./src/pg.js";
 
 const app = express();
@@ -2765,24 +2767,30 @@ app.get("/api/orders/:orderId/invoice.pdf", async (req, res) => {
 
 // ----------------- Line Sheet Builder -----------------
 app.use(createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }));
+app.use(createCustomersRouter());
+app.use(createOrdersRouter());
 
-async function runLineSheetsMigration() {
+async function runMigrations() {
   if (!pgAvailable()) {
-    console.warn("Line sheets: REPORTING_DATABASE_URL not set — skipping migration.");
+    console.warn("Migrations: REPORTING_DATABASE_URL not set — skipping.");
     return;
   }
   try {
     const here = path.dirname(fileURLToPath(import.meta.url));
-    const sql = fs.readFileSync(path.join(here, "migrations/001_line_sheets.sql"), "utf8");
-    await pgQuery(sql);
-    console.log("Line sheets: migration applied.");
+    const dir = path.join(here, "migrations");
+    const files = fs.readdirSync(dir).filter((f) => f.endsWith(".sql")).sort();
+    for (const f of files) {
+      const sql = fs.readFileSync(path.join(dir, f), "utf8");
+      await pgQuery(sql);
+      console.log(`Migration applied: ${f}`);
+    }
   } catch (err) {
-    console.error("Line sheets migration failed:", err.message);
+    console.error("Migration failed:", err.message);
   }
 }
 
 const port = process.env.PORT || 3000;
 app.listen(port, async () => {
   console.log(`Wholesale importer running on http://localhost:${port}`);
-  await runLineSheetsMigration();
+  await runMigrations();
 });

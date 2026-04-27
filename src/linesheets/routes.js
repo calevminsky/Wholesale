@@ -69,7 +69,10 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
   // ------- Line sheets -------
   r.get("/api/linesheets", async (req, res) => {
     try {
-      const sheets = await db.listLineSheets({ search: req.query.q });
+      const sheets = await db.listLineSheets({
+        search: req.query.q,
+        customerId: req.query.customer_id ? Number(req.query.customer_id) || undefined : undefined
+      });
       res.json({ linesheets: sheets });
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
@@ -81,6 +84,7 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
       const row = await db.createLineSheet({
         name: p.name,
         customer: p.customer,
+        customer_id: p.customer_id || null,
         description: p.description,
         filter_tree: p.filter_tree || { include: [], globals: [] },
         saved_filter_id: p.saved_filter_id || null,
@@ -196,6 +200,15 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     try {
       const ok = await db.archiveLineSheet(id);
       res.json({ ok });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  r.get("/api/linesheets/:id/price-history", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const history = await db.listLineSheetPriceHistory(id);
+      res.json({ history });
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
