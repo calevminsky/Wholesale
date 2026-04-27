@@ -404,13 +404,21 @@
     }
 
     const bar = el("div", { class: "lsf-bar" });
-    w.LineSheets.renderFilterBar(bar, state.filter_tree, meta, () => {
+    w.LineSheets.renderFilterBar(bar, state.filter_tree, filterMeta(), () => {
       rowLimit = PAGE_SIZE; // reset pagination on filter change
       debouncePreview();
     });
     wrap.appendChild(bar);
 
     return wrap;
+  }
+
+  // Meta view tailored for the filter bar: hides the current sheet from the
+  // "other line sheet" picker so users can't reference themselves.
+  function filterMeta() {
+    if (!meta) return meta;
+    const sheets = (meta.linesheets || []).filter((s) => !state?.id || s.id !== state.id);
+    return Object.assign({}, meta, { linesheets: sheets });
   }
 
   function renderControlsRow() {

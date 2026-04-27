@@ -6,6 +6,7 @@ import * as db from "./db.js";
 import { runFilter, loadProductsByIds } from "./query.js";
 import { applyPricing, defaultPricing } from "./pricing.js";
 import { buildRenderedPayload, renderHtml } from "./render-pdf.js";
+import { resolveLineSheetReferences } from "./linesheet-filter.js";
 import { buildOrderFormXlsx } from "./order-form-xlsx.js";
 import * as customersDb from "../customers/db.js";
 
@@ -141,13 +142,21 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
       catch (e) { warnings.push(`${label}: ${e?.message || e}`); return null; }
     };
     try {
-      const [seasons, classes, types, lengths, locations] = await Promise.all([
+      const [seasons, classes, types, lengths, locations, linesheets] = await Promise.all([
         safe("seasons",       () => distinct("season")),
         safe("classes",       () => distinct("class")),
         safe("product_types", () => distinct("product_type")),
         safe("lengths",       () => distinctLengths()),
-        safe("locations",     () => distinctLocations())
+        safe("locations",     () => distinctLocations()),
+        safe("linesheets",    () => db.listLineSheets({}))
       ]);
+
+      // Trim line sheet rows to just what the filter UI needs.
+      const linesheetSummaries = (linesheets || []).map((l) => ({
+        id: l.id,
+        name: l.name,
+        customer: l.customer || null
+      }));
 
       res.json({
         _v: "meta-v2",
@@ -158,6 +167,7 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
         sleeves:       ["Long Sleeve", "Short Sleeve", "Sleeveless"],
         lengths:       (lengths || []).filter(Boolean),
         locations:     locations || [],
+        linesheets:    linesheetSummaries,
         warnings
       });
     } catch (e) {
@@ -169,7 +179,7 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
         seasons: [], classes: [], product_types: [],
         fabrics: ["KNIT", "WOVEN"],
         sleeves: ["Long Sleeve", "Short Sleeve", "Sleeveless"],
-        lengths: [], locations: [],
+        lengths: [], locations: [], linesheets: [],
         warnings: [`fatal: ${e?.message || e}`]
       });
     }
@@ -344,13 +354,15 @@ async function distinctLocations() {
 }
 
 async function computePreview(sheet) {
-  const filterTree = sheet.filter_tree || { include: [], globals: [] };
+  const rawTree = sheet.filter_tree || { include: [], globals: [] };
   const pricing = { ...defaultPricing(), ...(sheet.pricing || {}) };
   const opts = sheet.display_opts || {};
 
   const runOpts = {
     atsLocations: Array.isArray(opts.ats_locations) ? opts.ats_locations : []
   };
+  // Resolve `linesheet` filter conditions to concrete product-id lists.
+  const filterTree = await resolveLineSheetReferences(rawTree, runOpts);
   let matched = await runFilter(filterTree, runOpts);
 
   let pinned = [];

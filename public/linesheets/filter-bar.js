@@ -23,7 +23,13 @@
     title:         { label: "Title contains",  type: "text",      defaultOp: "contains" },
     style_name:    { label: "Style name",      type: "text",      defaultOp: "contains" },
     inventory_min: { label: "Min inventory",   type: "num-loc",   defaultOp: ">=" },
-    has_inventory: { label: "Has inventory",   type: "bool",      defaultOp: "=" }
+    has_inventory: { label: "Has inventory",   type: "bool",      defaultOp: "=" },
+    linesheet:     {
+      label: "Other line sheet",
+      type: "linesheet",
+      defaultOp: "not_in",
+      opLabels: { not_in: "exclude products from", in: "only products from" }
+    }
   };
 
   function el(tag, attrs, children) {
@@ -61,6 +67,7 @@
     const f = FIELDS[field];
     if (!f) return "";
     if (f.type === "multi") return [];
+    if (f.type === "linesheet") return [];
     if (f.type === "num-cmp" || f.type === "num-loc") return 0;
     if (f.type === "num-range") return [0, 9999];
     if (f.type === "bool") return true;
@@ -94,6 +101,15 @@
       return `${f.label}: ${opt?.label || cond.value}`;
     }
     if (f.type === "text") return cond.value ? `${f.label}: "${cond.value}"` : `${f.label}: …`;
+    if (f.type === "linesheet") {
+      const ids = Array.isArray(cond.value) ? cond.value : (cond.value ? [cond.value] : []);
+      const sheets = (meta && meta.linesheets) || [];
+      const names = ids.map((id) => sheets.find((s) => String(s.id) === String(id))?.name).filter(Boolean);
+      const opLabel = f.opLabels?.[cond.op] || cond.op;
+      if (names.length === 0) return `${opLabel} (pick a sheet)`;
+      if (names.length === 1) return `${opLabel} ${names[0]}`;
+      return `${opLabel} ${names.length} sheets`;
+    }
     return f.label;
   }
 
@@ -148,6 +164,14 @@
       opSel.value = cond.op || f.defaultOp;
       opSel.addEventListener("change", () => { cond.op = opSel.value; onChange(); });
       pop.appendChild(el("div", { class: "lsf-pop-row" }, [opSel]));
+    } else if (f.type === "linesheet") {
+      const opSel = el("select", { class: "lsf-pop-op" },
+        Object.entries(f.opLabels || { not_in: "exclude products from", in: "only products from" })
+          .map(([v, lab]) => el("option", { value: v }, lab))
+      );
+      opSel.value = cond.op || f.defaultOp;
+      opSel.addEventListener("change", () => { cond.op = opSel.value; onChange(); });
+      pop.appendChild(el("div", { class: "lsf-pop-row" }, [el("span", { class: "muted" }, "rule"), opSel]));
     }
 
     pop.appendChild(renderValueBody(cond, meta, onChange));
@@ -304,6 +328,65 @@
         rb.addEventListener("change", () => { cond.value = o.value; onChange(); });
         body.appendChild(el("label", { class: "lsf-opt", for: id }, [rb, document.createTextNode(" " + o.label)]));
       }
+      return body;
+    }
+
+    if (f.type === "linesheet") {
+      const sheets = (meta && meta.linesheets) || [];
+      const body = el("div", { class: "lsf-pop-body" });
+
+      if (sheets.length === 0) {
+        body.appendChild(el("div", { class: "muted", style: "padding:8px 0;" },
+          "No other line sheets yet — save one first to reference it."));
+        return body;
+      }
+
+      const search = el("input", { type: "search", placeholder: "Search line sheets…", class: "lsf-search" });
+      body.appendChild(search);
+
+      const summary = el("div", { class: "lsf-pop-sub muted" });
+      body.appendChild(summary);
+      const list = el("div", { class: "lsf-pop-list" });
+      body.appendChild(list);
+
+      const current = new Set(
+        (Array.isArray(cond.value) ? cond.value : (cond.value ? [cond.value] : [])).map(String)
+      );
+
+      function updateSummary() {
+        summary.textContent = current.size === 0
+          ? `${sheets.length} sheets available`
+          : `${current.size} selected · ${sheets.length} available`;
+      }
+
+      function paint(filterText) {
+        list.innerHTML = "";
+        const q = (filterText || "").toLowerCase().trim();
+        const shown = sheets.filter((s) => {
+          if (!q) return true;
+          const hay = ((s.name || "") + " " + (s.customer || "")).toLowerCase();
+          return hay.includes(q);
+        });
+        for (const s of shown) {
+          const id = "lsfopt_" + s.id;
+          const cb = el("input", { type: "checkbox", id });
+          cb.checked = current.has(String(s.id));
+          cb.addEventListener("change", () => {
+            if (cb.checked) current.add(String(s.id));
+            else current.delete(String(s.id));
+            cond.value = Array.from(current).map((v) => Number(v));
+            updateSummary();
+            onChange();
+          });
+          const labelText = s.customer ? `${s.name} · ${s.customer}` : s.name;
+          list.appendChild(el("label", { class: "lsf-opt", for: id }, [cb, document.createTextNode(" " + labelText)]));
+        }
+        if (shown.length === 0) list.appendChild(el("div", { class: "muted", style: "padding:6px 2px;" }, "No matches."));
+      }
+
+      search.addEventListener("input", () => paint(search.value));
+      updateSummary();
+      paint("");
       return body;
     }
 
@@ -464,6 +547,7 @@
     const f = FIELDS[cond.field];
     if (!f) return false;
     if (f.type === "multi") return !Array.isArray(cond.value) || cond.value.length === 0;
+    if (f.type === "linesheet") return !Array.isArray(cond.value) || cond.value.length === 0;
     if (f.type === "text") return !String(cond.value || "").trim();
     return false;
   }

@@ -38,6 +38,12 @@ function emitCondition(cond, c) {
       if (op === "none_of") return `product_id <> ALL(${c.push(asArr(value))}::text[])`;
       return `product_id = ANY(${c.push(asArr(value))}::text[])`;
 
+    // `linesheet` should already be substituted with `product` by
+    // resolveLineSheetReferences before reaching the SQL compiler. Treat any
+    // leftover as a no-op so a stale tree never hard-fails the query.
+    case "linesheet":
+      return "TRUE";
+
     case "tag": {
       const arr = asArr(value);
       if (op === "has_all") return `tags_json @> ${c.push(JSON.stringify(arr))}::jsonb`;

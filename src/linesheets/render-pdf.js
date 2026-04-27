@@ -3,6 +3,7 @@ import { runFilter, loadProductsByIds } from "./query.js";
 import { applyPricing, defaultPricing } from "./pricing.js";
 import { livecheckProducts } from "./shopify-livecheck.js";
 import { buildLineSheetHtml } from "./template.js";
+import { resolveLineSheetReferences } from "./linesheet-filter.js";
 
 // Merge pinned rows into matched rows without duplicates; apply excludes.
 function composeProducts(matched, pinned, excludes) {
@@ -55,7 +56,7 @@ function sortProducts(products, sortKey) {
 }
 
 export async function buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck = true } = {}) {
-  const filterTree = sheet.filter_tree || { include: [], globals: [] };
+  const rawTree = sheet.filter_tree || { include: [], globals: [] };
   const pricing = { ...defaultPricing(), ...(sheet.pricing || {}) };
   const opts = sheet.display_opts || {};
 
@@ -65,6 +66,9 @@ export async function buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck = 
   const runOpts = {
     atsLocations: Array.isArray(opts.ats_locations) ? opts.ats_locations : []
   };
+
+  // Resolve `linesheet` filter conditions to concrete product-id lists.
+  const filterTree = await resolveLineSheetReferences(rawTree, runOpts);
 
   let matched = await runFilter(filterTree, runOpts);
   let pinned = [];
