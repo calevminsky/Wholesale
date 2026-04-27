@@ -62,10 +62,9 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
   const columns = [];
   if (showInventory) {
     columns.push({ key: "image", label: "", width: "12%" });
-    columns.push({ key: "product", label: "Product", width: "28%" });
-    columns.push({ key: "type", label: "Type", width: "10%" });
+    columns.push({ key: "product", label: "Product", width: "32%" });
     if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "8%", num: true });
-    columns.push({ key: "price", label: "Price", width: "9%", num: true });
+    columns.push({ key: "price", label: "Price", width: "12%", num: true });
     if (showPairs) columns.push({ key: "pairs", label: "Pairs With", width: "13%" });
     if (showNotes) columns.push({ key: "notes", label: "Notes", width: "13%" });
     for (const s of SIZE_COLS) columns.push({ key: `sz_${s}`, label: s, width: "4%", num: true });
@@ -73,18 +72,27 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
   } else {
     // No inventory grid → image gets ~3x the width.
     const productWidth = (() => {
-      let w = 44;
+      let w = 50;
       if (showPairs) w -= 14;
       if (showNotes) w -= 14;
       return w + "%";
     })();
     columns.push({ key: "image", label: "", width: "20%" });
     columns.push({ key: "product", label: "Product", width: productWidth });
-    columns.push({ key: "type", label: "Type", width: "10%" });
     if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "9%", num: true });
-    columns.push({ key: "price", label: "Price", width: "10%", num: true });
+    columns.push({ key: "price", label: "Price", width: "12%", num: true });
     if (showPairs) columns.push({ key: "pairs", label: "Pairs With", width: "14%" });
     if (showNotes) columns.push({ key: "notes", label: "Notes", width: "14%" });
+  }
+
+  function priceCell(p) {
+    const wholesale = Number.isFinite(p.base_wholesale_price) ? p.base_wholesale_price : p.effective_price;
+    const final = p.effective_price;
+    const showStrike = p.additional_discount_applied && Number.isFinite(wholesale) && wholesale !== final;
+    if (showStrike) {
+      return `<td class="num"><span class="was">${money(wholesale)}</span> <span class="now">${money(final)}</span></td>`;
+    }
+    return `<td class="num">${money(final)}</td>`;
   }
 
   function rowHtml(p) {
@@ -95,13 +103,10 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
         return `<td class="img-td">${p.image ? `<img src="${escapeHtml(p.image)}?width=240">` : ""}</td>`;
       }
       if (col.key === "product") {
-        const sub = p.style_name && p.style_name !== p.title
-          ? `<div class="sub">${escapeHtml(p.style_name)}</div>` : "";
-        return `<td class="prod-td"><div>${escapeHtml(p.title || "")}</div>${sub}</td>`;
+        return `<td class="prod-td"><div>${escapeHtml(p.title || "")}</div></td>`;
       }
-      if (col.key === "type") return `<td>${escapeHtml(p.product_type || "")}</td>`;
       if (col.key === "msrp") return `<td class="num">${money(p.compare_at_price || p.current_price)}</td>`;
-      if (col.key === "price") return `<td class="num">${money(p.effective_price)}</td>`;
+      if (col.key === "price") return priceCell(p);
       if (col.key === "notes") {
         const note = notesByProduct[p.product_id] || "";
         return `<td class="notes-td">${escapeHtml(note)}</td>`;
@@ -178,7 +183,9 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     .img-td { text-align: center; padding: 4px; }
     .img-td img { max-width: 110px; max-height: 140px; object-fit: cover; border-radius: 4px; }
     .prod-td { font-weight: 500; line-height: 1.3; }
-    .prod-td .sub { color: #666; font-size: 9px; margin-top: 1px; }
+
+    .sheet-tbl .num .was { color: #999; text-decoration: line-through; margin-right: 3px; font-weight: 400; }
+    .sheet-tbl .num .now { color: #b00020; font-weight: 600; }
 
     .notes-td { font-size: 9px; color: #444; line-height: 1.25; white-space: pre-wrap; }
     .pairs-td { font-size: 9px; color: #444; line-height: 1.25; }
@@ -186,13 +193,11 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     .section { page-break-inside: avoid; margin-top: 12px; }
     .group-title { font-size: 12px; margin: 12px 0 4px 0; border-bottom: 1px solid #aaa; padding-bottom: 2px; }
 
-    .footer { position: fixed; bottom: 0; left: 0; right: 0; text-align: center; font-size: 9px; color: #777; border-top: 1px solid #ccc; padding: 4px 0; }
   </style>
 </head>
 <body>
   ${header}
   ${sections.join("\n")}
-  <div class="footer">${escapeHtml(title)}${customer ? " · " + escapeHtml(customer) : ""} · Prices confidential, subject to change</div>
 </body>
 </html>`;
 }

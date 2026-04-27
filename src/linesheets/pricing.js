@@ -2,11 +2,12 @@
 // {
 //   default_mode: "pct_off_compare_at" | "pct_off_current" | "fixed",
 //   default_value: number,
+//   additional_discount_pct: number,   // applied on top of default/override
 //   overrides: { "gid://shopify/Product/123": 42.00, ... }
 // }
 
 export function defaultPricing() {
-  return { default_mode: "pct_off_compare_at", default_value: 50, overrides: {} };
+  return { default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, overrides: {} };
 }
 
 function round2(n) {
@@ -40,16 +41,23 @@ export function computeSuggestedPrice(product, pricing) {
 
 export function applyPricing(products, pricing) {
   const overrides = pricing?.overrides || {};
+  const addPct = Number(pricing?.additional_discount_pct) || 0;
+  const hasAdditional = addPct > 0;
   return products.map((p) => {
     const suggested = computeSuggestedPrice(p, pricing);
     const override = overrides[p.product_id];
     const hasOverride = override !== undefined && override !== null && override !== "";
-    const effective = hasOverride ? round2(Number(override)) : suggested;
+    const baseWholesale = hasOverride ? round2(Number(override)) : suggested;
+    const finalPrice = hasAdditional && Number.isFinite(baseWholesale)
+      ? round2(baseWholesale * (1 - addPct / 100))
+      : baseWholesale;
     return {
       ...p,
       suggested_price: suggested,
-      effective_price: effective,
-      has_override: hasOverride
+      base_wholesale_price: baseWholesale,
+      effective_price: finalPrice,
+      has_override: hasOverride,
+      additional_discount_applied: hasAdditional
     };
   });
 }

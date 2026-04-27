@@ -238,7 +238,20 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
       if (!sheet) return res.status(404).json({ error: "Not found" });
       const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
       const html = renderHtml(payload);
-      const { pdfBuffer } = await renderPdfFromHtml(html);
+      const titleText = String(sheet.name || "Line Sheet").replace(/[<>&"']/g, "");
+      const customerText = sheet.customer ? ` · ${String(sheet.customer).replace(/[<>&"']/g, "")}` : "";
+      const footerHtml = `
+        <div style="font-size:9px;color:#777;width:100%;padding:0 0.35in;display:flex;justify-content:space-between;font-family:Arial,Helvetica,sans-serif;">
+          <span>${titleText}${customerText}</span>
+          <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
+        </div>`;
+      const headerHtml = `<div></div>`;
+      const { pdfBuffer } = await renderPdfFromHtml(html, null, {
+        displayHeaderFooter: true,
+        headerTemplate: headerHtml,
+        footerTemplate: footerHtml,
+        margin: { top: "0.35in", right: "0.35in", bottom: "0.55in", left: "0.35in" }
+      });
       if (!pdfBuffer) {
         res.setHeader("Content-Type", "text/html; charset=utf-8");
         return res.send(html);

@@ -23,6 +23,7 @@
 
     const mode = pricing.default_mode || "pct_off_compare_at";
     const val = pricing.default_value ?? 50;
+    const addPct = Number(pricing.additional_discount_pct) || 0;
 
     const modeSel = el("select", null, [
       el("option", { value: "pct_off_compare_at" }, "% off MSRP"),
@@ -52,6 +53,20 @@
         if (confirm(`Reset ${overrideCount} custom price(s) to the default?`)) onResetOverrides();
       }
     }, `Reset custom prices (${overrideCount || 0})`));
+
+    // Additional bulk discount, applied on top of the default/override.
+    const addRow = el("div", { style: "margin-top:10px;" });
+    addRow.appendChild(el("label", null, [el("strong", null, "Additional discount: ")]));
+    const addInp = el("input", { type: "number", value: addPct, step: "0.5", min: "0", max: "100", style: "width:80px;" });
+    addInp.addEventListener("input", () => {
+      pricing.additional_discount_pct = Number(addInp.value) || 0;
+      onChange();
+    });
+    addRow.appendChild(addInp);
+    addRow.appendChild(el("span", null, "% off the wholesale price"));
+    addRow.appendChild(el("span", { class: "muted", style: "margin-left:10px;font-size:11px;" },
+      "Stacks on top of the default and any per-product overrides."));
+    root.appendChild(addRow);
   }
 
   w.LineSheets.renderPricingBar = render;

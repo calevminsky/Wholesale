@@ -1697,7 +1697,7 @@ async function launchPdfBrowser() {
 // Render an HTML string to a PDF buffer.
 // Pass an existing `browser` to reuse it across multiple calls (caller is responsible for closing).
 // If `browser` is omitted, a new one is launched and closed automatically.
-async function renderPdfFromHtml(html, browser = null) {
+async function renderPdfFromHtml(html, browser = null, pdfOptions = null) {
   const ownBrowser = !browser;
 
   if (ownBrowser) {
@@ -1713,11 +1713,12 @@ async function renderPdfFromHtml(html, browser = null) {
     page = await browser.newPage();
     await page.setContent(html, { waitUntil: "networkidle0" });
 
-    const pdfBuffer = await page.pdf({
+    const baseOptions = {
       format: "Letter",
       printBackground: true,
       margin: { top: "0.25in", right: "0.25in", bottom: "0.25in", left: "0.25in" }
-    });
+    };
+    const pdfBuffer = await page.pdf({ ...baseOptions, ...(pdfOptions || {}) });
 
     return { pdfBuffer: Buffer.from(pdfBuffer), reason: null };
   } finally {

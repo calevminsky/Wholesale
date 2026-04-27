@@ -97,7 +97,7 @@
       saved_filter_name: null,
       pins: [],
       excludes: [],
-      pricing: { default_mode: "pct_off_compare_at", default_value: 50, overrides: {} },
+      pricing: { default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, overrides: {} },
       display_opts: { ats_locations: defaultStockLocationIds() },
       products: [],
       counts: {},
@@ -187,7 +187,7 @@
       saved_filter_name: l.saved_filter_name || null,
       pins: l.pins || [],
       excludes: l.excludes || [],
-      pricing: Object.assign({ default_mode: "pct_off_compare_at", default_value: 50, overrides: {} }, l.pricing || {}),
+      pricing: Object.assign({ default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, overrides: {} }, l.pricing || {}),
       display_opts: Object.assign({ ats_locations: [] }, l.display_opts || {}),
       products: j.products || [],
       counts: j.counts || {},
@@ -561,10 +561,9 @@
   const COL_WIDTHS = {
     chk:   36,
     img:   60,
-    prod:  260,
-    type:  90,
+    prod:  320,
     msrp:  80,
-    price: 88,
+    price: 110,
     notes: 180,
     size:  48,
     total: 64,
@@ -577,7 +576,6 @@
     add(COL_WIDTHS.chk);
     add(COL_WIDTHS.img);
     add(COL_WIDTHS.prod);
-    add(COL_WIDTHS.type);
     add(COL_WIDTHS.msrp);
     add(COL_WIDTHS.price);
     add(COL_WIDTHS.notes);
@@ -592,7 +590,6 @@
       { key: "_chk", label: selectAllCell(all), align: "center" },
       { key: "image", label: "", align: "center" },
       { key: "style_name", label: "Product", align: "left" },
-      { key: "product_type", label: "Type", align: "left" },
       { key: "compare_at_price", label: "MSRP", align: "right" },
       { key: "effective_price", label: "Price", align: "right" },
       { key: "notes", label: "Notes", align: "left" }
@@ -653,7 +650,6 @@
     const upsellNames = upsell.map((u) => u.title).filter(Boolean);
     tr.appendChild(el("td", { class: "ls-prod" }, [
       el("div", { class: "ls-prod-title" }, p.title || ""),
-      p.style_name && p.style_name !== p.title ? el("div", { class: "muted" }, p.style_name) : null,
       upsellNames.length
         ? el("div", { class: "ls-prod-upsell", title: "From the theme.upsell_list metafield. Customers see these in the Pairs With column on the PDF." },
             "Pairs with: " + upsellNames.join(", "))
@@ -665,7 +661,6 @@
       ])
     ]));
 
-    tr.appendChild(el("td", null, p.product_type || ""));
     tr.appendChild(el("td", { class: "num" }, fmtMoney(p.compare_at_price || p.current_price)));
 
     // Price: click-to-edit. Stores into state.pricing.overrides[product_id];
@@ -967,7 +962,7 @@
     const box = el("div", { class: "ls-adv" });
 
     // Pricing
-    const pricingDet = el("details", null);
+    const pricingDet = el("details", { open: "" });
     pricingDet.appendChild(el("summary", null, priceSummary()));
     const pb = el("div", { class: "ls-adv-body" });
     pricingDet.appendChild(pb);
@@ -1009,11 +1004,13 @@
   function priceSummary() {
     const m = state.pricing.default_mode;
     const v = state.pricing.default_value;
+    const add = Number(state.pricing.additional_discount_pct) || 0;
     const count = Object.keys(state.pricing.overrides || {}).length;
     const label = m === "fixed" ? `Fixed $${v}` :
                   m === "pct_off_current" ? `${v}% off current` :
                   `${v}% off MSRP`;
-    return `Pricing: ${label}${count ? ` · ${count} overrides` : ""}`;
+    const addLabel = add > 0 ? ` · then ${add}% extra off` : "";
+    return `Pricing: ${label}${addLabel}${count ? ` · ${count} overrides` : ""}`;
   }
 
   function renderDisplayOptsBody() {
