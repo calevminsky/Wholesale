@@ -25,8 +25,8 @@
     const val = pricing.default_value ?? 50;
 
     const modeSel = el("select", null, [
-      el("option", { value: "pct_off_compare_at" }, "% off compare-at"),
-      el("option", { value: "pct_off_current" }, "% off current price"),
+      el("option", { value: "pct_off_compare_at" }, "% off MSRP"),
+      el("option", { value: "pct_off_current" }, "% off current sale price"),
       el("option", { value: "fixed" }, "fixed $")
     ]);
     modeSel.value = mode;
@@ -46,11 +46,12 @@
     root.appendChild(el("button", { style: "margin-left:16px;", onclick: onApplyAll }, "Apply to all"));
     root.appendChild(el("button", {
       style: "margin-left:6px;",
+      title: "Removes all per-product price tweaks and uses the default for everything",
       onclick: () => {
         if (!overrideCount) return;
-        if (confirm(`Reset ${overrideCount} hand-edited price(s) to the default?`)) onResetOverrides();
+        if (confirm(`Reset ${overrideCount} custom price(s) to the default?`)) onResetOverrides();
       }
-    }, `Reset overrides (${overrideCount || 0})`));
+    }, `Reset custom prices (${overrideCount || 0})`));
   }
 
   w.LineSheets.renderPricingBar = render;

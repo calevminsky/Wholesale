@@ -18,6 +18,14 @@
   let rowLimit = PAGE_SIZE;
   let selected = new Set();
 
+  // Autosave state. Only active once the sheet has been saved at least once
+  // (i.e. has an id). Brand-new drafts still require an explicit name + Save.
+  let autosaveTimer = null;
+  let savingNow = false;
+  let lastSavedAt = null;
+  let saveError = null;
+  const AUTOSAVE_DEBOUNCE_MS = 1500;
+
   function el(tag, attrs, children) {
     const e = document.createElement(tag);
     if (attrs) for (const [k, v] of Object.entries(attrs)) {
@@ -154,6 +162,9 @@
     initialState = snapshot(state);
     selected = new Set();
     rowLimit = PAGE_SIZE;
+    lastSavedAt = null;     // shows just "Saved" until the next autosave
+    saveError = null;
+    clearTimeout(autosaveTimer);
     renderShell(container);
   }
 
@@ -161,6 +172,9 @@
     const container = document.getElementById("lsEditorRoot");
     state = defaultState();
     initialState = snapshot(state);
+    lastSavedAt = null;
+    saveError = null;
+    clearTimeout(autosaveTimer);
     selected = new Set();
     rowLimit = PAGE_SIZE;
     renderShell(container);
@@ -206,10 +220,14 @@
     left.appendChild(viewSel);
 
     const nameLabel = el("div", { class: "ls-hd-title" }, [
-      document.createTextNode(state.name || "Untitled view"),
-      isDirty() ? el("span", { class: "ls-dirty", title: "Unsaved changes" }, " •") : null
+      document.createTextNode(state.name || "Untitled view")
     ]);
     left.appendChild(nameLabel);
+
+    const statusEl = el("span", { id: "ls-save-status", class: "ls-save-status" }, saveStatusText());
+    statusEl.classList.toggle("ls-save-status-warn", savingNow || !!saveError || isDirty() || !state.id);
+    statusEl.classList.toggle("ls-save-status-ok", !savingNow && !saveError && !isDirty() && !!state.id);
+    left.appendChild(statusEl);
 
     hdr.appendChild(left);
 
@@ -542,8 +560,8 @@
       el("div", { class: "ls-prod-title" }, p.title || ""),
       p.style_name && p.style_name !== p.title ? el("div", { class: "muted" }, p.style_name) : null,
       el("div", { class: "ls-prod-badges" }, [
-        isPinned ? el("span", { class: "ls-badge ls-badge-pin" }, "pinned") : null,
-        isExcluded ? el("span", { class: "ls-badge ls-badge-ex" }, "excluded") : null,
+        isPinned ? el("span", { class: "ls-badge ls-badge-pin", title: "Always included regardless of filters" }, "always included") : null,
+        isExcluded ? el("span", { class: "ls-badge ls-badge-ex", title: "Hidden from this sheet" }, "hidden") : null,
         p.price_tier === "off_price" ? el("span", { class: "ls-badge ls-badge-off" }, "off price") : null
       ])
     ]));
@@ -551,9 +569,10 @@
     tr.appendChild(el("td", null, p.product_type || ""));
     tr.appendChild(el("td", { class: "num" }, fmtMoney(p.compare_at_price || p.current_price)));
 
-    // Price: display-only. Bulk override via the Pricing drawer.
-    tr.appendChild(el("td", { class: "num ls-price" + (p.has_override ? " has-override" : "") },
-      fmtMoney(p.effective_price ?? 0)));
+    // Price: click-to-edit. Stores into state.pricing.overrides[product_id];
+    // shows a reset arrow when overridden so the manager can revert to the
+    // global default. Submitted/archived sheets stay editable here too.
+    tr.appendChild(renderPriceCell(p));
 
     for (const s of SIZE_COLS) {
       const qty = Number(p.inventory_by_size?.[s] || 0);
@@ -564,20 +583,24 @@
     // actions
     const act = el("td", { class: "ls-act" });
     if (isExcluded) {
-      act.appendChild(iconBtn("↺", "Un-exclude", () => {
+      act.appendChild(iconBtn("↺", "Show again", () => {
         state.excludes = state.excludes.filter(id => id !== p.product_id);
         debouncePreview();
       }));
     } else {
-      act.appendChild(iconBtn("✕", "Exclude", () => {
+      act.appendChild(iconBtn("✕", "Hide from this sheet", () => {
         if (!state.excludes.includes(p.product_id)) state.excludes.push(p.product_id);
         debouncePreview();
       }));
-      act.appendChild(iconBtn(isPinned ? "☆" : "⭐", isPinned ? "Unpin" : "Pin", () => {
-        if (isPinned) state.pins = state.pins.filter(id => id !== p.product_id);
-        else if (!state.pins.includes(p.product_id)) state.pins.push(p.product_id);
-        debouncePreview();
-      }));
+      act.appendChild(iconBtn(
+        isPinned ? "☆" : "⭐",
+        isPinned ? "Stop always including" : "Always include (even if filters change)",
+        () => {
+          if (isPinned) state.pins = state.pins.filter(id => id !== p.product_id);
+          else if (!state.pins.includes(p.product_id)) state.pins.push(p.product_id);
+          debouncePreview();
+        }
+      ));
     }
     tr.appendChild(act);
 
@@ -586,6 +609,68 @@
 
   function iconBtn(sym, title, onclick) {
     return el("button", { class: "ls-iconbtn", title, onclick }, sym);
+  }
+
+  function renderPriceCell(p) {
+    const td = el("td", {
+      class: "num ls-price ls-price-edit" + (p.has_override ? " has-override" : ""),
+      title: "Click to set a custom price for this product"
+    });
+
+    const valueSpan = el("span", { class: "ls-price-val" }, fmtMoney(p.effective_price ?? 0));
+    td.appendChild(valueSpan);
+
+    if (p.has_override) {
+      td.appendChild(el("button", {
+        class: "ls-price-reset",
+        title: "Reset to default pricing",
+        onclick: (ev) => {
+          ev.stopPropagation();
+          if (state.pricing.overrides) delete state.pricing.overrides[p.product_id];
+          debouncePreview();
+        }
+      }, "↺"));
+    }
+
+    td.addEventListener("click", (ev) => {
+      // Don't re-enter edit mode while typing
+      if (td.classList.contains("editing")) return;
+      td.classList.add("editing");
+      td.innerHTML = "";
+      const inp = el("input", {
+        type: "number",
+        step: "0.01",
+        min: "0",
+        class: "ls-price-input",
+        value: String(p.effective_price ?? 0)
+      });
+      td.appendChild(inp);
+      inp.focus();
+      inp.select();
+
+      const commit = () => {
+        const raw = inp.value.trim();
+        if (raw === "") {
+          // Empty = remove override
+          if (state.pricing.overrides) delete state.pricing.overrides[p.product_id];
+        } else {
+          const n = Number(raw);
+          if (Number.isFinite(n) && n >= 0) {
+            state.pricing.overrides = state.pricing.overrides || {};
+            state.pricing.overrides[p.product_id] = Math.round(n * 100) / 100;
+          }
+        }
+        debouncePreview();
+      };
+      const cancel = () => debouncePreview(); // re-renders the cell
+      inp.addEventListener("blur", commit);
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") { e.preventDefault(); inp.blur(); }
+        else if (e.key === "Escape") { e.preventDefault(); cancel(); }
+      });
+    });
+
+    return td;
   }
 
   function sortProducts(arr) {
@@ -703,21 +788,21 @@
         selected.clear();
         debouncePreview();
       }
-    }, "Exclude"));
+    }, "Hide"));
     bar.appendChild(el("button", {
       onclick: () => {
         for (const id of selected) if (!state.pins.includes(id)) state.pins.push(id);
         selected.clear();
         debouncePreview();
       }
-    }, "Pin"));
+    }, "Always include"));
     bar.appendChild(el("button", {
       onclick: () => {
         state.excludes = state.excludes.filter(id => !selected.has(id));
         selected.clear();
         debouncePreview();
       }
-    }, "Un-exclude"));
+    }, "Show again"));
     bar.appendChild(el("button", {
       class: "ls-bulk-x",
       onclick: () => { selected.clear(); renderTableBody(); }
@@ -822,7 +907,74 @@
     // Repaint chrome that reflects state (dirty, counts, badges)
     renderTableBody();
     previewTimer = setTimeout(refreshPreview, 220);
+    scheduleAutosave();
+    refreshSaveStatus();
   }
+
+  function scheduleAutosave() {
+    if (!state || !state.id) return;        // unnamed drafts: no autosave
+    if (!isDirty()) return;
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(() => { autosave(); }, AUTOSAVE_DEBOUNCE_MS);
+  }
+
+  async function autosave() {
+    if (!state || !state.id || !isDirty() || savingNow) return;
+    savingNow = true;
+    saveError = null;
+    refreshSaveStatus();
+    try {
+      await save({ silent: true, fromAutosave: true });
+      lastSavedAt = Date.now();
+    } catch (e) {
+      saveError = e?.message || String(e);
+    } finally {
+      savingNow = false;
+      refreshSaveStatus();
+    }
+  }
+
+  function saveStatusText() {
+    if (!state) return "";
+    if (!state.id) return "Not saved yet";
+    if (savingNow) return "Saving…";
+    if (saveError) return `Save failed — ${saveError}`;
+    if (isDirty()) return "Unsaved changes";
+    if (lastSavedAt) return `Saved ${secondsAgo(lastSavedAt)}`;
+    return "Saved";
+  }
+
+  function secondsAgo(ts) {
+    const sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
+    if (sec < 5) return "just now";
+    if (sec < 60) return `${sec}s ago`;
+    const m = Math.floor(sec / 60);
+    if (m < 60) return `${m} min ago`;
+    const h = Math.floor(m / 60);
+    return `${h}h ago`;
+  }
+
+  // Repaint just the saved-status pill in the header without re-rendering
+  // everything else (which would steal focus from open inputs).
+  function refreshSaveStatus() {
+    const node = document.getElementById("ls-save-status");
+    if (!node) return;
+    node.textContent = saveStatusText();
+    node.className = "ls-save-status" + (
+      savingNow || saveError || isDirty() || !state?.id ? " ls-save-status-warn" : " ls-save-status-ok"
+    );
+  }
+  // Tick the "X seconds ago" label every 5s.
+  setInterval(refreshSaveStatus, 5000);
+
+  // Warn before navigation if there are unsaved changes (autosave usually
+  // catches everything, but this protects against in-flight failures).
+  window.addEventListener("beforeunload", (e) => {
+    if (state && isDirty()) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
 
   async function refreshPreview() {
     state.loading = true;
@@ -868,7 +1020,7 @@
     }
   }
 
-  async function save({ saveAs = false, silent = false } = {}) {
+  async function save({ saveAs = false, silent = false, fromAutosave = false } = {}) {
     let nameToUse = state.name;
     if (saveAs || !state.id) {
       const prompted = prompt(saveAs ? "Save as new view. Name:" : "Name this view:", state.name || seasonSuggestion());
@@ -895,13 +1047,23 @@
     const r = await fetch(url, {
       method, headers: { "Content-Type": "application/json" }, body: JSON.stringify(body)
     });
-    if (!r.ok) { alert("Save failed: " + (await r.text())); return null; }
+    if (!r.ok) {
+      const msg = await r.text();
+      if (fromAutosave) throw new Error(msg || `HTTP ${r.status}`);
+      alert("Save failed: " + msg);
+      return null;
+    }
     const j = await r.json();
     state.id = j.linesheet.id;
     state.name = j.linesheet.name;
     initialState = snapshot(state);
+    lastSavedAt = Date.now();
+    saveError = null;
     await loadSavedSheets();
-    renderShell(document.getElementById("lsEditorRoot"));
+    // Autosave avoids re-rendering the whole shell so it doesn't steal focus
+    // from inputs the user is still typing in.
+    if (!fromAutosave) renderShell(document.getElementById("lsEditorRoot"));
+    refreshSaveStatus();
     if (!silent) flash(`Saved "${state.name}"`);
     return state.id;
   }

@@ -226,11 +226,12 @@
     }, "+ OR group");
     groupsWrap.appendChild(addGroup);
 
-    // Global filters
+    // Always-applied filters (AND'd with every group). Renamed from "Global
+    // filters" — that wording confused non-technical users.
     const globalsWrap = el("div", { class: "ls-globals" }, [
       el("div", { class: "ls-group-hd" }, [
-        el("strong", null, "Global filters"),
-        el("span", { class: "muted" }, " (AND'd with all groups)")
+        el("strong", null, "Always apply"),
+        el("span", { class: "muted" }, " (these filter every result, no matter the groups above)")
       ])
     ]);
     tree.globals.forEach((cond, ci) => {
@@ -241,7 +242,7 @@
     globalsWrap.appendChild(el("button", {
       class: "ls-add",
       onclick: () => { tree.globals.push({ field: "price_tier", op: "=", value: "full_price" }); onChange(); }
-    }, "+ global"));
+    }, "+ always-apply rule"));
 
     root.appendChild(groupsWrap);
     root.appendChild(globalsWrap);
