@@ -649,9 +649,15 @@
       p.image ? [el("img", { src: p.image + "?width=80" })] : ""));
 
     // title
+    const upsell = Array.isArray(p.upsell_list) ? p.upsell_list : [];
+    const upsellNames = upsell.map((u) => u.title).filter(Boolean);
     tr.appendChild(el("td", { class: "ls-prod" }, [
       el("div", { class: "ls-prod-title" }, p.title || ""),
       p.style_name && p.style_name !== p.title ? el("div", { class: "muted" }, p.style_name) : null,
+      upsellNames.length
+        ? el("div", { class: "ls-prod-upsell", title: "From the theme.upsell_list metafield. Customers see these in the Pairs With column on the PDF." },
+            "Pairs with: " + upsellNames.join(", "))
+        : null,
       el("div", { class: "ls-prod-badges" }, [
         isPinned ? el("span", { class: "ls-badge ls-badge-pin", title: "Always included regardless of filters" }, "always included") : null,
         isExcluded ? el("span", { class: "ls-badge ls-badge-ex", title: "Hidden from this sheet" }, "hidden") : null,
@@ -1032,7 +1038,8 @@
     body.appendChild(el("div", { class: "ls-row" }, [
       makeCheckbox("hide_inventory", "Hide inventory from customer (PDF)", true),
       makeCheckbox("show_msrp", "Show MSRP on PDF", true),
-      makeCheckbox("show_notes", "Show notes column on PDF", true)
+      makeCheckbox("show_notes", "Show notes column on PDF", true),
+      makeCheckbox("show_pairs", "Show pairs-with column on PDF", true)
     ]));
 
     const groupSel = el("select", null, ["none", "season", "product_type", "class"].map(v => el("option", { value: v }, v)));

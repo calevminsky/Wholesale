@@ -34,6 +34,11 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     : (groups || []).flatMap((g) => g.products || []);
   const showNotes = (opts.show_notes !== false)
     && allProducts.some((p) => (notesByProduct[p.product_id] || "").trim());
+  // "Pairs With" surfaces the theme.upsell_list metafield as a
+  // comma-separated list of product names so the customer can scan/search
+  // the line sheet for them. Only renders when at least one product has it.
+  const showPairs = (opts.show_pairs !== false)
+    && allProducts.some((p) => Array.isArray(p.upsell_list) && p.upsell_list.length);
 
   const dateStr = new Date().toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "2-digit"
@@ -61,17 +66,25 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     columns.push({ key: "type", label: "Type", width: "10%" });
     if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "8%", num: true });
     columns.push({ key: "price", label: "Price", width: "9%", num: true });
+    if (showPairs) columns.push({ key: "pairs", label: "Pairs With", width: "13%" });
     if (showNotes) columns.push({ key: "notes", label: "Notes", width: "13%" });
     for (const s of SIZE_COLS) columns.push({ key: `sz_${s}`, label: s, width: "4%", num: true });
     columns.push({ key: "total", label: "Total", width: "6%", num: true });
   } else {
     // No inventory grid → image gets ~3x the width.
+    const productWidth = (() => {
+      let w = 44;
+      if (showPairs) w -= 14;
+      if (showNotes) w -= 14;
+      return w + "%";
+    })();
     columns.push({ key: "image", label: "", width: "20%" });
-    columns.push({ key: "product", label: "Product", width: showNotes ? "30%" : "44%" });
-    columns.push({ key: "type", label: "Type", width: "12%" });
-    if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "10%", num: true });
-    columns.push({ key: "price", label: "Price", width: "12%", num: true });
-    if (showNotes) columns.push({ key: "notes", label: "Notes", width: "16%" });
+    columns.push({ key: "product", label: "Product", width: productWidth });
+    columns.push({ key: "type", label: "Type", width: "10%" });
+    if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "9%", num: true });
+    columns.push({ key: "price", label: "Price", width: "10%", num: true });
+    if (showPairs) columns.push({ key: "pairs", label: "Pairs With", width: "14%" });
+    if (showNotes) columns.push({ key: "notes", label: "Notes", width: "14%" });
   }
 
   function rowHtml(p) {
@@ -92,6 +105,11 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
       if (col.key === "notes") {
         const note = notesByProduct[p.product_id] || "";
         return `<td class="notes-td">${escapeHtml(note)}</td>`;
+      }
+      if (col.key === "pairs") {
+        const list = Array.isArray(p.upsell_list) ? p.upsell_list : [];
+        const text = list.map((u) => u.title).filter(Boolean).join(", ");
+        return `<td class="pairs-td">${escapeHtml(text)}</td>`;
       }
       if (col.key === "total") return `<td class="num">${Number(p.inventory_total || 0)}</td>`;
       if (col.key.startsWith("sz_")) {
@@ -163,6 +181,7 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     .prod-td .sub { color: #666; font-size: 9px; margin-top: 1px; }
 
     .notes-td { font-size: 9px; color: #444; line-height: 1.25; white-space: pre-wrap; }
+    .pairs-td { font-size: 9px; color: #444; line-height: 1.25; }
 
     .section { page-break-inside: avoid; margin-top: 12px; }
     .group-title { font-size: 12px; margin: 12px 0 4px 0; border-bottom: 1px solid #aaa; padding-bottom: 2px; }
