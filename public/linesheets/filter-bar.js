@@ -447,26 +447,36 @@
     root.innerHTML = "";
     root.classList.add("lsf-bar");
 
-    if (!isSimpleTree(tree)) {
-      root.appendChild(el("span", { class: "lsf-chip lsf-chip-adv" }, [
-        document.createTextNode("Advanced filter active"),
+    // Always render chips for the first include group, even when the tree
+    // has extras (additional include groups or globals). The extras are
+    // surfaced as a non-destructive badge that the user can choose to clear
+    // separately — adding/editing chips no longer requires throwing away
+    // anything they didn't see.
+    const conds = getConditions(tree);
+    const used = new Set(conds.map(c => c.field));
+
+    const extraGroupCount = (Array.isArray(tree.include) ? tree.include.length : 0) - 1;
+    const globalCount     = Array.isArray(tree.globals) ? tree.globals.length : 0;
+    const extras = Math.max(0, extraGroupCount) + globalCount;
+
+    if (extras > 0) {
+      root.appendChild(el("span", {
+        class: "lsf-chip lsf-chip-adv",
+        title: "Extra rules from an older filter format. Click to clear them; your visible filters stay."
+      }, [
+        document.createTextNode(`+ ${extras} advanced rule${extras === 1 ? "" : "s"}`),
         el("button", {
-          title: "Convert to simple and discard extras",
+          title: "Clear advanced rules (keeps the chips below)",
           onclick: () => {
-            if (!confirm("Simplify this filter to the first group? Other groups and always-apply rules will be discarded.")) return;
-            const inc = tree.include?.[0] ? [tree.include[0]] : [{ conditions: [] }];
-            tree.include = inc;
+            if (!confirm(`Clear ${extras} advanced rule${extras === 1 ? "" : "s"}? Your visible chips below will stay.`)) return;
+            tree.include = [tree.include?.[0] || { conditions: conds }];
             tree.globals = [];
             renderBar(root, tree, meta, onChange);
             onChange();
           }
-        }, "Simplify")
+        }, "Clear")
       ]));
-      return;
     }
-
-    const conds = getConditions(tree);
-    const used = new Set(conds.map(c => c.field));
 
     conds.forEach((cond, idx) => {
       const chip = el("button", {
