@@ -90,6 +90,7 @@ export async function buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck = 
         if (live.inventory_total !== undefined) {
           p.inventory_total_live = live.inventory_total;
         }
+        if (Array.isArray(live.upsell_list)) p.upsell_list = live.upsell_list;
         filtered.push(p);
       }
       products = filtered;

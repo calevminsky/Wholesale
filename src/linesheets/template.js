@@ -1,4 +1,4 @@
-// PDF template for a line sheet. Landscape, mirrors the on-screen table.
+// PDF template for a line sheet. Portrait layout so images can be larger.
 // Header appears on the first page; footer repeats.
 
 const SIZE_COLS = ["XS", "S", "M", "L", "XL"];
@@ -23,7 +23,23 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
   const customer = sheet.customer || "";
   const opts = sheet.display_opts || {};
   const showMSRP = opts.show_msrp !== false;
-  const showInventory = opts.show_inventory !== false;
+  // Default: hide inventory from the customer. `hide_inventory` (new) wins;
+  // fall back to legacy `show_inventory` if it's explicitly set.
+  const showInventory = opts.hide_inventory !== undefined
+    ? !opts.hide_inventory
+    : (opts.show_inventory === true);
+  const notesByProduct = opts.notes_by_product || {};
+  const allProducts = (products && products.length)
+    ? products
+    : (groups || []).flatMap((g) => g.products || []);
+  const showNotes = (opts.show_notes !== false)
+    && allProducts.some((p) => (notesByProduct[p.product_id] || "").trim());
+  // "Pairs With" surfaces the theme.upsell_list metafield as a
+  // comma-separated list of product names so the customer can scan/search
+  // the line sheet for them. Only renders when at least one product has it.
+  const showPairs = (opts.show_pairs !== false)
+    && allProducts.some((p) => Array.isArray(p.upsell_list) && p.upsell_list.length);
+
   const dateStr = new Date().toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "2-digit"
   });
@@ -41,21 +57,42 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     </div>
   `;
 
+  // Column layout. Portrait has ~7.6in usable width; we trade the size grid
+  // for a bigger image when inventory is hidden (the common case).
   const columns = [];
-  columns.push({ key: "image", label: "", width: "8%" });
-  columns.push({ key: "product", label: "Product", width: "26%" });
-  columns.push({ key: "type", label: "Type", width: "8%" });
-  if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "7%", num: true });
-  columns.push({ key: "price", label: "Price", width: "8%", num: true });
   if (showInventory) {
-    for (const s of SIZE_COLS) columns.push({ key: `sz_${s}`, label: s, width: "5%", num: true });
-    columns.push({ key: "total", label: "Total", width: "7%", num: true });
+    columns.push({ key: "image", label: "", width: "12%" });
+    columns.push({ key: "product", label: "Product", width: "28%" });
+    columns.push({ key: "type", label: "Type", width: "10%" });
+    if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "8%", num: true });
+    columns.push({ key: "price", label: "Price", width: "9%", num: true });
+    if (showPairs) columns.push({ key: "pairs", label: "Pairs With", width: "13%" });
+    if (showNotes) columns.push({ key: "notes", label: "Notes", width: "13%" });
+    for (const s of SIZE_COLS) columns.push({ key: `sz_${s}`, label: s, width: "4%", num: true });
+    columns.push({ key: "total", label: "Total", width: "6%", num: true });
+  } else {
+    // No inventory grid → image gets ~3x the width.
+    const productWidth = (() => {
+      let w = 44;
+      if (showPairs) w -= 14;
+      if (showNotes) w -= 14;
+      return w + "%";
+    })();
+    columns.push({ key: "image", label: "", width: "20%" });
+    columns.push({ key: "product", label: "Product", width: productWidth });
+    columns.push({ key: "type", label: "Type", width: "10%" });
+    if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "9%", num: true });
+    columns.push({ key: "price", label: "Price", width: "10%", num: true });
+    if (showPairs) columns.push({ key: "pairs", label: "Pairs With", width: "14%" });
+    if (showNotes) columns.push({ key: "notes", label: "Notes", width: "14%" });
   }
 
   function rowHtml(p) {
     const cells = columns.map((col) => {
       if (col.key === "image") {
-        return `<td class="img-td">${p.image ? `<img src="${escapeHtml(p.image)}?width=96">` : ""}</td>`;
+        // Larger image (?width hint) + larger CSS box. Browsers respect the
+        // CSS cap so older 96-wide hints still render fine.
+        return `<td class="img-td">${p.image ? `<img src="${escapeHtml(p.image)}?width=240">` : ""}</td>`;
       }
       if (col.key === "product") {
         const sub = p.style_name && p.style_name !== p.title
@@ -65,6 +102,15 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
       if (col.key === "type") return `<td>${escapeHtml(p.product_type || "")}</td>`;
       if (col.key === "msrp") return `<td class="num">${money(p.compare_at_price || p.current_price)}</td>`;
       if (col.key === "price") return `<td class="num">${money(p.effective_price)}</td>`;
+      if (col.key === "notes") {
+        const note = notesByProduct[p.product_id] || "";
+        return `<td class="notes-td">${escapeHtml(note)}</td>`;
+      }
+      if (col.key === "pairs") {
+        const list = Array.isArray(p.upsell_list) ? p.upsell_list : [];
+        const text = list.map((u) => u.title).filter(Boolean).join(", ");
+        return `<td class="pairs-td">${escapeHtml(text)}</td>`;
+      }
       if (col.key === "total") return `<td class="num">${Number(p.inventory_total || 0)}</td>`;
       if (col.key.startsWith("sz_")) {
         const size = col.key.slice(3);
@@ -110,7 +156,7 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
 <head>
   <meta charset="utf-8">
   <style>
-    @page { size: Letter landscape; margin: 0.35in 0.35in 0.55in 0.35in; }
+    @page { size: Letter portrait; margin: 0.4in 0.4in 0.55in 0.4in; }
     body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #222; }
 
     .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; }
@@ -123,15 +169,19 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     .sheet-tbl { width: 100%; border-collapse: collapse; }
     .sheet-tbl thead { display: table-header-group; }
     .sheet-tbl th { background: #f3f3f3; border-bottom: 1.5px solid #000; padding: 5px 4px; text-align: left; font-weight: 600; font-size: 10px; }
-    .sheet-tbl td { border-bottom: 1px solid #eee; padding: 4px; font-size: 10px; vertical-align: middle; }
+    .sheet-tbl td { border-bottom: 1px solid #eee; padding: 6px 4px; font-size: 10px; vertical-align: middle; }
     .sheet-tbl .num { text-align: right; }
     .sheet-tbl .zero { color: #bbb; }
     .sheet-tbl tr { page-break-inside: avoid; }
 
-    .img-td { width: 48px; text-align: center; }
-    .img-td img { max-width: 44px; max-height: 56px; object-fit: cover; border-radius: 3px; }
-    .prod-td { font-weight: 500; }
+    /* Bigger images now that we're in portrait */
+    .img-td { text-align: center; padding: 4px; }
+    .img-td img { max-width: 110px; max-height: 140px; object-fit: cover; border-radius: 4px; }
+    .prod-td { font-weight: 500; line-height: 1.3; }
     .prod-td .sub { color: #666; font-size: 9px; margin-top: 1px; }
+
+    .notes-td { font-size: 9px; color: #444; line-height: 1.25; white-space: pre-wrap; }
+    .pairs-td { font-size: 9px; color: #444; line-height: 1.25; }
 
     .section { page-break-inside: avoid; margin-top: 12px; }
     .group-title { font-size: 12px; margin: 12px 0 4px 0; border-bottom: 1px solid #aaa; padding-bottom: 2px; }
