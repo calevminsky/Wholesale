@@ -76,6 +76,9 @@
       .ls-hd-r { display:flex; align-items:center; gap:6px; margin-left:auto; }
       .ls-hd-title { font-weight:600; font-size:16px; color:#222; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:360px; }
       .ls-dirty { color:#d58500; font-weight:700; }
+      .ls-save-status { font-size:12px; padding:3px 10px; border-radius:999px; font-weight:600; }
+      .ls-save-status-ok { background:#e7f6e7; color:#2a6e2a; }
+      .ls-save-status-warn { background:#fff4cc; color:#7a5800; }
       .ls-views { padding:6px 8px; border-radius:8px; border:1px solid #ccc; background:#fff; font-size:13px; max-width:280px; }
 
       .ls-more { position:relative; }
@@ -166,6 +169,13 @@
       .ls-tbl td.ls-zero { color:#ccc; }
       .ls-tbl td.ls-price { font-weight:600; color:#111; }
       .ls-tbl td.ls-price.has-override { background:#fff7e0; }
+      .ls-tbl td.ls-price-edit { cursor: text; position: relative; }
+      .ls-tbl td.ls-price-edit:hover { background:#eef5ff; }
+      .ls-tbl td.ls-price-edit.has-override:hover { background:#fff0c2; }
+      .ls-tbl td.ls-price-edit.editing { padding:0; }
+      .ls-price-input { width: 70px; padding: 4px 6px; border:1px solid #5a8dee; border-radius: 4px; text-align: right; font-size: 13px; box-sizing: border-box; }
+      .ls-price-reset { margin-left:6px; border:none; background:transparent; cursor:pointer; color:#7a5800; font-size:12px; padding:2px 4px; border-radius:4px; }
+      .ls-price-reset:hover { background:rgba(0,0,0,0.06); }
       .ls-tbl td.ls-act { white-space:nowrap; text-align:center; }
       .ls-iconbtn { border:none; background:transparent; cursor:pointer; font-size:14px; padding:4px 6px; border-radius:4px; }
       .ls-iconbtn:hover { background:#eee; }

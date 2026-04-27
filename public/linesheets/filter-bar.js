@@ -370,7 +370,7 @@
         el("button", {
           title: "Convert to simple and discard extras",
           onclick: () => {
-            if (!confirm("Collapse advanced filter to the first group? Other groups and globals will be discarded.")) return;
+            if (!confirm("Simplify this filter to the first group? Other groups and always-apply rules will be discarded.")) return;
             const inc = tree.include?.[0] ? [tree.include[0]] : [{ conditions: [] }];
             tree.include = inc;
             tree.globals = [];
