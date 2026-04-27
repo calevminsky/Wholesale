@@ -59,9 +59,16 @@ export async function buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck = 
   const pricing = { ...defaultPricing(), ...(sheet.pricing || {}) };
   const opts = sheet.display_opts || {};
 
-  let matched = await runFilter(filterTree);
+  // Mirror the editor's preview: pass ats_locations so inventory totals (and
+  // therefore the set of products visible after min_live_inventory) match
+  // exactly between the on-screen builder and the rendered PDF.
+  const runOpts = {
+    atsLocations: Array.isArray(opts.ats_locations) ? opts.ats_locations : []
+  };
+
+  let matched = await runFilter(filterTree, runOpts);
   let pinned = [];
-  if ((sheet.pins || []).length) pinned = await loadProductsByIds(sheet.pins);
+  if ((sheet.pins || []).length) pinned = await loadProductsByIds(sheet.pins, runOpts);
 
   let products = composeProducts(matched, pinned, sheet.excludes || []);
 

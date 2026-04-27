@@ -44,12 +44,6 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     year: "numeric", month: "long", day: "2-digit"
   });
 
-  const pricing = sheet.pricing || {};
-  const additionalPct = Number(pricing.additional_discount_pct) || 0;
-  const additionalNote = additionalPct > 0
-    ? `<div class="discount-note">All prices reflect an additional ${additionalPct}% off.</div>`
-    : "";
-
   const header = `
     <div class="header">
       <div class="brand">
@@ -61,7 +55,6 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
         <div class="date">${escapeHtml(dateStr)}</div>
       </div>
     </div>
-    ${additionalNote}
   `;
 
   // Column layout. Portrait has ~7.6in usable width; we trade the size grid
@@ -105,9 +98,7 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
   function rowHtml(p) {
     const cells = columns.map((col) => {
       if (col.key === "image") {
-        // Larger image (?width hint) + larger CSS box. Browsers respect the
-        // CSS cap so older 96-wide hints still render fine.
-        return `<td class="img-td">${p.image ? `<img src="${escapeHtml(p.image)}?width=240">` : ""}</td>`;
+        return `<td class="img-td">${p.image ? `<img src="${escapeHtml(p.image)}?width=160">` : ""}</td>`;
       }
       if (col.key === "product") {
         return `<td class="prod-td"><div>${escapeHtml(p.title || "")}</div></td>`;
@@ -168,11 +159,11 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
 <head>
   <meta charset="utf-8">
   <style>
-    @page { size: Letter portrait; margin: 0.4in 0.4in 0.55in 0.4in; }
+    @page { size: Letter portrait; margin: 0.35in 0.4in 0.5in 0.4in; }
     body {
       margin: 0; padding: 0;
       font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-      font-size: 10px;
+      font-size: 9.5px;
       color: #1a1a1a;
       -webkit-font-smoothing: antialiased;
     }
@@ -180,71 +171,66 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     .header {
       display: flex; justify-content: space-between; align-items: flex-end;
       border-bottom: 1.5px solid #1a1a1a;
-      padding-bottom: 10px;
-      margin-bottom: 14px;
+      padding-bottom: 6px;
+      margin-bottom: 8px;
     }
-    .brand img { max-height: 56px; width: auto; }
+    .brand img { max-height: 42px; width: auto; }
     .meta { text-align: right; }
-    .meta .title { font-size: 20px; font-weight: 700; letter-spacing: 0.2px; }
-    .meta .customer { font-size: 11px; color: #444; margin-top: 3px; letter-spacing: 0.3px; text-transform: uppercase; }
-    .meta .date { font-size: 9.5px; color: #888; margin-top: 3px; }
-
-    .discount-note {
-      font-size: 10px; font-style: italic; color: #b00020;
-      margin: -6px 0 12px; text-align: right;
-    }
+    .meta .title { font-size: 17px; font-weight: 700; letter-spacing: 0.2px; line-height: 1.1; }
+    .meta .customer { font-size: 10px; color: #444; margin-top: 2px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .meta .date { font-size: 9px; color: #888; margin-top: 1px; }
 
     .sheet-tbl { width: 100%; border-collapse: collapse; }
     .sheet-tbl thead { display: table-header-group; }
     .sheet-tbl th {
       background: #fafafa;
       border-bottom: 1.5px solid #1a1a1a;
-      padding: 6px 5px;
+      padding: 4px 4px;
       text-align: left;
       font-weight: 600;
-      font-size: 9.5px;
+      font-size: 8.5px;
       letter-spacing: 0.3px;
       text-transform: uppercase;
       color: #555;
     }
     .sheet-tbl td {
       border-bottom: 1px solid #eee;
-      padding: 8px 5px;
-      font-size: 10px;
+      padding: 4px 4px;
+      font-size: 9.5px;
       vertical-align: middle;
     }
     .sheet-tbl .num { text-align: right; }
     .sheet-tbl .zero { color: #ccc; }
     .sheet-tbl tr { page-break-inside: avoid; }
 
-    .img-td { text-align: center; padding: 6px 4px; }
-    .img-td img { max-width: 120px; max-height: 150px; object-fit: cover; border-radius: 3px; }
-    .prod-td { font-weight: 500; line-height: 1.35; }
+    .img-td { text-align: center; padding: 3px 4px; }
+    .img-td img { max-width: 70px; max-height: 80px; object-fit: cover; border-radius: 3px; }
+    .prod-td { font-weight: 500; line-height: 1.25; }
 
     /* MSRP de-emphasized; price emphasized as the headline number. */
-    .sheet-tbl th.msrp-h, .sheet-tbl td.msrp-c { color: #888; }
-    .sheet-tbl td.price-c { font-weight: 600; font-size: 11px; }
+    .sheet-tbl td.msrp-c { color: #888; }
+    .sheet-tbl td.price-c { font-weight: 600; font-size: 10.5px; }
     .sheet-tbl .num .was {
       color: #aaa;
       text-decoration: line-through;
-      margin-right: 4px;
+      margin-right: 3px;
       font-weight: 400;
-      font-size: 9.5px;
+      font-size: 9px;
     }
     .sheet-tbl .num .now { color: #b00020; font-weight: 700; }
 
-    .notes-td { font-size: 9px; color: #555; line-height: 1.35; white-space: pre-wrap; }
-    .pairs-td { font-size: 9px; color: #555; line-height: 1.35; }
+    .notes-td { font-size: 8.5px; color: #555; line-height: 1.2; white-space: pre-wrap; }
+    .pairs-td { font-size: 8.5px; color: #555; line-height: 1.2; }
 
-    .section { page-break-inside: avoid; margin-top: 14px; }
+    .section { page-break-inside: avoid; margin-top: 8px; }
     .group-title {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 700;
       letter-spacing: 0.5px;
       text-transform: uppercase;
       color: #1a1a1a;
-      margin: 16px 0 6px;
-      padding-bottom: 4px;
+      margin: 10px 0 4px;
+      padding-bottom: 3px;
       border-bottom: 1px solid #1a1a1a;
     }
   </style>
