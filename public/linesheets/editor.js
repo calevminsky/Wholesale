@@ -234,6 +234,11 @@
       onclick: exportPdf
     }, "Export PDF"));
 
+    right.appendChild(el("button", {
+      onclick: exportOrderForm,
+      title: "Customer-friendly XLSX with MSRP and wholesale pre-filled. Customer fills in quantities and emails it back."
+    }, "Export Order Form"));
+
     // Overflow menu
     const more = el("div", { class: "ls-more" });
     const moreBtn = el("button", { class: "ls-more-btn", title: "More actions" }, "⋯");
@@ -915,6 +920,15 @@
       if (!id) return;
     }
     window.open(`/api/linesheets/${id}/render.pdf`, "_blank");
+  }
+
+  async function exportOrderForm() {
+    let id = state.id;
+    if (!id || isDirty()) {
+      id = await save({ silent: true });
+      if (!id) return;
+    }
+    window.open(`/api/linesheets/${id}/order-form.xlsx`, "_blank");
   }
 
   function editNameDialog() {

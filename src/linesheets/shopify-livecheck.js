@@ -27,6 +27,7 @@ export async function livecheckProducts(productIds, shopifyGraphQL) {
       for (const v of (n.variants?.nodes || [])) inv += Number(v.inventoryQuantity || 0);
       out.set(n.id, {
         product_id: n.id,
+        handle: n.handle || "",
         title: n.title,
         image: n.featuredImage?.url ? n.featuredImage.url.split("?")[0] : "",
         compare_at_price: compareAt,
@@ -62,6 +63,7 @@ const NODES_QUERY = `
     nodes(ids: $ids) {
       ... on Product {
         id
+        handle
         title
         status
         featuredImage { url }

@@ -198,8 +198,10 @@
     <h1>Wholesale Tools</h1>
 
     <div class="app-tabs">
-      <button class="app-tab active-tab" data-page="import">Wholesale Import</button>
+      <button class="app-tab" data-page="orders">Orders</button>
       <button class="app-tab" data-page="linesheets">Line Sheets</button>
+      <button class="app-tab" data-page="customers">Customers</button>
+      <button class="app-tab active-tab" data-page="import">Wholesale Import</button>
     </div>
 
     <div id="wholesaleImportPage">
@@ -321,17 +323,24 @@
       <div id="lsEditorRoot"></div>
     </div>
 
+    <div id="ordersPage" style="display:none;"></div>
+    <div id="customersPage" style="display:none;"></div>
+
     <script src="/linesheets/filter-bar.js"></script>
     <script src="/linesheets/pricing-bar.js"></script>
     <script src="/linesheets/editor.js"></script>
     <script src="/linesheets/list.js"></script>
+    <script src="/orders.js"></script>
+    <script src="/customers.js"></script>
     <script>
       // ===== Top-level tab switching =====
       (function () {
         const tabs = document.querySelectorAll(".app-tab");
         const pages = {
           import: document.getElementById("wholesaleImportPage"),
-          linesheets: document.getElementById("lineSheetsPage")
+          linesheets: document.getElementById("lineSheetsPage"),
+          orders: document.getElementById("ordersPage"),
+          customers: document.getElementById("customersPage")
         };
         let lsInitialized = false;
         tabs.forEach((t) => t.addEventListener("click", async () => {
@@ -343,8 +352,12 @@
           if (p === "linesheets" && !lsInitialized) {
             lsInitialized = true;
             await window.LineSheets.showList();
-          } else if (p === "linesheets") {
-            // Already initialized; no reload on tab switch.
+          }
+          if (p === "orders" && window.OrdersPage) {
+            await window.OrdersPage.show();
+          }
+          if (p === "customers" && window.CustomersPage) {
+            await window.CustomersPage.show();
           }
         }));
       })();

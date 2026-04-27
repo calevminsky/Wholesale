@@ -6,6 +6,8 @@ import * as db from "./db.js";
 import { runFilter, loadProductsByIds } from "./query.js";
 import { applyPricing, defaultPricing } from "./pricing.js";
 import { buildRenderedPayload, renderHtml } from "./render-pdf.js";
+import { buildOrderFormXlsx } from "./order-form-xlsx.js";
+import * as customersDb from "../customers/db.js";
 
 export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
   const r = Router();
@@ -69,7 +71,10 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
   // ------- Line sheets -------
   r.get("/api/linesheets", async (req, res) => {
     try {
-      const sheets = await db.listLineSheets({ search: req.query.q });
+      const sheets = await db.listLineSheets({
+        search: req.query.q,
+        customerId: req.query.customer_id ? Number(req.query.customer_id) || undefined : undefined
+      });
       res.json({ linesheets: sheets });
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
@@ -78,15 +83,32 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     try {
       const p = req.body || {};
       if (!p.name) return res.status(400).json({ error: "name is required" });
+
+      // If the line sheet is for a customer with a pricing tier and the caller
+      // didn't pass explicit pricing, seed pricing.default_value from the tier.
+      // Manual per-product overrides on the sheet always win.
+      let pricing = p.pricing;
+      if (!pricing && p.customer_id) {
+        const c = await customersDb.getCustomer(p.customer_id);
+        if (c && c.discount_pct_off_msrp != null) {
+          pricing = {
+            default_mode: "pct_off_compare_at",
+            default_value: Number(c.discount_pct_off_msrp),
+            overrides: {}
+          };
+        }
+      }
+
       const row = await db.createLineSheet({
         name: p.name,
         customer: p.customer,
+        customer_id: p.customer_id || null,
         description: p.description,
         filter_tree: p.filter_tree || { include: [], globals: [] },
         saved_filter_id: p.saved_filter_id || null,
         pins: p.pins || [],
         excludes: p.excludes || [],
-        pricing: p.pricing || defaultPricing(),
+        pricing: pricing || defaultPricing(),
         display_opts: p.display_opts || {}
       });
       res.json({ linesheet: row });
@@ -199,6 +221,15 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
+  r.get("/api/linesheets/:id/price-history", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const history = await db.listLineSheetPriceHistory(id);
+      res.json({ history });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
   r.get("/api/linesheets/:id/render.pdf", async (req, res) => {
     const id = parseId(req.params.id);
     if (id === null) return res.status(404).json({ error: "Not found" });
@@ -219,6 +250,23 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
+  // Customer-facing order-form XLSX. Pre-fills handles, MSRP, wholesale; the
+  // customer types quantities and the manager uploads it back via /api/import.
+  r.get("/api/linesheets/:id/order-form.xlsx", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const sheet = await db.getLineSheet(id);
+      if (!sheet) return res.status(404).json({ error: "Not found" });
+      const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
+      const buf = await buildOrderFormXlsx(payload, { customer: sheet.customer_name || sheet.customer });
+      const safe = String(sheet.name || "linesheet").replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || "linesheet";
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${safe}_order_form.xlsx"`);
+      res.send(Buffer.from(buf));
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
   r.get("/api/linesheets/:id/render.html", async (req, res) => {
     const id = parseId(req.params.id);
     if (id === null) return res.status(404).json({ error: "Not found" });
@@ -235,8 +283,12 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
 }
 
 async function distinct(col) {
+  // Bound the result set to keep meta dropdowns responsive even on large tables.
   const { rows } = await query(
-    `SELECT DISTINCT ${col} AS v FROM inventory_items WHERE ${col} IS NOT NULL AND ${col} <> '' ORDER BY ${col}`
+    `SELECT DISTINCT ${col} AS v FROM inventory_items
+      WHERE ${col} IS NOT NULL AND ${col} <> ''
+      ORDER BY ${col}
+      LIMIT 500`
   );
   return rows.map((r) => r.v);
 }
