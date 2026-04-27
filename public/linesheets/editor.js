@@ -565,6 +565,7 @@
     type:  90,
     msrp:  80,
     price: 88,
+    notes: 180,
     size:  48,
     total: 64,
     act:   74
@@ -579,6 +580,7 @@
     add(COL_WIDTHS.type);
     add(COL_WIDTHS.msrp);
     add(COL_WIDTHS.price);
+    add(COL_WIDTHS.notes);
     for (let i = 0; i < SIZE_COLS.length; i++) add(COL_WIDTHS.size);
     add(COL_WIDTHS.total);
     add(COL_WIDTHS.act);
@@ -592,7 +594,8 @@
       { key: "style_name", label: "Product", align: "left" },
       { key: "product_type", label: "Type", align: "left" },
       { key: "compare_at_price", label: "MSRP", align: "right" },
-      { key: "effective_price", label: "Price", align: "right" }
+      { key: "effective_price", label: "Price", align: "right" },
+      { key: "notes", label: "Notes", align: "left" }
     ];
     for (const s of SIZE_COLS) cols.push({ key: `sz_${s}`, label: s, align: "center" });
     cols.push({ key: "inventory_total", label: inventoryHeaderLabel(), align: "right" });
@@ -664,6 +667,10 @@
     // global default. Submitted/archived sheets stay editable here too.
     tr.appendChild(renderPriceCell(p));
 
+    // Notes: click-to-edit free-text per product, persisted in
+    // state.display_opts.notes_by_product[product_id].
+    tr.appendChild(renderNotesCell(p));
+
     for (const s of SIZE_COLS) {
       const qty = Number(p.inventory_by_size?.[s] || 0);
       tr.appendChild(el("td", { class: "num" + (qty === 0 ? " ls-zero" : "") }, qty ? String(qty) : ""));
@@ -699,6 +706,56 @@
 
   function iconBtn(sym, title, onclick) {
     return el("button", { class: "ls-iconbtn", title, onclick }, sym);
+  }
+
+  function renderNotesCell(p) {
+    const notes = state.display_opts.notes_by_product || {};
+    const current = notes[p.product_id] || "";
+    const td = el("td", {
+      class: "ls-notes-cell" + (current ? " has-note" : ""),
+      title: "Click to add a note for this product"
+    });
+
+    const renderView = () => {
+      td.innerHTML = "";
+      td.classList.remove("editing");
+      if (current) {
+        td.appendChild(el("span", { class: "ls-notes-text" }, current));
+      } else {
+        td.appendChild(el("span", { class: "muted" }, "+ note"));
+      }
+    };
+
+    td.addEventListener("click", () => {
+      if (td.classList.contains("editing")) return;
+      td.classList.add("editing");
+      td.innerHTML = "";
+      const inp = el("textarea", { class: "ls-notes-input", rows: "2" });
+      inp.value = current;
+      td.appendChild(inp);
+      inp.focus();
+      // Place caret at end so the user can keep typing
+      inp.setSelectionRange(inp.value.length, inp.value.length);
+
+      const commit = () => {
+        const next = inp.value;
+        const map = state.display_opts.notes_by_product || {};
+        if (next.trim() === "") delete map[p.product_id];
+        else map[p.product_id] = next;
+        state.display_opts.notes_by_product = map;
+        // Saving fires the autosave debounce + repaints the row.
+        debouncePreview();
+      };
+      const cancel = () => debouncePreview();
+      inp.addEventListener("blur", commit);
+      inp.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); inp.blur(); }
+        else if (e.key === "Escape") { e.preventDefault(); cancel(); }
+      });
+    });
+
+    renderView();
+    return td;
   }
 
   function renderPriceCell(p) {
@@ -965,9 +1022,17 @@
       return el("label", { for: id, class: "ls-chkbox" }, [inp, document.createTextNode(" " + label)]);
     };
 
+    // Inventory visibility: stored as `hide_inventory` so the natural default
+    // (checkbox checked = hidden) flows through unchanged on saved sheets.
+    // Migrate legacy show_inventory if present.
+    if (opts.hide_inventory === undefined && opts.show_inventory !== undefined) {
+      opts.hide_inventory = !opts.show_inventory;
+    }
+
     body.appendChild(el("div", { class: "ls-row" }, [
-      makeCheckbox("show_inventory", "Show inventory on PDF", true),
-      makeCheckbox("show_msrp", "Show MSRP on PDF", true)
+      makeCheckbox("hide_inventory", "Hide inventory from customer (PDF)", true),
+      makeCheckbox("show_msrp", "Show MSRP on PDF", true),
+      makeCheckbox("show_notes", "Show notes column on PDF", true)
     ]));
 
     const groupSel = el("select", null, ["none", "season", "product_type", "class"].map(v => el("option", { value: v }, v)));
