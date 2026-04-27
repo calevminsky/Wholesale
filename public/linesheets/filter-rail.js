@@ -2,24 +2,34 @@
 // checkbox lists for the dimensions a wholesale manager actually filters by.
 //
 // Talks to the existing filter_tree schema:
-//   { include: [{ conditions: [{field, op, value}, ...] }], globals: [...] }
+//   { include: [{ conditions: [{field, op, value, locations?}, ...] }],
+//     globals: [...] }
 //
-// The rail handles the "simple" subset: a single include-group with conditions
-// from a known set of dimensions, no ORs across groups, and a small set of
-// operators. Anything else is treated as "advanced" — the rail dims out and
-// shows a button to fall back to the chip-style filter bar.
+// The rail handles the "simple" subset: a single include-group plus a known
+// set of globals. Anything else is treated as advanced — the rail dims out
+// and offers a button to drop back to the chip-style builder.
+//
+// Important: degrading to advanced does NOT discard data. The user only loses
+// state if they explicitly click the "switch to simple filters" button,
+// which confirms first.
 (function () {
   const w = window;
   w.LineSheets = w.LineSheets || {};
 
-  // Dimensions the rail handles, in display order.
-  const DIMENSIONS = [
+  // Primary dimensions, in display order.
+  const PRIMARY_DIMENSIONS = [
     { key: "season",       label: "Season",        metaKey: "seasons" },
     { key: "class",        label: "Class",         metaKey: "classes" },
-    { key: "product_type", label: "Type",          metaKey: "product_types" },
-    { key: "fabric",       label: "Fabric",        metaKey: "fabrics" },
-    { key: "sleeve",       label: "Sleeve",        metaKey: "sleeves" }
+    { key: "product_type", label: "Type",          metaKey: "product_types" }
   ];
+
+  // Less-common dimensions hidden behind a "More filters" disclosure.
+  const SECONDARY_DIMENSIONS = [
+    { key: "fabric", label: "Fabric", metaKey: "fabrics" },
+    { key: "sleeve", label: "Sleeve", metaKey: "sleeves" }
+  ];
+
+  const ALL_DIMENSIONS = [...PRIMARY_DIMENSIONS, ...SECONDARY_DIMENSIONS];
 
   function el(tag, attrs, children) {
     const e = document.createElement(tag);
@@ -37,17 +47,17 @@
   }
 
   // ---------- compile: tree -> simple state ----------
-  // Returns { simple: bool, dims: {key: [values]}, priceMin, priceMax, hasInventory, complexReason }
   function compile(tree) {
     const out = {
       simple: true,
-      dims: {},
+      complexReason: null,
+      dims: Object.fromEntries(ALL_DIMENSIONS.map((d) => [d.key, []])),
       priceMin: null,
       priceMax: null,
       hasInventory: null,
-      complexReason: null
+      hasImage: null,
+      stockMin: null
     };
-    for (const d of DIMENSIONS) out.dims[d.key] = [];
 
     if (!tree || typeof tree !== "object") return out;
 
@@ -60,11 +70,10 @@
       return out;
     }
     const group0 = include[0]?.conditions || [];
-    const all = [...group0, ...globals];
 
-    for (const c of all) {
+    for (const c of [...group0, ...globals]) {
       if (!c || !c.field) continue;
-      const dim = DIMENSIONS.find((d) => d.key === c.field);
+      const dim = ALL_DIMENSIONS.find((d) => d.key === c.field);
       if (dim) {
         if (c.op !== "in") {
           out.simple = false;
@@ -88,13 +97,14 @@
         }
         continue;
       }
-      if (c.field === "has_inventory") {
-        if (c.op === "=" || c.op === undefined) {
-          out.hasInventory = !!c.value;
-          continue;
-        }
+      if (c.field === "has_inventory") { out.hasInventory = !!c.value; continue; }
+      if (c.field === "has_image")     { out.hasImage     = !!c.value; continue; }
+      if (c.field === "inventory_min") {
+        const n = Number(c.value);
+        if (Number.isFinite(n) && n >= 0) out.stockMin = n;
+        continue;
       }
-      // Unknown field or operator — degrade.
+      // Anything else — degrade.
       out.simple = false;
       out.complexReason = `Filter on "${c.field}" not in simple view`;
       return out;
@@ -105,7 +115,7 @@
   // ---------- decode: simple state -> tree ----------
   function decode(simple) {
     const conditions = [];
-    for (const d of DIMENSIONS) {
+    for (const d of ALL_DIMENSIONS) {
       const vs = (simple.dims[d.key] || []).filter(Boolean);
       if (vs.length) conditions.push({ field: d.key, op: "in", value: vs });
     }
@@ -116,14 +126,28 @@
     } else if (simple.priceMax != null) {
       conditions.push({ field: "price", op: "<=", value: simple.priceMax });
     }
-    if (simple.hasInventory) {
-      conditions.push({ field: "has_inventory", op: "=", value: true });
+    const globals = [];
+    if (simple.hasInventory) globals.push({ field: "has_inventory", op: "=", value: true });
+    if (simple.hasImage)     globals.push({ field: "has_image",     op: "=", value: true });
+    if (simple.stockMin != null && simple.stockMin > 0) {
+      // Locations come from display_opts.ats_locations (set by the rail's
+      // Stock section), not from the condition itself, so the inventory
+      // column display matches the filter.
+      globals.push({ field: "inventory_min", op: ">=", value: simple.stockMin });
     }
-    return { include: [{ conditions }], globals: [] };
+    return { include: [{ conditions }], globals };
   }
 
   // ---------- render ----------
-  function render(root, tree, meta, onChange) {
+  // opts:
+  //   onChange()                    — call after a tree change
+  //   getStockLocations() -> string[] — current ATS locations
+  //   setStockLocations(arr)        — write ATS locations + trigger preview
+  function render(root, tree, meta, opts) {
+    const onChange = opts?.onChange || (() => {});
+    const getStockLocations = opts?.getStockLocations || (() => []);
+    const setStockLocations = opts?.setStockLocations || (() => {});
+
     root.innerHTML = "";
     root.className = "ls-rail";
 
@@ -133,17 +157,17 @@
       root.appendChild(el("div", { class: "ls-rail-complex" }, [
         el("div", { class: "ls-rail-complex-title" }, "Advanced filter active"),
         el("div", { class: "muted", style: "margin:6px 0 10px 0; font-size:12px;" }, compiled.complexReason || ""),
+        el("div", { class: "muted", style: "margin-bottom:10px; font-size:12px;" },
+          "Use the Advanced filter expander below to edit. Switching to simple filters will discard rules the simple view can't represent."),
         el("button", {
           class: "primary",
           style: "width:100%;",
           onclick: () => {
             if (!confirm("Reset to a simple filter? Custom OR rules and unsupported conditions will be discarded.")) return;
-            // Wipe and re-render fresh in simple mode.
             const empty = decode({
-              dims: Object.fromEntries(DIMENSIONS.map((d) => [d.key, []])),
-              priceMin: null,
-              priceMax: null,
-              hasInventory: null
+              dims: Object.fromEntries(ALL_DIMENSIONS.map((d) => [d.key, []])),
+              priceMin: null, priceMax: null,
+              hasInventory: null, hasImage: null, stockMin: null
             });
             tree.include = empty.include;
             tree.globals = empty.globals;
@@ -162,62 +186,92 @@
         title: "Clear all filters",
         onclick: () => {
           const empty = decode({
-            dims: Object.fromEntries(DIMENSIONS.map((d) => [d.key, []])),
-            priceMin: null,
-            priceMax: null,
-            hasInventory: null
+            dims: Object.fromEntries(ALL_DIMENSIONS.map((d) => [d.key, []])),
+            priceMin: null, priceMax: null,
+            hasInventory: null, hasImage: null, stockMin: null
           });
           tree.include = empty.include;
           tree.globals = empty.globals;
+          setStockLocations([]);
           onChange();
         }
       }, "Clear all")
     ]));
 
-    // Dimension sections
-    for (const dim of DIMENSIONS) {
-      const options = (meta?.[dim.metaKey] || []).map((v) =>
-        typeof v === "object" ? { id: v.id || v.value || String(v), label: v.name || v.label || String(v.id || v) } : { id: v, label: String(v) }
-      );
-      if (!options.length) continue;
-      root.appendChild(renderCheckboxSection(dim, options, compiled.dims[dim.key] || [], (next) => {
+    // Primary dimensions (Season, Class, Type).
+    for (const dim of PRIMARY_DIMENSIONS) {
+      const sec = renderDimensionSection(dim, meta, compiled, (next) => {
         compiled.dims[dim.key] = next;
-        const newTree = decode(compiled);
-        tree.include = newTree.include;
-        tree.globals = newTree.globals;
-        onChange();
-      }));
+        applyTree(tree, compiled, onChange);
+      });
+      if (sec) root.appendChild(sec);
     }
 
-    // Price range
+    // Stock section: locations + min combined units.
+    root.appendChild(renderStockSection(meta, compiled, getStockLocations,
+      (nextLocs) => setStockLocations(nextLocs),
+      (nextMin) => {
+        compiled.stockMin = nextMin;
+        applyTree(tree, compiled, onChange);
+      }
+    ));
+
+    // Has-image toggle.
+    root.appendChild(renderHasImageToggle(compiled, (next) => {
+      compiled.hasImage = next;
+      applyTree(tree, compiled, onChange);
+    }));
+
+    // Price range.
     root.appendChild(renderPriceSection(compiled, (next) => {
       compiled.priceMin = next.priceMin;
       compiled.priceMax = next.priceMax;
-      const newTree = decode(compiled);
-      tree.include = newTree.include;
-      tree.globals = newTree.globals;
-      onChange();
+      applyTree(tree, compiled, onChange);
     }));
 
-    // Has inventory toggle
-    root.appendChild(renderInventoryToggle(compiled, (next) => {
-      compiled.hasInventory = next;
-      const newTree = decode(compiled);
-      tree.include = newTree.include;
-      tree.globals = newTree.globals;
-      onChange();
-    }));
+    // Secondary dimensions (Fabric, Sleeve) hidden behind a disclosure unless
+    // they already have a value — we don't want to spring-clean the user's
+    // saved selections.
+    const anySecondary = SECONDARY_DIMENSIONS.some((d) => (compiled.dims[d.key] || []).length);
+    const more = el("details", { class: "ls-rail-more" });
+    if (anySecondary) more.setAttribute("open", "");
+    more.appendChild(el("summary", null, "More filters"));
+    for (const dim of SECONDARY_DIMENSIONS) {
+      const sec = renderDimensionSection(dim, meta, compiled, (next) => {
+        compiled.dims[dim.key] = next;
+        applyTree(tree, compiled, onChange);
+      });
+      if (sec) more.appendChild(sec);
+    }
+    root.appendChild(more);
   }
 
-  function renderCheckboxSection(dim, options, selected, onChange) {
+  function applyTree(tree, compiled, onChange) {
+    const next = decode(compiled);
+    tree.include = next.include;
+    tree.globals = next.globals;
+    onChange();
+  }
+
+  function renderDimensionSection(dim, meta, compiled, onSelected) {
+    const options = (meta?.[dim.metaKey] || []).map((v) =>
+      typeof v === "object"
+        ? { id: v.id || v.value || String(v), label: v.name || v.label || String(v.id || v) }
+        : { id: v, label: String(v) }
+    );
+    const selected = compiled.dims[dim.key] || [];
+    if (!options.length && !selected.length) return null;
+    return renderCheckboxSection(dim.label, options, selected, onSelected);
+  }
+
+  function renderCheckboxSection(label, options, selected, onChange) {
     const sec = el("div", { class: "ls-rail-sec" });
     const collapsed = options.length > 12;
     const summary = selected.length ? ` (${selected.length})` : "";
-    const head = el("div", { class: "ls-rail-sec-hd" }, [
-      el("span", { class: "ls-rail-sec-title" }, dim.label),
+    sec.appendChild(el("div", { class: "ls-rail-sec-hd" }, [
+      el("span", { class: "ls-rail-sec-title" }, label),
       el("span", { class: "ls-rail-sec-count" }, summary)
-    ]);
-    sec.appendChild(head);
+    ]));
 
     const body = el("div", { class: "ls-rail-sec-body" });
     let filterText = "";
@@ -226,7 +280,7 @@
       searchInp = el("input", {
         type: "text",
         class: "ls-rail-search",
-        placeholder: `Search ${dim.label.toLowerCase()}…`
+        placeholder: `Search ${label.toLowerCase()}…`
       });
       searchInp.addEventListener("input", () => {
         filterText = searchInp.value.trim().toLowerCase();
@@ -242,7 +296,6 @@
       const visible = filterText
         ? options.filter((o) => o.label.toLowerCase().includes(filterText))
         : options;
-      // Selected first, then a divider, then the rest.
       const selectedSet = new Set(selected);
       const sel = visible.filter((o) => selectedSet.has(o.id));
       const unsel = visible.filter((o) => !selectedSet.has(o.id));
@@ -258,13 +311,102 @@
         });
         list.appendChild(el("label", { class: "ls-rail-opt" }, [cb, document.createTextNode(opt.label)]));
       }
-      if (!order.length) {
+      // Selected items that aren't in the meta options anymore — keep them
+      // visible so the user can clear them.
+      if (!filterText) {
+        const known = new Set(options.map((o) => o.id));
+        for (const id of selected) {
+          if (known.has(id)) continue;
+          const cb = el("input", { type: "checkbox" });
+          cb.checked = true;
+          cb.addEventListener("change", () => onChange(selected.filter((s) => s !== id)));
+          list.appendChild(el("label", { class: "ls-rail-opt" }, [
+            cb,
+            el("span", { style: "color:#999;" }, String(id) + " (legacy)")
+          ]));
+        }
+      }
+      if (!list.firstChild) {
         list.appendChild(el("div", { class: "muted", style: "padding:6px 4px;" }, "No matches."));
       }
     };
     renderOptions();
+    sec.appendChild(body);
+    return sec;
+  }
+
+  function renderStockSection(meta, compiled, getStockLocations, setStockLocations, setMin) {
+    const sec = el("div", { class: "ls-rail-sec" });
+    const locations = (meta?.locations || []).map((l) => ({
+      id: String(l.id || l), label: l.name || l.id || String(l)
+    }));
+    const currentLocs = (getStockLocations() || []).map(String);
+
+    const sumLabel =
+      (currentLocs.length ? `· ${currentLocs.length} loc${currentLocs.length === 1 ? "" : "s"}` : "") +
+      (compiled.stockMin && compiled.stockMin > 0 ? ` · ≥ ${compiled.stockMin}` : "");
+
+    sec.appendChild(el("div", { class: "ls-rail-sec-hd" }, [
+      el("span", { class: "ls-rail-sec-title" }, "Stock"),
+      el("span", { class: "ls-rail-sec-count" }, sumLabel)
+    ]));
+
+    const body = el("div", { class: "ls-rail-sec-body" });
+
+    if (locations.length) {
+      body.appendChild(el("div", { class: "muted", style: "font-size:12px; margin-bottom:4px;" },
+        "Count inventory from"));
+      const list = el("div", { class: "ls-rail-list", style: "max-height:160px;" });
+      for (const loc of locations) {
+        const cb = el("input", { type: "checkbox" });
+        cb.checked = currentLocs.includes(loc.id);
+        cb.addEventListener("change", () => {
+          const next = cb.checked
+            ? [...currentLocs.filter((x) => x !== loc.id), loc.id]
+            : currentLocs.filter((x) => x !== loc.id);
+          setStockLocations(next);
+        });
+        list.appendChild(el("label", { class: "ls-rail-opt" }, [cb, document.createTextNode(loc.label)]));
+      }
+      body.appendChild(list);
+      if (currentLocs.length === 0) {
+        body.appendChild(el("div", { class: "muted", style: "font-size:11px; margin:2px 0 8px 2px;" },
+          "(empty = all locations)"));
+      }
+    } else {
+      body.appendChild(el("div", { class: "muted", style: "font-size:12px;" }, "No locations available."));
+    }
+
+    body.appendChild(el("div", { class: "ls-rail-row", style: "margin-top:4px;" }, [
+      el("span", { class: "muted", style: "font-size:12px; min-width:96px;" }, "Combined units ≥"),
+      (() => {
+        const inp = el("input", {
+          type: "number",
+          min: "0",
+          step: "1",
+          class: "ls-rail-num",
+          placeholder: "0"
+        });
+        if (compiled.stockMin != null && compiled.stockMin > 0) inp.value = String(compiled.stockMin);
+        inp.addEventListener("change", () => {
+          const n = inp.value === "" ? 0 : Number(inp.value);
+          setMin(Number.isFinite(n) && n > 0 ? n : null);
+        });
+        return inp;
+      })()
+    ]));
 
     sec.appendChild(body);
+    return sec;
+  }
+
+  function renderHasImageToggle(compiled, onChange) {
+    const sec = el("div", { class: "ls-rail-sec" });
+    const cb = el("input", { type: "checkbox" });
+    cb.checked = !!compiled.hasImage;
+    cb.addEventListener("change", () => onChange(cb.checked));
+    sec.appendChild(el("label", { class: "ls-rail-opt", style: "padding:8px 4px;" },
+      [cb, document.createTextNode("Hide products without an image")]));
     return sec;
   }
 
@@ -297,16 +439,6 @@
       maxInp
     ]));
     sec.appendChild(body);
-    return sec;
-  }
-
-  function renderInventoryToggle(compiled, onChange) {
-    const sec = el("div", { class: "ls-rail-sec" });
-    const cb = el("input", { type: "checkbox" });
-    cb.checked = !!compiled.hasInventory;
-    cb.addEventListener("change", () => onChange(cb.checked));
-    sec.appendChild(el("label", { class: "ls-rail-opt", style: "padding:8px 4px;" },
-      [cb, document.createTextNode("Only products with inventory")]));
     return sec;
   }
 

@@ -18,7 +18,8 @@
     price_tier:    { label: "Price tier",  type: "single", ops: ["="] },
     price:         { label: "Price",       type: "num",  ops: [">=", "<=", "between"] },
     inventory_min: { label: "Inv ≥",       type: "num",  ops: [">="] },
-    has_inventory: { label: "Has inv.",    type: "bool", ops: ["="] }
+    has_inventory: { label: "Has inv.",    type: "bool", ops: ["="] },
+    has_image:     { label: "Has image",   type: "bool", ops: ["="] }
   };
 
   function el(tag, attrs, children) {

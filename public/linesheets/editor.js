@@ -217,13 +217,20 @@
       ]));
     }
     const railRoot = el("div");
-    function onRailChange() {
+    const railOpts = {
+      onChange: () => paintRail(),
+      getStockLocations: () => state.display_opts.ats_locations || [],
+      setStockLocations: (arr) => {
+        state.display_opts.ats_locations = arr.map(String);
+        paintRail();
+      }
+    };
+    function paintRail() {
       rowLimit = PAGE_SIZE; // reset pagination on filter change
       debouncePreview();
-      // Re-render the rail so checkbox counts and selected-on-top order reflect.
-      w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, onRailChange);
+      w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, railOpts);
     }
-    w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, onRailChange);
+    w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, railOpts);
     wrap.appendChild(railRoot);
 
     // Advanced filter expandable: kept available for power users.
@@ -386,8 +393,9 @@
     sortSel.addEventListener("change", () => { sortMode = sortSel.value; renderTableBody(); });
     row.appendChild(sortSel);
 
-    // ATS locations (which warehouses count toward inventory numbers)
-    row.appendChild(renderAtsLocationsPicker());
+    // The Stock section in the left rail now controls which locations count
+    // toward the inventory column, so the standalone "Available at:" picker
+    // is no longer needed here.
 
     // Add product by name (pin)
     const pinWrap = el("div", { class: "ls-addprod" });
