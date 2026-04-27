@@ -86,6 +86,7 @@ export async function buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck = 
         }
         p.compare_at_price = live.compare_at_price || p.compare_at_price;
         p.current_price = live.current_price || p.current_price;
+        if (live.handle) p.handle = live.handle;
         if (live.inventory_total !== undefined) {
           p.inventory_total_live = live.inventory_total;
         }

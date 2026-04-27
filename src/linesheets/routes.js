@@ -6,6 +6,7 @@ import * as db from "./db.js";
 import { runFilter, loadProductsByIds } from "./query.js";
 import { applyPricing, defaultPricing } from "./pricing.js";
 import { buildRenderedPayload, renderHtml } from "./render-pdf.js";
+import { buildOrderFormXlsx } from "./order-form-xlsx.js";
 
 export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
   const r = Router();
@@ -229,6 +230,23 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="${safe}.pdf"`);
       res.send(Buffer.from(pdfBuffer));
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // Customer-facing order-form XLSX. Pre-fills handles, MSRP, wholesale; the
+  // customer types quantities and the manager uploads it back via /api/import.
+  r.get("/api/linesheets/:id/order-form.xlsx", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const sheet = await db.getLineSheet(id);
+      if (!sheet) return res.status(404).json({ error: "Not found" });
+      const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
+      const buf = await buildOrderFormXlsx(payload, { customer: sheet.customer_name || sheet.customer });
+      const safe = String(sheet.name || "linesheet").replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || "linesheet";
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="${safe}_order_form.xlsx"`);
+      res.send(Buffer.from(buf));
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 

@@ -1275,26 +1275,25 @@ async function buildWorkbookFromTransferData({
 }
 
 // ----------------- Shared allocator used by Preview / Import -----------------
-async function runAllocationOnly(req) {
-  const { locationIdsJson } = req.body;
 
+// Parse the requested-items shape from an HTTP request (CSV/XLSX upload or
+// orderItemsJson body). Used by /api/preview and /api/import.
+function parseAllocationInputFromReq(req) {
+  const { locationIdsJson } = req.body;
   const locationIdsInOrder = JSON.parse(locationIdsJson || "[]");
   if (!Array.isArray(locationIdsInOrder) || locationIdsInOrder.length === 0) {
     throw new Error("Select at least one location.");
   }
-  if (!req.file?.buffer && !req.body.orderItemsJson) throw new Error("Missing CSV/XLSX file or orderItemsJson.");
+  if (!req.file?.buffer && !req.body.orderItemsJson) {
+    throw new Error("Missing CSV/XLSX file or orderItemsJson.");
+  }
 
   const uploadFileName = req.file?.originalname || "manual-order.xlsx";
-
   const customer = String(req.body.customer || "").trim();
   const notes = String(req.body.notes || "").trim();
 
-  const locations = await getAllLocations();
-  const locationIdToName = Object.fromEntries(locations.map(l => [l.id, l.name]));
-
   const requested = [];
   if (req.file?.buffer) {
-    // File upload path (CSV/XLSX)
     const records = parseUpload(req.file);
     for (const row of records) {
       const handle = (row.product_handle || "").toString().trim();
@@ -1309,7 +1308,6 @@ async function runAllocationOnly(req) {
       requested.push({ handle, unitPrice, sizeQty });
     }
   } else {
-    // In-app order builder path (JSON)
     const items = JSON.parse(req.body.orderItemsJson);
     if (!Array.isArray(items) || items.length === 0) throw new Error("orderItemsJson must be a non-empty array.");
     for (const item of items) {
@@ -1325,6 +1323,24 @@ async function runAllocationOnly(req) {
       requested.push({ handle, unitPrice, sizeQty });
     }
   }
+
+  return { locationIdsInOrder, requested, customer, notes, uploadFileName };
+}
+
+async function runAllocationOnly(req) {
+  return runAllocation(parseAllocationInputFromReq(req));
+}
+
+async function runAllocation({ locationIdsInOrder, requested, customer = "", notes = "", uploadFileName = "manual-order.xlsx" }) {
+  if (!Array.isArray(locationIdsInOrder) || locationIdsInOrder.length === 0) {
+    throw new Error("Select at least one location.");
+  }
+  if (!Array.isArray(requested) || requested.length === 0) {
+    throw new Error("No items to allocate.");
+  }
+
+  const locations = await getAllLocations();
+  const locationIdToName = Object.fromEntries(locations.map(l => [l.id, l.name]));
 
   const remainingAvailMap = new Map();
   const allocationPlan = new Map(); // variantId -> { inventoryItemId, allocations:[{locationId, qty}] }
@@ -2049,61 +2065,39 @@ app.get("/api/preview-print", (req, res) => {
   }
 });
 
-// Create order (draft -> complete unpaid -> wait -> rebalance -> wait for settlement -> build FINAL excel+pdf -> email)
-app.post("/api/import", upload.single("file"), async (req, res) => {
+// Take a runAllocation() result and create one or more Shopify orders from it.
+// Returns the per-order results and the email attachment buffers (Excel + packing
+// slip per order). The HTTP layer is responsible for persisting the runId and
+// sending the email — this helper is pure submission logic so both the legacy
+// /api/import path and the new draft-submit path can share it.
+async function submitAllocationToShopify({
+  allocationPlan,
+  draftLineItems,
+  locationIdsInOrder,
+  locationIdToName,
+  customer,
+  notes,
+  uploadFileName,
+  report,
+  reserveHours = 48
+}) {
+  if (!Array.isArray(draftLineItems) || draftLineItems.length === 0) {
+    throw new Error("Nothing fulfillable from selected locations. No order created.");
+  }
+
+  const lineItemChunks = chunkArray(draftLineItems, DRAFT_LINE_ITEM_LIMIT);
+  const allowedLocationIds = locationIdsInOrder;
+  const uploadBase = safeFilePart(baseNameNoExt(uploadFileName || "upload"));
+
+  const orderResults = [];
+  const attachments = [];
+
+  const pdfBrowser = await launchPdfBrowser();
   try {
-    const { reserveHours = "48", locationIdsJson } = req.body;
-
-    const result = await runAllocationOnly(req);
-    const {
-      report,
-      allocationPlan,
-      draftLineItems,
-      locationIdToName,
-      locationIdsInOrder,
-      customer,
-      notes,
-      uploadFileName,
-      metaByHandle
-    } = result;
-
-    const runId = saveRun({
-      locationIdToName,
-      requestedSeen: report.requestedSeen,
-      availabilitySeen: report.availabilitySeen,
-      metaByHandle,
-      locationIdsInOrder: JSON.parse(locationIdsJson || "[]"),
-      customer,
-      notes,
-      uploadFileName
-    });
-
-    if (draftLineItems.length === 0) {
-      return res.status(400).json({
-        error: "Nothing fulfillable from selected locations. No order created.",
-        runId,
-        report
-      });
-    }
-
-    // Shopify caps draftOrderCreate at 250 line items per call.
-    // Split into batches and create one draft order per batch.
-    const lineItemChunks = chunkArray(draftLineItems, DRAFT_LINE_ITEM_LIMIT);
-    const allowedLocationIds = locationIdsInOrder;
-    const uploadBase = safeFilePart(baseNameNoExt(uploadFileName || "upload"));
-
-    const orderResults = []; // { draftOrderId, orderId, orderName, settled, rebalance, finalFulfillment }
-    const attachments = [];
-
-    // Launch Chromium once and reuse across all batches to avoid OOM from multiple browser instances.
-    const pdfBrowser = await launchPdfBrowser();
-    try {
-
     for (let chunkIdx = 0; chunkIdx < lineItemChunks.length; chunkIdx++) {
       const chunk = lineItemChunks[chunkIdx];
 
-      // Build subset of allocationPlan for only the variants in this chunk
-      const chunkVariantIds = new Set(chunk.map(li => li.variantId));
+      const chunkVariantIds = new Set(chunk.map((li) => li.variantId));
       const chunkAllocationPlan = new Map(
         [...allocationPlan.entries()].filter(([variantId]) => chunkVariantIds.has(variantId))
       );
@@ -2112,16 +2106,10 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
         lineItems: chunk,
         reserveHours: Number(reserveHours)
       });
-
       const order = await draftOrderComplete(draft.id);
-
-      // Wait for FOs so moves can be applied reliably
       await waitForFulfillmentOrders(order.id);
+      await new Promise((r) => setTimeout(r, 1000));
 
-      // Small settle delay reduces Shopify race weirdness
-      await new Promise(r => setTimeout(r, 1000));
-
-      // Rebalance to match allocation plan for this chunk's variants
       const rebalance = await enforceFulfillmentLocationsRebalance({
         orderId: order.id,
         allocationPlan: chunkAllocationPlan,
@@ -2129,7 +2117,6 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
         drainOrderLocationIds: allowedLocationIds
       });
 
-      // Wait for Shopify to fully settle to the desired split
       const settled = await waitForFulfillmentSettlement({
         orderId: order.id,
         allocationPlan: chunkAllocationPlan,
@@ -2138,13 +2125,9 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
         stableChecksRequired: 2
       });
 
-      // Now fetch FINAL order data (source of truth)
       const { order: finalOrder, shop: finalShop } = await getOrderPackingData(order.id);
-
-      // Label filenames with part number when there are multiple batches
       const partSuffix = lineItemChunks.length > 1 ? `-part${chunkIdx + 1}` : "";
 
-      // Build FINAL Excel from Shopify fulfillmentOrders + lineItems
       const excelBuffer = await buildWorkbookFromFinalOrder({
         finalOrder,
         locationIdToName,
@@ -2155,7 +2138,6 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       });
       const excelFilename = `${uploadBase}${partSuffix}-fulfillment.xlsx`;
 
-      // Build FINAL packing slip PDF
       const packingHtml = buildPackingSlipHtml({ order: finalOrder, shop: finalShop });
       const { pdfBuffer, reason: pdfReason } = await renderPdfFromHtml(packingHtml, pdfBrowser);
       const pdfFilename = `packing-slip-${String(order.name || "order").replaceAll("#", "")}${partSuffix}.pdf`;
@@ -2195,10 +2177,63 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
         packingSlipFilename: pdfBuffer ? pdfFilename : pdfFilename.replace(/\.pdf$/i, ".html")
       });
     }
+  } finally {
+    if (pdfBrowser) try { await pdfBrowser.close(); } catch {}
+  }
 
-    } finally {
-      if (pdfBrowser) try { await pdfBrowser.close(); } catch {}
+  return { orderResults, attachments };
+}
+
+// Create order (draft -> complete unpaid -> wait -> rebalance -> wait for settlement -> build FINAL excel+pdf -> email)
+app.post("/api/import", upload.single("file"), async (req, res) => {
+  try {
+    const { reserveHours = "48", locationIdsJson } = req.body;
+
+    const result = await runAllocationOnly(req);
+    const {
+      report,
+      allocationPlan,
+      draftLineItems,
+      locationIdToName,
+      locationIdsInOrder,
+      customer,
+      notes,
+      uploadFileName,
+      metaByHandle
+    } = result;
+
+    const runId = saveRun({
+      locationIdToName,
+      requestedSeen: report.requestedSeen,
+      availabilitySeen: report.availabilitySeen,
+      metaByHandle,
+      locationIdsInOrder: JSON.parse(locationIdsJson || "[]"),
+      customer,
+      notes,
+      uploadFileName
+    });
+
+    if (draftLineItems.length === 0) {
+      return res.status(400).json({
+        error: "Nothing fulfillable from selected locations. No order created.",
+        runId,
+        report
+      });
     }
+
+    const { orderResults, attachments } = await submitAllocationToShopify({
+      allocationPlan,
+      draftLineItems,
+      locationIdsInOrder,
+      locationIdToName,
+      customer,
+      notes,
+      uploadFileName,
+      report,
+      reserveHours
+    });
+
+    const lineItemChunks = chunkArray(draftLineItems, DRAFT_LINE_ITEM_LIMIT);
 
     // Use first order's data for top-level fields (backward compat for single-batch case)
     const firstOrder = orderResults[0];
@@ -2768,7 +2803,12 @@ app.get("/api/orders/:orderId/invoice.pdf", async (req, res) => {
 // ----------------- Line Sheet Builder -----------------
 app.use(createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }));
 app.use(createCustomersRouter());
-app.use(createOrdersRouter());
+app.use(createOrdersRouter({
+  runAllocation,
+  upload,
+  submitAllocationToShopify,
+  sendEmailWithAttachments
+}));
 
 async function runMigrations() {
   if (!pgAvailable()) {
