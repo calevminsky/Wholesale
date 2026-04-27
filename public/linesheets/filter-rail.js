@@ -198,6 +198,15 @@
       }, "Clear all")
     ]));
 
+    // Stock section first — it's the primary filter the manager touches.
+    root.appendChild(renderStockSection(meta, compiled, getStockLocations,
+      (nextLocs) => setStockLocations(nextLocs),
+      (nextMin) => {
+        compiled.stockMin = nextMin;
+        applyTree(tree, compiled, onChange);
+      }
+    ));
+
     // Primary dimensions (Season, Class, Type).
     for (const dim of PRIMARY_DIMENSIONS) {
       const sec = renderDimensionSection(dim, meta, compiled, (next) => {
@@ -206,15 +215,6 @@
       });
       if (sec) root.appendChild(sec);
     }
-
-    // Stock section: locations + min combined units.
-    root.appendChild(renderStockSection(meta, compiled, getStockLocations,
-      (nextLocs) => setStockLocations(nextLocs),
-      (nextMin) => {
-        compiled.stockMin = nextMin;
-        applyTree(tree, compiled, onChange);
-      }
-    ));
 
     // Has-image toggle.
     root.appendChild(renderHasImageToggle(compiled, (next) => {
