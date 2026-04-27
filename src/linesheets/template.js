@@ -44,6 +44,12 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     year: "numeric", month: "long", day: "2-digit"
   });
 
+  const pricing = sheet.pricing || {};
+  const additionalPct = Number(pricing.additional_discount_pct) || 0;
+  const additionalNote = additionalPct > 0
+    ? `<div class="discount-note">All prices reflect an additional ${additionalPct}% off.</div>`
+    : "";
+
   const header = `
     <div class="header">
       <div class="brand">
@@ -51,10 +57,11 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
       </div>
       <div class="meta">
         <div class="title">${escapeHtml(title)}</div>
-        ${customer ? `<div class="customer">For: ${escapeHtml(customer)}</div>` : ""}
+        ${customer ? `<div class="customer">For ${escapeHtml(customer)}</div>` : ""}
         <div class="date">${escapeHtml(dateStr)}</div>
       </div>
     </div>
+    ${additionalNote}
   `;
 
   // Column layout. Portrait has ~7.6in usable width; we trade the size grid
@@ -90,9 +97,9 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     const final = p.effective_price;
     const showStrike = p.additional_discount_applied && Number.isFinite(wholesale) && wholesale !== final;
     if (showStrike) {
-      return `<td class="num"><span class="was">${money(wholesale)}</span> <span class="now">${money(final)}</span></td>`;
+      return `<td class="num price-c"><span class="was">${money(wholesale)}</span> <span class="now">${money(final)}</span></td>`;
     }
-    return `<td class="num">${money(final)}</td>`;
+    return `<td class="num price-c">${money(final)}</td>`;
   }
 
   function rowHtml(p) {
@@ -105,7 +112,7 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
       if (col.key === "product") {
         return `<td class="prod-td"><div>${escapeHtml(p.title || "")}</div></td>`;
       }
-      if (col.key === "msrp") return `<td class="num">${money(p.compare_at_price || p.current_price)}</td>`;
+      if (col.key === "msrp") return `<td class="num msrp-c">${money(p.compare_at_price || p.current_price)}</td>`;
       if (col.key === "price") return priceCell(p);
       if (col.key === "notes") {
         const note = notesByProduct[p.product_id] || "";
@@ -162,37 +169,84 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
   <meta charset="utf-8">
   <style>
     @page { size: Letter portrait; margin: 0.4in 0.4in 0.55in 0.4in; }
-    body { margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; font-size: 10px; color: #222; }
+    body {
+      margin: 0; padding: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 10px;
+      color: #1a1a1a;
+      -webkit-font-smoothing: antialiased;
+    }
 
-    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 10px; }
-    .brand img { max-height: 52px; width: auto; }
+    .header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      border-bottom: 1.5px solid #1a1a1a;
+      padding-bottom: 10px;
+      margin-bottom: 14px;
+    }
+    .brand img { max-height: 56px; width: auto; }
     .meta { text-align: right; }
-    .meta .title { font-size: 18px; font-weight: 700; }
-    .meta .customer { font-size: 12px; color: #333; margin-top: 2px; }
-    .meta .date { font-size: 10px; color: #666; margin-top: 2px; }
+    .meta .title { font-size: 20px; font-weight: 700; letter-spacing: 0.2px; }
+    .meta .customer { font-size: 11px; color: #444; margin-top: 3px; letter-spacing: 0.3px; text-transform: uppercase; }
+    .meta .date { font-size: 9.5px; color: #888; margin-top: 3px; }
+
+    .discount-note {
+      font-size: 10px; font-style: italic; color: #b00020;
+      margin: -6px 0 12px; text-align: right;
+    }
 
     .sheet-tbl { width: 100%; border-collapse: collapse; }
     .sheet-tbl thead { display: table-header-group; }
-    .sheet-tbl th { background: #f3f3f3; border-bottom: 1.5px solid #000; padding: 5px 4px; text-align: left; font-weight: 600; font-size: 10px; }
-    .sheet-tbl td { border-bottom: 1px solid #eee; padding: 6px 4px; font-size: 10px; vertical-align: middle; }
+    .sheet-tbl th {
+      background: #fafafa;
+      border-bottom: 1.5px solid #1a1a1a;
+      padding: 6px 5px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 9.5px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: #555;
+    }
+    .sheet-tbl td {
+      border-bottom: 1px solid #eee;
+      padding: 8px 5px;
+      font-size: 10px;
+      vertical-align: middle;
+    }
     .sheet-tbl .num { text-align: right; }
-    .sheet-tbl .zero { color: #bbb; }
+    .sheet-tbl .zero { color: #ccc; }
     .sheet-tbl tr { page-break-inside: avoid; }
 
-    /* Bigger images now that we're in portrait */
-    .img-td { text-align: center; padding: 4px; }
-    .img-td img { max-width: 110px; max-height: 140px; object-fit: cover; border-radius: 4px; }
-    .prod-td { font-weight: 500; line-height: 1.3; }
+    .img-td { text-align: center; padding: 6px 4px; }
+    .img-td img { max-width: 120px; max-height: 150px; object-fit: cover; border-radius: 3px; }
+    .prod-td { font-weight: 500; line-height: 1.35; }
 
-    .sheet-tbl .num .was { color: #999; text-decoration: line-through; margin-right: 3px; font-weight: 400; }
-    .sheet-tbl .num .now { color: #b00020; font-weight: 600; }
+    /* MSRP de-emphasized; price emphasized as the headline number. */
+    .sheet-tbl th.msrp-h, .sheet-tbl td.msrp-c { color: #888; }
+    .sheet-tbl td.price-c { font-weight: 600; font-size: 11px; }
+    .sheet-tbl .num .was {
+      color: #aaa;
+      text-decoration: line-through;
+      margin-right: 4px;
+      font-weight: 400;
+      font-size: 9.5px;
+    }
+    .sheet-tbl .num .now { color: #b00020; font-weight: 700; }
 
-    .notes-td { font-size: 9px; color: #444; line-height: 1.25; white-space: pre-wrap; }
-    .pairs-td { font-size: 9px; color: #444; line-height: 1.25; }
+    .notes-td { font-size: 9px; color: #555; line-height: 1.35; white-space: pre-wrap; }
+    .pairs-td { font-size: 9px; color: #555; line-height: 1.35; }
 
-    .section { page-break-inside: avoid; margin-top: 12px; }
-    .group-title { font-size: 12px; margin: 12px 0 4px 0; border-bottom: 1px solid #aaa; padding-bottom: 2px; }
-
+    .section { page-break-inside: avoid; margin-top: 14px; }
+    .group-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #1a1a1a;
+      margin: 16px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid #1a1a1a;
+    }
   </style>
 </head>
 <body>

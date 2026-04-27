@@ -1234,23 +1234,25 @@
     return "";
   }
 
-  async function exportPdf() {
+  // Always flush local edits before opening any server-rendered export, so
+  // recent state (excludes, pins, pricing, notes) is guaranteed to be in the
+  // DB by the time the export route reads it. Cancels any in-flight autosave
+  // debounce so we don't race with it.
+  async function flushAndExport(urlPath) {
+    clearTimeout(autosaveTimer);
+    // Wait for any in-flight autosave to settle before issuing our own.
+    while (savingNow) await new Promise((r) => setTimeout(r, 50));
+
     let id = state.id;
     if (!id || isDirty()) {
       id = await save({ silent: true });
-      if (!id) return;
+      if (!id) return; // user cancelled the name prompt or save failed
     }
-    window.open(`/api/linesheets/${id}/render.pdf`, "_blank");
+    window.open(`/api/linesheets/${id}/${urlPath}`, "_blank");
   }
 
-  async function exportOrderForm() {
-    let id = state.id;
-    if (!id || isDirty()) {
-      id = await save({ silent: true });
-      if (!id) return;
-    }
-    window.open(`/api/linesheets/${id}/order-form.xlsx`, "_blank");
-  }
+  async function exportPdf()       { return flushAndExport("render.pdf"); }
+  async function exportOrderForm() { return flushAndExport("order-form.xlsx"); }
 
   function editNameDialog() {
     const next = prompt("View name:", state.name);
