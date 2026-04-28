@@ -246,27 +246,43 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     try {
       const sheet = await db.getLineSheet(id);
       if (!sheet) return res.status(404).json({ error: "Not found" });
-      const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
+      const layout = String(req.query.layout || "").toLowerCase() === "internal" ? "internal" : "customer";
+      // Inject layout into display_opts so the template can branch without
+      // mutating saved sheet state.
+      const sheetForRender = { ...sheet, display_opts: { ...(sheet.display_opts || {}), layout } };
+      const payload = await buildRenderedPayload(sheetForRender, { shopifyGraphQL, liveCheck: true });
       const html = renderHtml(payload);
       const titleText = String(sheet.name || "Line Sheet").replace(/[<>&"']/g, "");
       const customerText = sheet.customer ? ` · ${String(sheet.customer).replace(/[<>&"']/g, "")}` : "";
+      const footerLabel = layout === "internal" ? `${titleText}${customerText} · Internal` : `${titleText}${customerText}`;
       const footerHtml = `
         <div style="font-size:9px;color:#777;width:100%;padding:0 0.35in;display:flex;justify-content:space-between;font-family:Arial,Helvetica,sans-serif;">
-          <span>${titleText}${customerText}</span>
+          <span>${footerLabel}</span>
           <span>Page <span class="pageNumber"></span> of <span class="totalPages"></span></span>
         </div>`;
       const headerHtml = `<div></div>`;
-      const { pdfBuffer } = await renderPdfFromHtml(html, null, {
-        displayHeaderFooter: true,
-        headerTemplate: headerHtml,
-        footerTemplate: footerHtml,
-        margin: { top: "0.35in", right: "0.35in", bottom: "0.55in", left: "0.35in" }
-      });
+      const pdfOpts = layout === "internal"
+        ? {
+            displayHeaderFooter: true,
+            headerTemplate: headerHtml,
+            footerTemplate: footerHtml,
+            landscape: true,
+            format: "Letter",
+            margin: { top: "0.3in", right: "0.3in", bottom: "0.45in", left: "0.3in" }
+          }
+        : {
+            displayHeaderFooter: true,
+            headerTemplate: headerHtml,
+            footerTemplate: footerHtml,
+            margin: { top: "0.35in", right: "0.35in", bottom: "0.55in", left: "0.35in" }
+          };
+      const { pdfBuffer } = await renderPdfFromHtml(html, null, pdfOpts);
       if (!pdfBuffer) {
         res.setHeader("Content-Type", "text/html; charset=utf-8");
         return res.send(html);
       }
-      const safe = String(sheet.name || "linesheet").replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || "linesheet";
+      const baseName = String(sheet.name || "linesheet").replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || "linesheet";
+      const safe = layout === "internal" ? `${baseName}_internal` : baseName;
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename="${safe}.pdf"`);
       res.send(Buffer.from(pdfBuffer));
@@ -296,7 +312,9 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     try {
       const sheet = await db.getLineSheet(id);
       if (!sheet) return res.status(404).json({ error: "Not found" });
-      const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
+      const layout = String(req.query.layout || "").toLowerCase() === "internal" ? "internal" : "customer";
+      const sheetForRender = { ...sheet, display_opts: { ...(sheet.display_opts || {}), layout } };
+      const payload = await buildRenderedPayload(sheetForRender, { shopifyGraphQL, liveCheck: true });
       res.setHeader("Content-Type", "text/html; charset=utf-8");
       res.send(renderHtml(payload));
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }

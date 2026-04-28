@@ -373,6 +373,10 @@
     moreMenu.appendChild(el("button", {
       onclick: () => { if (state.id) window.open(`/api/linesheets/${state.id}/render.html`, "_blank"); else alert("Save the view first."); }
     }, "Preview in browser"));
+    moreMenu.appendChild(el("button", {
+      onclick: exportInternalPdf,
+      title: "Landscape PDF with cost, MSRP, 50% wholesale, and final price side-by-side. Internal review only — never share with customers."
+    }, "Print for review (internal)"));
     moreBtn.addEventListener("click", (ev) => {
       ev.stopPropagation();
       moreMenu.classList.toggle("open");
@@ -1261,6 +1265,7 @@
 
   async function exportPdf()       { return flushAndExport("render.pdf"); }
   async function exportOrderForm() { return flushAndExport("order-form.xlsx"); }
+  async function exportInternalPdf() { return flushAndExport("render.pdf?layout=internal"); }
 
   function editNameDialog() {
     const next = prompt("View name:", state.name);

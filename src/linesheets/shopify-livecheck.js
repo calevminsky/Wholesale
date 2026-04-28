@@ -24,7 +24,14 @@ export async function livecheckProducts(productIds, shopifyGraphQL) {
       );
       const current = extractMoney(n.priceRangeV2?.minVariantPrice);
       let inv = 0;
-      for (const v of (n.variants?.nodes || [])) inv += Number(v.inventoryQuantity || 0);
+      let costSum = 0;
+      let costCount = 0;
+      for (const v of (n.variants?.nodes || [])) {
+        inv += Number(v.inventoryQuantity || 0);
+        const c = Number(v.inventoryItem?.unitCost?.amount);
+        if (Number.isFinite(c) && c > 0) { costSum += c; costCount += 1; }
+      }
+      const unitCost = costCount ? costSum / costCount : 0;
 
       // Upsell metafield. Could be a list.product_reference (preferred — we
       // get titles via the references field), or a list of plain text names.
@@ -60,6 +67,7 @@ export async function livecheckProducts(productIds, shopifyGraphQL) {
         compare_at_price: compareAt,
         current_price: current,
         inventory_total: inv,
+        unit_cost: unitCost,
         status: String(n.status || "").toUpperCase(),
         upsell_list: upsellList
       });
@@ -101,7 +109,11 @@ const NODES_QUERY = `
           minVariantCompareAtPrice { amount currencyCode }
         }
         variants(first: 100) {
-          nodes { id inventoryQuantity }
+          nodes {
+            id
+            inventoryQuantity
+            inventoryItem { unitCost { amount } }
+          }
         }
         upsellMetafield: metafield(namespace: "theme", key: "upsell_list") {
           value

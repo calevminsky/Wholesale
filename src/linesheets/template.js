@@ -19,9 +19,12 @@ function money(v) {
 }
 
 export function buildLineSheetHtml({ sheet, products, groups }) {
+  const opts = sheet.display_opts || {};
+  if (opts.layout === "internal") {
+    return buildInternalReviewHtml({ sheet, products, groups, opts });
+  }
   const title = sheet.name || "Line Sheet";
   const customer = sheet.customer || "";
-  const opts = sheet.display_opts || {};
   const showMSRP = opts.show_msrp !== false;
   // Default: hide inventory from the customer. `hide_inventory` (new) wins;
   // fall back to legacy `show_inventory` if it's explicitly set.
@@ -237,6 +240,169 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
 </head>
 <body>
   ${header}
+  ${sections.join("\n")}
+</body>
+</html>`;
+}
+
+// Internal-review layout: landscape, ~10 products per page, with cost & margin
+// columns. Intended for internal review (Emily) — never shared with customers.
+function buildInternalReviewHtml({ sheet, products, groups, opts }) {
+  const title = sheet.name || "Line Sheet";
+  const customer = sheet.customer || "";
+  const allProducts = (products && products.length)
+    ? products
+    : (groups || []).flatMap((g) => g.products || []);
+  const dateStr = new Date().toLocaleDateString("en-US", {
+    year: "numeric", month: "long", day: "2-digit"
+  });
+
+  const SIZES = SIZE_COLS;
+
+  function pct(n, d) {
+    if (!Number.isFinite(n) || !Number.isFinite(d) || d <= 0) return "";
+    return `${Math.round(((d - n) / d) * 100)}%`;
+  }
+
+  function rowHtml(p) {
+    const msrp = Number(p.compare_at_price || 0);
+    const price = Number(p.current_price || 0);
+    const cost = Number(p.unit_cost || 0);
+    const half = msrp > 0 ? msrp * 0.5 : 0;
+    const finalPrice = Number(p.effective_price || 0);
+    const sizeCells = SIZES.map((s) => {
+      const qty = Number(p.inventory_by_size?.[s] || 0);
+      return `<td class="num${qty === 0 ? " zero" : ""}">${qty || ""}</td>`;
+    }).join("");
+    const total = Number(p.inventory_total || 0);
+    const marginVsCost = (cost > 0 && finalPrice > 0)
+      ? `<span class="muted">m ${pct(cost, finalPrice)}</span>` : "";
+    return `<tr>
+      <td class="img-td">${p.image ? `<img src="${escapeHtml(p.image)}?width=120">` : ""}</td>
+      <td class="prod-td">
+        <div class="title">${escapeHtml(p.title || "")}</div>
+        <div class="sub">${escapeHtml(p.style_name || "")}</div>
+      </td>
+      <td class="num msrp-c">${money(msrp)}</td>
+      <td class="num">${money(price)}</td>
+      <td class="num cost-c">${cost > 0 ? money(cost) : "—"}</td>
+      <td class="num half-c">${half > 0 ? money(half) : "—"}</td>
+      <td class="num final-c">${money(finalPrice)} ${marginVsCost}</td>
+      ${sizeCells}
+      <td class="num total-c">${total}</td>
+    </tr>`;
+  }
+
+  const head = `<thead><tr>
+    <th style="width:8%"></th>
+    <th style="width:21%">Product</th>
+    <th class="num" style="width:6%">MSRP</th>
+    <th class="num" style="width:6%">Price</th>
+    <th class="num" style="width:6%">Cost</th>
+    <th class="num" style="width:6%">50%</th>
+    <th class="num" style="width:9%">Final</th>
+    ${SIZES.map((s) => `<th class="num" style="width:4.5%">${s}</th>`).join("")}
+    <th class="num" style="width:6%">Total</th>
+  </tr></thead>`;
+
+  const sections = [];
+  if (groups && groups.length) {
+    for (const g of groups) {
+      if (!g.products || g.products.length === 0) continue;
+      sections.push(`
+        <div class="section">
+          <h2 class="group-title">${escapeHtml(g.label || "")}</h2>
+          <table class="sheet-tbl">
+            ${head}
+            <tbody>${g.products.map(rowHtml).join("")}</tbody>
+          </table>
+        </div>
+      `);
+    }
+  } else {
+    sections.push(`
+      <table class="sheet-tbl">
+        ${head}
+        <tbody>${allProducts.map(rowHtml).join("")}</tbody>
+      </table>
+    `);
+  }
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <style>
+    @page { size: Letter landscape; margin: 0.3in 0.35in 0.45in 0.35in; }
+    body {
+      margin: 0; padding: 0;
+      font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 8.5px;
+      color: #1a1a1a;
+      -webkit-font-smoothing: antialiased;
+    }
+    .header {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      border-bottom: 1.5px solid #1a1a1a;
+      padding-bottom: 4px;
+      margin-bottom: 6px;
+    }
+    .header .title { font-size: 14px; font-weight: 700; }
+    .header .sub { font-size: 9px; color: #666; }
+    .header .tag { font-size: 9px; color: #b00020; font-weight: 700; letter-spacing: 0.5px; text-transform: uppercase; }
+    .sheet-tbl { width: 100%; border-collapse: collapse; table-layout: fixed; }
+    .sheet-tbl thead { display: table-header-group; }
+    .sheet-tbl th {
+      background: #fafafa;
+      border-bottom: 1.2px solid #1a1a1a;
+      padding: 3px 3px;
+      text-align: left;
+      font-weight: 600;
+      font-size: 8px;
+      letter-spacing: 0.3px;
+      text-transform: uppercase;
+      color: #555;
+    }
+    .sheet-tbl td {
+      border-bottom: 1px solid #eee;
+      padding: 3px 3px;
+      font-size: 9px;
+      vertical-align: middle;
+      overflow: hidden;
+    }
+    .sheet-tbl .num { text-align: right; }
+    .sheet-tbl .zero { color: #ccc; }
+    .sheet-tbl tr { page-break-inside: avoid; height: 0.65in; }
+    .img-td { text-align: center; padding: 2px; }
+    .img-td img { max-width: 60px; max-height: 60px; object-fit: cover; border-radius: 2px; }
+    .prod-td .title { font-weight: 600; line-height: 1.2; }
+    .prod-td .sub { font-size: 8px; color: #888; margin-top: 1px; }
+    td.msrp-c { color: #888; }
+    td.cost-c { color: #555; }
+    td.half-c { color: #555; }
+    td.final-c { font-weight: 700; color: #b00020; }
+    td.total-c { font-weight: 600; }
+    .muted { color: #999; font-weight: 400; font-size: 7.5px; margin-left: 2px; }
+    .section { page-break-inside: avoid; margin-top: 6px; }
+    .group-title {
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin: 8px 0 3px;
+      padding-bottom: 2px;
+      border-bottom: 1px solid #1a1a1a;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div>
+      <div class="title">${escapeHtml(title)}</div>
+      <div class="sub">${customer ? `For ${escapeHtml(customer)} · ` : ""}${escapeHtml(dateStr)}</div>
+    </div>
+    <div class="tag">Internal review · do not share</div>
+  </div>
   ${sections.join("\n")}
 </body>
 </html>`;
