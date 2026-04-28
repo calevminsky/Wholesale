@@ -274,6 +274,34 @@
       o.shopify_order_name ? el("span", { class: "muted" }, `Shopify: ${o.shopify_order_name}`) : null
     ]));
 
+    // Step strip — makes the workflow obvious for a non-technical manager.
+    if (!isReadOnly) {
+      const items = Array.isArray(o.items) ? o.items : [];
+      const selectedLocs = Array.isArray(o.location_ids) ? o.location_ids : [];
+      const stepDone = {
+        1: items.length > 0 && selectedLocs.length > 0,
+        2: o.status === "previewed",
+        3: o.status === "submitted"
+      };
+      const stepActive = stepDone[2] ? 3 : (stepDone[1] ? 2 : 1);
+      const steps = [
+        { n: 1, label: "Pick locations" },
+        { n: 2, label: "Run preview" },
+        { n: 3, label: "Submit to Shopify" }
+      ];
+      const strip = el("div", { class: "ord-steps" });
+      for (const s of steps) {
+        const cls = "ord-step"
+          + (stepDone[s.n] ? " ord-step-done" : "")
+          + (stepActive === s.n && !stepDone[s.n] ? " ord-step-active" : "");
+        strip.appendChild(el("div", { class: cls }, [
+          el("span", { class: "ord-step-num" }, stepDone[s.n] ? "✓" : String(s.n)),
+          el("span", { class: "ord-step-lbl" }, s.label)
+        ]));
+      }
+      wrap.appendChild(strip);
+    }
+
     // Top form: name, customer, notes
     const form = el("div", { class: "box" });
     const nameInp = el("input", { type: "text", value: o.name || "" });
@@ -368,16 +396,34 @@
     }
     wrap.appendChild(itemsBox);
 
-    // Action bar
-    const actions = el("div", { class: "row", style: { marginTop: "12px" } });
+    // Action bar — Submit is gated behind a successful preview so the
+    // manager always sees what's fulfillable before anything hits Shopify.
+    const actions = el("div", { class: "row", style: { marginTop: "12px", alignItems: "center" } });
     if (!isReadOnly) {
+      const hasItems = items.length > 0;
+      const hasLocs = selectedLocs.length > 0;
+      const hasFreshPreview = o.status === "previewed";
+
       const previewBtn = el("button", { class: "primary", onclick: runPreview }, "Run Availability Preview");
-      previewBtn.disabled = !items.length || !selectedLocs.length;
+      previewBtn.disabled = !hasItems || !hasLocs;
       actions.appendChild(previewBtn);
 
-      const submitBtn = el("button", { onclick: submitToShopify }, "Submit to Shopify");
-      submitBtn.disabled = !items.length || !selectedLocs.length;
+      const submitBtn = el("button", {
+        onclick: submitToShopify,
+        title: hasFreshPreview
+          ? "Create the Shopify order using the preview's allocation"
+          : "Run preview first, then submit"
+      }, "Submit to Shopify");
+      submitBtn.disabled = !hasItems || !hasLocs || !hasFreshPreview;
       actions.appendChild(submitBtn);
+
+      // Inline hint for whatever step the manager is on right now.
+      let hint = "";
+      if (!hasItems) hint = "Add items to the draft first.";
+      else if (!hasLocs) hint = "Pick at least one location to start.";
+      else if (!hasFreshPreview) hint = "Run preview before submitting.";
+      else hint = "Ready to submit.";
+      actions.appendChild(el("span", { class: "muted", style: { marginLeft: "8px" } }, hint));
     }
     wrap.appendChild(actions);
 

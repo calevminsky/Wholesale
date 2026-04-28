@@ -2815,7 +2815,8 @@ app.use(createOrdersRouter({
   runAllocation,
   upload,
   submitAllocationToShopify,
-  sendEmailWithAttachments
+  sendEmailWithAttachments,
+  getAllLocations
 }));
 
 async function runMigrations() {

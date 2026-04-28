@@ -8,11 +8,32 @@ import * as db from "./db.js";
 import * as customersDb from "../customers/db.js";
 import { parseOrderUpload } from "./parse-upload.js";
 
+// Default locations to pre-select on a brand-new draft. Substring match against
+// location names from getAllLocations(). Edit if the org's defaults change.
+const DEFAULT_LOCATION_NAME_PATTERNS = ["bogota", "warehouse"];
+
+async function defaultLocationIds(getAllLocations) {
+  if (typeof getAllLocations !== "function") return [];
+  try {
+    const locs = await getAllLocations();
+    if (!Array.isArray(locs)) return [];
+    const ids = [];
+    for (const pat of DEFAULT_LOCATION_NAME_PATTERNS) {
+      const hit = locs.find((l) => String(l.name || "").toLowerCase().includes(pat));
+      if (hit && !ids.includes(String(hit.id))) ids.push(String(hit.id));
+    }
+    return ids;
+  } catch {
+    return [];
+  }
+}
+
 export function createOrdersRouter({
   runAllocation,
   upload,
   submitAllocationToShopify,
-  sendEmailWithAttachments
+  sendEmailWithAttachments,
+  getAllLocations
 } = {}) {
   const r = Router();
 
@@ -43,7 +64,12 @@ export function createOrdersRouter({
 
   r.post("/api/orders-draft", async (req, res) => {
     try {
-      const row = await db.createOrder(req.body || {});
+      const payload = { ...(req.body || {}) };
+      // Default locations to Bogota + Warehouse if the caller didn't pick any.
+      if (!Array.isArray(payload.location_ids) || payload.location_ids.length === 0) {
+        payload.location_ids = await defaultLocationIds(getAllLocations);
+      }
+      const row = await db.createOrder(payload);
       res.json({ order: row });
     } catch (e) { res.status(400).json({ error: String(e?.message || e) }); }
   });
@@ -67,6 +93,11 @@ export function createOrdersRouter({
             const v = JSON.parse(req.body.location_ids);
             if (Array.isArray(v)) locationIds = v.filter((x) => typeof x === "string");
           } catch { /* ignore — leave empty */ }
+        }
+        // No locations supplied by the UI? Pre-fill with the org defaults
+        // (Bogota + Warehouse). Manager can change them in the editor.
+        if (!locationIds.length) {
+          locationIds = await defaultLocationIds(getAllLocations);
         }
 
         const customerId = req.body.customer_id ? parseId(req.body.customer_id) : null;
