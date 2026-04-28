@@ -1,12 +1,13 @@
 // Build a customer-facing order-form XLSX from a rendered line sheet payload.
 //
-// The customer fills in quantity cells and emails the file back. The manager
-// uploads it via the wholesale importer, which parses both the friendly headers
-// here AND the original developer headers (product_handle / unit_price / size
-// columns) so old workflows keep working.
+// The customer fills in size-column quantities and emails the file back. The
+// manager uploads it via the wholesale importer, which parses the same
+// columns we write here:
+//   Handle | Product | Price | XXS | XS | S | M | L | XL | XXL | Total | Total Cost
 //
-// Hidden metadata in row 1 of the data sheet lets the importer link an upload
-// back to the originating line sheet.
+// Hidden metadata in the workbook subject lets the importer link the upload
+// back to the originating line sheet without requiring the user to pick it
+// from a dropdown.
 import ExcelJS from "exceljs";
 
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
@@ -14,6 +15,16 @@ const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 // Magic marker stored in the workbook's custom properties so the importer can
 // detect line-sheet-derived uploads regardless of column reordering.
 export const ORDER_FORM_MAGIC = "WHOLESALE_ORDER_FORM_V1";
+
+const COLS = {
+  handle:    1,
+  product:   2,
+  price:     3,
+  firstSize: 4,
+  total:     4 + SIZES.length,
+  totalCost: 5 + SIZES.length
+};
+const N_COLS = COLS.totalCost;
 
 export async function buildOrderFormXlsx(payload, { customer } = {}) {
   const wb = new ExcelJS.Workbook();
@@ -29,29 +40,28 @@ export async function buildOrderFormXlsx(payload, { customer } = {}) {
     views: [{ state: "frozen", ySplit: 6 }]
   });
 
-  // ----- Header block -----
+  // ----- Header block (rows 1-4) -----
   const sheetName = payload.sheet?.name || "Line Sheet";
   const customerName = customer || payload.sheet?.customer_name || payload.sheet?.customer || "";
+  const lastColLetter = colLetter(N_COLS);
 
   ws.getCell("A1").value = sheetName;
   ws.getCell("A1").font = { size: 16, bold: true };
-  ws.mergeCells("A1:L1");
+  ws.mergeCells(`A1:${lastColLetter}1`);
 
   ws.getCell("A2").value = customerName ? `Customer: ${customerName}` : "Fill in quantities below and email this file back.";
-  ws.mergeCells("A2:L2");
+  ws.mergeCells(`A2:${lastColLetter}2`);
 
   ws.getCell("A3").value = `Generated ${new Date().toISOString().slice(0, 10)}`;
   ws.getCell("A3").font = { italic: true, color: { argb: "FF666666" } };
-  ws.mergeCells("A3:L3");
+  ws.mergeCells(`A3:${lastColLetter}3`);
 
-  ws.getCell("A4").value = "Type quantities into the size columns. Wholesale prices are pre-filled.";
+  ws.getCell("A4").value = "Type quantities into the size columns. Prices are pre-filled.";
   ws.getCell("A4").font = { italic: true, color: { argb: "FF666666" } };
-  ws.mergeCells("A4:L4");
+  ws.mergeCells(`A4:${lastColLetter}4`);
 
   // ----- Header row (row 6) -----
-  // Column A holds the Shopify product handle (the importer's product_handle).
-  // We label it "Style" for the customer; the importer treats it as the SKU key.
-  const headers = ["Style", "Product", "MSRP", "Wholesale", ...SIZES, "Total"];
+  const headers = ["Handle", "Product", "Price", ...SIZES, "Total", "Total Cost"];
   const headerRow = ws.getRow(6);
   headers.forEach((h, i) => {
     const cell = headerRow.getCell(i + 1);
@@ -69,59 +79,74 @@ export async function buildOrderFormXlsx(payload, { customer } = {}) {
   for (const p of products) {
     if (p.excluded) continue;
     const handle = String(p.handle || "").trim();
-    if (!handle) continue; // can't include products without a handle (importer needs it)
+    if (!handle) continue; // importer needs the handle
 
-    const msrp = Number(p.compare_at_price || p.current_price || 0);
-    const wholesale = Number(p.effective_price ?? p.current_price ?? 0);
+    // Full product name = title (which already includes style + color in
+    // Shopify), falling back to style_name only if title is missing.
+    const productName = (p.title || p.style_name || "").trim();
+    const price = Number(p.effective_price ?? p.current_price ?? 0);
 
     const row = ws.getRow(r);
-    row.getCell(1).value = handle;
-    row.getCell(2).value = p.style_name || p.title || "";
-    row.getCell(3).value = msrp;
-    row.getCell(3).numFmt = '"$"#,##0.00';
-    row.getCell(4).value = wholesale;
-    row.getCell(4).numFmt = '"$"#,##0.00';
+    row.getCell(COLS.handle).value = handle;
+    row.getCell(COLS.product).value = productName;
+    row.getCell(COLS.price).value = price;
+    row.getCell(COLS.price).numFmt = '"$"#,##0.00';
 
     // Size cells: blank, ready for the customer to type
     for (let i = 0; i < SIZES.length; i++) {
-      row.getCell(5 + i).value = null;
-      row.getCell(5 + i).alignment = { horizontal: "center" };
+      const c = row.getCell(COLS.firstSize + i);
+      c.value = null;
+      c.alignment = { horizontal: "center" };
     }
 
-    // Total: SUM across size cells
-    const startCol = colLetter(5);
-    const endCol = colLetter(5 + SIZES.length - 1);
-    row.getCell(5 + SIZES.length).value = { formula: `SUM(${startCol}${r}:${endCol}${r})` };
-    row.getCell(5 + SIZES.length).alignment = { horizontal: "center" };
+    // Total = sum of size cells
+    const sizeStart = colLetter(COLS.firstSize);
+    const sizeEnd = colLetter(COLS.firstSize + SIZES.length - 1);
+    row.getCell(COLS.total).value = { formula: `SUM(${sizeStart}${r}:${sizeEnd}${r})` };
+    row.getCell(COLS.total).alignment = { horizontal: "center" };
+
+    // Total Cost = price × total
+    const priceCol = colLetter(COLS.price);
+    const totalCol = colLetter(COLS.total);
+    row.getCell(COLS.totalCost).value = { formula: `${priceCol}${r}*${totalCol}${r}` };
+    row.getCell(COLS.totalCost).numFmt = '"$"#,##0.00';
+    row.getCell(COLS.totalCost).alignment = { horizontal: "right" };
 
     r++;
   }
 
-  // ----- Totals row -----
+  // ----- Footer totals row -----
   if (r > 7) {
     const totalsRow = ws.getRow(r);
-    totalsRow.getCell(2).value = "Total Units";
-    totalsRow.getCell(2).font = { bold: true };
-    totalsRow.getCell(2).alignment = { horizontal: "right" };
+    totalsRow.getCell(COLS.product).value = "Totals";
+    totalsRow.getCell(COLS.product).font = { bold: true };
+    totalsRow.getCell(COLS.product).alignment = { horizontal: "right" };
     for (let i = 0; i < SIZES.length; i++) {
-      const col = colLetter(5 + i);
-      totalsRow.getCell(5 + i).value = { formula: `SUM(${col}7:${col}${r - 1})` };
-      totalsRow.getCell(5 + i).alignment = { horizontal: "center" };
-      totalsRow.getCell(5 + i).font = { bold: true };
+      const c = colLetter(COLS.firstSize + i);
+      const cell = totalsRow.getCell(COLS.firstSize + i);
+      cell.value = { formula: `SUM(${c}7:${c}${r - 1})` };
+      cell.alignment = { horizontal: "center" };
+      cell.font = { bold: true };
     }
-    const totCol = colLetter(5 + SIZES.length);
-    totalsRow.getCell(5 + SIZES.length).value = { formula: `SUM(${totCol}7:${totCol}${r - 1})` };
-    totalsRow.getCell(5 + SIZES.length).font = { bold: true };
-    totalsRow.getCell(5 + SIZES.length).alignment = { horizontal: "center" };
+    const totC = colLetter(COLS.total);
+    totalsRow.getCell(COLS.total).value = { formula: `SUM(${totC}7:${totC}${r - 1})` };
+    totalsRow.getCell(COLS.total).font = { bold: true };
+    totalsRow.getCell(COLS.total).alignment = { horizontal: "center" };
+
+    const tcCol = colLetter(COLS.totalCost);
+    totalsRow.getCell(COLS.totalCost).value = { formula: `SUM(${tcCol}7:${tcCol}${r - 1})` };
+    totalsRow.getCell(COLS.totalCost).numFmt = '"$"#,##0.00';
+    totalsRow.getCell(COLS.totalCost).font = { bold: true };
+    totalsRow.getCell(COLS.totalCost).alignment = { horizontal: "right" };
   }
 
   // ----- Column widths -----
-  ws.getColumn(1).width = 18; // Style (handle)
-  ws.getColumn(2).width = 32; // Product
-  ws.getColumn(3).width = 10; // MSRP
-  ws.getColumn(4).width = 12; // Wholesale
-  for (let i = 0; i < SIZES.length; i++) ws.getColumn(5 + i).width = 6;
-  ws.getColumn(5 + SIZES.length).width = 8; // Total
+  ws.getColumn(COLS.handle).width  = 18;
+  ws.getColumn(COLS.product).width = 36;
+  ws.getColumn(COLS.price).width   = 10;
+  for (let i = 0; i < SIZES.length; i++) ws.getColumn(COLS.firstSize + i).width = 6;
+  ws.getColumn(COLS.total).width     = 8;
+  ws.getColumn(COLS.totalCost).width = 12;
 
   return wb.xlsx.writeBuffer();
 }
