@@ -4,18 +4,20 @@
 const BATCH = 50;
 const CONCURRENCY = 3;
 
-export async function livecheckProducts(productIds, shopifyGraphQL) {
+export async function livecheckProducts(productIds, shopifyGraphQL, opts = {}) {
   const unique = Array.from(new Set(productIds.filter(Boolean)));
   if (unique.length === 0) return new Map();
+  const includeCost = !!opts.includeCost;
 
   const batches = [];
   for (let i = 0; i < unique.length; i += BATCH) batches.push(unique.slice(i, i + BATCH));
 
   const out = new Map();
   const running = new Set();
+  const queryStr = includeCost ? NODES_QUERY_WITH_COST : NODES_QUERY;
 
   async function runBatch(ids) {
-    const data = await shopifyGraphQL(NODES_QUERY, { ids });
+    const data = await shopifyGraphQL(queryStr, { ids });
     for (const n of data?.nodes || []) {
       if (!n || !n.id) continue;
       const compareAt = extractMoney(
@@ -28,8 +30,10 @@ export async function livecheckProducts(productIds, shopifyGraphQL) {
       let costCount = 0;
       for (const v of (n.variants?.nodes || [])) {
         inv += Number(v.inventoryQuantity || 0);
-        const c = Number(v.inventoryItem?.unitCost?.amount);
-        if (Number.isFinite(c) && c > 0) { costSum += c; costCount += 1; }
+        if (includeCost) {
+          const c = Number(v.inventoryItem?.unitCost?.amount);
+          if (Number.isFinite(c) && c > 0) { costSum += c; costCount += 1; }
+        }
       }
       const unitCost = costCount ? costSum / costCount : 0;
 
@@ -96,6 +100,40 @@ function extractMoney(m) {
 
 const NODES_QUERY = `
   query LivecheckProducts($ids: [ID!]!) {
+    nodes(ids: $ids) {
+      ... on Product {
+        id
+        handle
+        title
+        status
+        featuredImage { url }
+        priceRangeV2 { minVariantPrice { amount currencyCode } }
+        compareAtPriceRange {
+          maxVariantCompareAtPrice { amount currencyCode }
+          minVariantCompareAtPrice { amount currencyCode }
+        }
+        variants(first: 100) {
+          nodes { id inventoryQuantity }
+        }
+        upsellMetafield: metafield(namespace: "theme", key: "upsell_list") {
+          value
+          type
+          references(first: 25) {
+            nodes {
+              ... on Product { id title handle }
+            }
+          }
+        }
+      }
+    }
+  }
+`;
+
+// Same as NODES_QUERY but adds inventoryItem.unitCost on each variant. Only
+// used by the internal-review layout — keeps the customer-facing payload as
+// small as before, since costs aren't needed there and require read_inventory.
+const NODES_QUERY_WITH_COST = `
+  query LivecheckProductsWithCost($ids: [ID!]!) {
     nodes(ids: $ids) {
       ... on Product {
         id
