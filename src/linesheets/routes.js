@@ -8,6 +8,7 @@ import { applyPricing, defaultPricing } from "./pricing.js";
 import { buildRenderedPayload, renderHtml } from "./render-pdf.js";
 import { resolveLineSheetReferences } from "./linesheet-filter.js";
 import { buildOrderFormXlsx } from "./order-form-xlsx.js";
+import { buildExportItems, createExport } from "./exports-db.js";
 import * as customersDb from "../customers/db.js";
 
 export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
@@ -298,7 +299,21 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
       const sheet = await db.getLineSheet(id);
       if (!sheet) return res.status(404).json({ error: "Not found" });
       const payload = await buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck: true });
-      const buf = await buildOrderFormXlsx(payload, { customer: sheet.customer_name || sheet.customer });
+
+      // Snapshot the priced rows so an uploaded order can be diffed against
+      // exactly what we sent. Token is stamped into the workbook subject and
+      // a visible reference cell.
+      const exportItems = buildExportItems(payload);
+      const exportRow = await createExport({
+        lineSheetId: sheet.id,
+        customerId: sheet.customer_id || null,
+        items: exportItems
+      });
+
+      const buf = await buildOrderFormXlsx(payload, {
+        customer: sheet.customer_name || sheet.customer,
+        exportToken: exportRow.token
+      });
       const safe = String(sheet.name || "linesheet").replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || "linesheet";
       res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
       res.setHeader("Content-Disposition", `attachment; filename="${safe}_order_form.xlsx"`);

@@ -4,6 +4,7 @@ import { query, getPool } from "../pg.js";
 const ORDER_COLS = `
   o.id, o.status, o.customer_id, o.line_sheet_id, o.name, o.notes,
   o.location_ids, o.items, o.source_filename,
+  o.export_token, o.price_mismatches,
   o.shopify_order_id, o.shopify_order_name, o.submitted_at,
   o.archived_at, o.created_at, o.updated_at
 `;
@@ -71,15 +72,22 @@ export async function createOrder(payload) {
     notes = null,
     location_ids = [],
     items = [],
-    source_filename = null
+    source_filename = null,
+    export_token = null,
+    price_mismatches = []
   } = payload;
 
   const { rows } = await query(
     `INSERT INTO wholesale_orders
-       (customer_id, line_sheet_id, name, notes, location_ids, items, source_filename)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)
-     RETURNING ${ORDER_COLS.replace(/o\./g, "")}`,
-    [customer_id, line_sheet_id, name, notes, location_ids, JSON.stringify(items), source_filename]
+       (customer_id, line_sheet_id, name, notes, location_ids, items, source_filename,
+        export_token, price_mismatches)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+     RETURNING id`,
+    [
+      customer_id, line_sheet_id, name, notes, location_ids,
+      JSON.stringify(items), source_filename,
+      export_token, JSON.stringify(price_mismatches || [])
+    ]
   );
   // Re-fetch with joined columns so the API shape stays consistent.
   return getOrder(rows[0].id);
@@ -135,6 +143,68 @@ export async function updateOrder(id, payload) {
         [id]
       );
     }
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+  return getOrder(id);
+}
+
+// Resolve price mismatches on a draft.
+//   strategy "snapshot": rewrite item unit_price for the given handles from
+//                        ppuByHandle (the export snapshot). Clears mismatches.
+//   strategy "customer": accept what the customer typed; just clears mismatches.
+// Items + locations untouched apart from the targeted unit_price rewrites.
+export async function resolvePriceMismatches(id, strategy, ppuByHandle = {}) {
+  if (strategy !== "snapshot" && strategy !== "customer") {
+    throw new Error(`Unknown strategy: ${strategy}`);
+  }
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows: cur } = await client.query(
+      `SELECT items, status, archived_at
+         FROM wholesale_orders
+        WHERE id = $1
+        FOR UPDATE`,
+      [id]
+    );
+    if (cur.length === 0) { await client.query("ROLLBACK"); return null; }
+    if (cur[0].archived_at || cur[0].status === "submitted") {
+      await client.query("ROLLBACK");
+      return null;
+    }
+    let items = Array.isArray(cur[0].items) ? cur[0].items : [];
+    if (strategy === "snapshot") {
+      items = items.map((it) => {
+        const handle = String(it.handle || "").trim();
+        if (handle in ppuByHandle) {
+          return { ...it, unit_price: ppuByHandle[handle] };
+        }
+        return it;
+      });
+    }
+    await client.query(
+      `UPDATE wholesale_orders
+          SET items = $2,
+              price_mismatches = '[]'::jsonb,
+              updated_at = NOW()
+        WHERE id = $1`,
+      [id, JSON.stringify(items)]
+    );
+    // Items changing invalidates any prior preview snapshot.
+    await client.query(
+      `UPDATE wholesale_order_previews SET is_stale = TRUE WHERE order_id = $1`,
+      [id]
+    );
+    await client.query(
+      `UPDATE wholesale_orders SET status = 'draft' WHERE id = $1 AND status = 'previewed'`,
+      [id]
+    );
     await client.query("COMMIT");
   } catch (e) {
     await client.query("ROLLBACK");

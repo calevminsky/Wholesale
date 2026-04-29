@@ -26,7 +26,13 @@ const COLS = {
 };
 const N_COLS = COLS.totalCost;
 
-export async function buildOrderFormXlsx(payload, { customer } = {}) {
+// Visible reference cell. The token also lives in workbook custom properties
+// (less editable), but having it on the sheet means it survives Google Sheets
+// round-trips that strip xlsx custom props.
+export const REFERENCE_CELL = "A5";
+const REFERENCE_PREFIX = "Reference: ";
+
+export async function buildOrderFormXlsx(payload, { customer, exportToken } = {}) {
   const wb = new ExcelJS.Workbook();
   wb.creator = "Wholesale Importer";
   wb.created = new Date();
@@ -34,7 +40,10 @@ export async function buildOrderFormXlsx(payload, { customer } = {}) {
   // Custom workbook properties — survive cell edits, used by importer to
   // recognize the file came from us.
   wb.company = ORDER_FORM_MAGIC;
-  if (payload.sheet?.id) wb.subject = `line_sheet_id:${payload.sheet.id}`;
+  const subjectParts = [];
+  if (payload.sheet?.id) subjectParts.push(`line_sheet_id:${payload.sheet.id}`);
+  if (exportToken) subjectParts.push(`export_token:${exportToken}`);
+  if (subjectParts.length) wb.subject = subjectParts.join(";");
 
   const ws = wb.addWorksheet("Order Form", {
     views: [{ state: "frozen", ySplit: 6 }]
@@ -59,6 +68,12 @@ export async function buildOrderFormXlsx(payload, { customer } = {}) {
   ws.getCell("A4").value = "Type quantities into the size columns. Prices are pre-filled.";
   ws.getCell("A4").font = { italic: true, color: { argb: "FF666666" } };
   ws.mergeCells(`A4:${lastColLetter}4`);
+
+  if (exportToken) {
+    ws.getCell(REFERENCE_CELL).value = `${REFERENCE_PREFIX}${exportToken} — do not edit`;
+    ws.getCell(REFERENCE_CELL).font = { italic: true, color: { argb: "FF999999" } };
+    ws.mergeCells("A5:L5");
+  }
 
   // ----- Header row (row 6) -----
   const headers = ["Handle", "Product", "Price", ...SIZES, "Total", "Total Cost"];
