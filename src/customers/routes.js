@@ -3,7 +3,7 @@ import { Router } from "express";
 import { pgAvailable } from "../pg.js";
 import * as db from "./db.js";
 
-export function createCustomersRouter() {
+export function createCustomersRouter({ shopifyGraphQL } = {}) {
   const r = Router();
 
   r.use((req, res, next) => {
@@ -18,6 +18,62 @@ export function createCustomersRouter() {
       const customers = await db.listCustomers({ search: req.query.q });
       res.json({ customers });
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // Search Shopify customers tagged "wholesale". Returns lightweight results
+  // (shopify_id, name, email) — does not write to the local DB.
+  // Use POST /api/customers/from-shopify to upsert a selection into local DB.
+  r.get("/api/customers/shopify-search", async (req, res) => {
+    if (!shopifyGraphQL) {
+      return res.status(503).json({ error: "Shopify not configured." });
+    }
+    const q = String(req.query.q || "").trim();
+    if (q.length < 2) return res.json({ customers: [] });
+
+    const gql = `
+      query SearchWholesaleCustomers($query: String!) {
+        customers(first: 20, query: $query) {
+          edges {
+            node {
+              id
+              displayName
+              email
+              phone
+            }
+          }
+        }
+      }
+    `;
+    try {
+      // Shopify customer search: tag filter + name/email substring
+      const data = await shopifyGraphQL(gql, { query: `tag:wholesale ${q}` });
+      const edges = data?.customers?.edges || [];
+      const customers = edges.map(({ node }) => ({
+        shopify_id: node.id,
+        name: node.displayName || "",
+        email: node.email || "",
+        phone: node.phone || ""
+      }));
+      res.json({ customers });
+    } catch (e) {
+      res.status(500).json({ error: String(e?.message || e) });
+    }
+  });
+
+  // Upsert a Shopify customer into the local customers table.
+  // Matches by email if possible; otherwise creates a new record.
+  // Returns the local customer row so the caller can use its integer id.
+  r.post("/api/customers/from-shopify", async (req, res) => {
+    const { shopify_id, name, email, phone } = req.body || {};
+    if (!name) return res.status(400).json({ error: "name required" });
+    try {
+      const existing = email ? await db.findByEmail(email) : null;
+      if (existing) return res.json({ customer: existing });
+      const row = await db.createCustomer({ name, email: email || null, phone: phone || null });
+      res.json({ customer: row });
+    } catch (e) {
+      res.status(400).json({ error: String(e?.message || e) });
+    }
   });
 
   r.post("/api/customers", async (req, res) => {

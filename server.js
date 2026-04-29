@@ -2811,7 +2811,7 @@ app.get("/api/orders/:orderId/invoice.pdf", async (req, res) => {
 
 // ----------------- Line Sheet Builder -----------------
 app.use(createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }));
-app.use(createCustomersRouter());
+app.use(createCustomersRouter({ shopifyGraphQL }));
 app.use(createOrdersRouter({
   runAllocation,
   upload,

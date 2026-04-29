@@ -358,15 +358,116 @@
     nameInp.disabled = isReadOnly;
     nameInp.addEventListener("change", () => saveCurrent({ name: nameInp.value }));
 
-    const custSel = el("select");
-    custSel.disabled = isReadOnly;
-    custSel.appendChild(el("option", { value: "" }, "— No customer —"));
-    for (const c of state.customers) {
-      const opt = el("option", { value: String(c.id) }, c.name);
-      if (o.customer_id === c.id) opt.selected = true;
-      custSel.appendChild(opt);
+    // Customer picker — searches Shopify wholesale-tagged customers as you type,
+    // upserts into local DB on selection, then saves customer_id on the draft.
+    const custWrap = el("div", { style: { position: "relative", flex: "1" } });
+    const custDisplay = el("div", {
+      style: {
+        padding: "4px 8px", border: "1px solid #ccc", borderRadius: "4px",
+        cursor: isReadOnly ? "default" : "pointer", background: isReadOnly ? "#fafafa" : "#fff",
+        minHeight: "28px", lineHeight: "20px", fontSize: "14px"
+      }
+    }, o.customer_name || el("span", { style: { color: "#aaa" } }, "— search wholesale customers —"));
+
+    const custDropdown = el("div", {
+      style: {
+        display: "none", position: "absolute", top: "100%", left: "0", right: "0",
+        background: "#fff", border: "1px solid #ccc", borderRadius: "4px",
+        boxShadow: "0 4px 12px rgba(0,0,0,.12)", zIndex: 100, marginTop: "2px"
+      }
+    });
+
+    if (!isReadOnly) {
+      const custSearch = el("input", {
+        type: "text", placeholder: "Type to search…",
+        style: {
+          width: "100%", padding: "6px 8px", border: "none", borderBottom: "1px solid #eee",
+          fontSize: "13px", boxSizing: "border-box", outline: "none"
+        }
+      });
+
+      let searchTimer = null;
+      custSearch.addEventListener("input", () => {
+        clearTimeout(searchTimer);
+        const q = custSearch.value.trim();
+        if (q.length < 2) {
+          custDropdown.innerHTML = "";
+          custDropdown.appendChild(custSearch);
+          return;
+        }
+        searchTimer = setTimeout(async () => {
+          try {
+            const { customers } = await api(`/api/customers/shopify-search?q=${encodeURIComponent(q)}`);
+            custDropdown.innerHTML = "";
+            custDropdown.appendChild(custSearch);
+            if (!customers.length) {
+              custDropdown.appendChild(el("div", {
+                style: { padding: "8px", fontSize: "12px", color: "#aaa" }
+              }, "No wholesale customers found."));
+              return;
+            }
+            for (const c of customers) {
+              const item = el("div", {
+                style: {
+                  padding: "7px 10px", cursor: "pointer", fontSize: "13px",
+                  borderBottom: "1px solid #f5f5f5"
+                }
+              }, [
+                el("div", { style: { fontWeight: 500 } }, c.name),
+                c.email ? el("div", { style: { fontSize: "11px", color: "#888" } }, c.email) : null
+              ]);
+              item.addEventListener("mouseover", () => item.style.background = "#f5f5f5");
+              item.addEventListener("mouseout",  () => item.style.background = "");
+              item.addEventListener("mousedown", async (e) => {
+                e.preventDefault(); // don't blur the search first
+                custDropdown.style.display = "none";
+                try {
+                  const { customer } = await api("/api/customers/from-shopify", {
+                    method: "POST",
+                    body: JSON.stringify({ shopify_id: c.shopify_id, name: c.name, email: c.email, phone: c.phone })
+                  });
+                  await saveCurrent({ customer_id: customer.id });
+                } catch (err) {
+                  alert("Couldn't save customer: " + err.message);
+                }
+              });
+              custDropdown.appendChild(item);
+            }
+          } catch { /* network error — silently ignore */ }
+        }, 300);
+      });
+
+      custSearch.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") { custDropdown.style.display = "none"; custDisplay.focus(); }
+      });
+
+      custDropdown.appendChild(custSearch);
+
+      // Clear button shown when a customer is set
+      if (o.customer_id) {
+        const clearBtn = el("button", {
+          style: { fontSize: "11px", marginLeft: "6px", padding: "1px 5px" },
+          onclick: () => saveCurrent({ customer_id: null })
+        }, "Clear");
+        custDisplay.appendChild(clearBtn);
+      }
+
+      custDisplay.addEventListener("click", () => {
+        custDropdown.style.display = "block";
+        custSearch.value = "";
+        custSearch.focus();
+      });
+
+      document.addEventListener("click", function hide(e) {
+        if (!custWrap.contains(e.target)) {
+          custDropdown.style.display = "none";
+          document.removeEventListener("click", hide);
+        }
+      }, { capture: true, once: false });
     }
-    custSel.addEventListener("change", () => saveCurrent({ customer_id: custSel.value ? Number(custSel.value) : null }));
+
+    custWrap.appendChild(custDisplay);
+    custWrap.appendChild(custDropdown);
 
     const notesInp = el("textarea", {});
     notesInp.value = o.notes || "";
@@ -374,7 +475,7 @@
     notesInp.addEventListener("change", () => saveCurrent({ notes: notesInp.value }));
 
     form.appendChild(el("div", { class: "row" }, [el("label", { style: { width: "120px" } }, "Name"), nameInp]));
-    form.appendChild(el("div", { class: "row" }, [el("label", { style: { width: "120px" } }, "Customer"), custSel]));
+    form.appendChild(el("div", { class: "row" }, [el("label", { style: { width: "120px" } }, "Customer"), custWrap]));
     form.appendChild(el("div", { class: "row" }, [el("label", { style: { width: "120px", alignSelf: "flex-start" } }, "Notes"), notesInp]));
     wrap.appendChild(form);
 
@@ -729,6 +830,14 @@
         onclick: () => window.open(`/api/orders-draft/${o.id}/draft-order.pdf`, "_blank")
       }, hasPreview ? "Print Order Confirmation" : "Print Draft Order");
       actions.appendChild(printBtn);
+
+      if (hasPreview) {
+        const allocBtn = el("button", {
+          style: { marginLeft: "8px" },
+          onclick: () => window.open(`/api/orders-draft/${o.id}/allocation-report.pdf`, "_blank")
+        }, "Print Internal Report");
+        actions.appendChild(allocBtn);
+      }
     }
 
     wrap.appendChild(actions);

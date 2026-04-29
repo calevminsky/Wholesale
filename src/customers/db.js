@@ -25,6 +25,17 @@ export async function listCustomers({ search } = {}) {
   return rows;
 }
 
+export async function findByEmail(email) {
+  if (!email) return null;
+  const { rows } = await query(
+    `SELECT ${BASE_COLS} FROM customers
+      WHERE LOWER(email) = LOWER($1) AND archived_at IS NULL
+      LIMIT 1`,
+    [email]
+  );
+  return rows[0] || null;
+}
+
 export async function getCustomer(id) {
   const { rows } = await query(
     `SELECT ${BASE_COLS} FROM customers WHERE id = $1`,
