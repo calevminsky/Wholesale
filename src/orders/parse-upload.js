@@ -12,6 +12,7 @@ const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 
 const HANDLE_KEYS = ["product_handle", "handle", "style", "style #", "style id", "sku"];
 const PRICE_KEYS = ["unit_price", "wholesale", "wholesale price", "price"];
+const PRODUCT_KEYS = ["product", "product name", "name", "description", "style name", "title"];
 
 function norm(s) {
   return String(s ?? "").trim().toLowerCase().replace(/\s+/g, " ");
@@ -110,7 +111,11 @@ export function parseOrderUpload(file) {
     }
 
     if (totalQty === 0) continue; // no quantities ordered — skip
-    items.push({ handle, unitPrice, sizeQty });
+
+    const pNameKey = findKey(row, PRODUCT_KEYS);
+    const productName = pNameKey ? String(row[pNameKey] || "").trim() : "";
+
+    items.push({ handle, unitPrice, sizeQty, productName });
   }
 
   // Detect line sheet ID embedded by buildOrderFormXlsx (workbook subject).

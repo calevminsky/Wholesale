@@ -7,6 +7,7 @@ import { pgAvailable } from "../pg.js";
 import * as db from "./db.js";
 import * as customersDb from "../customers/db.js";
 import { parseOrderUpload } from "./parse-upload.js";
+import { getExportByToken } from "../linesheets/exports-db.js";
 
 // Default locations to pre-select on a brand-new draft. Substring match against
 // location names from getAllLocations(). Edit if the org's defaults change.
@@ -116,17 +117,53 @@ export function createOrdersRouter({
         const items = parsed.items.map((it) => ({
           handle: it.handle,
           unit_price: it.unitPrice,
-          size_qty: it.sizeQty
+          size_qty: it.sizeQty,
+          product_name: it.productName || null
         }));
 
+        // If we recognize the export token, diff submitted PPUs against the
+        // frozen snapshot. Mismatches are stored on the draft for the manager
+        // to resolve before submission.
+        let exportToken = parsed.exportToken || null;
+        let priceMismatches = [];
+        let resolvedLineSheetId = lineSheetId;
+        let resolvedCustomerId = inheritedCustomerId;
+        if (exportToken) {
+          const snap = await getExportByToken(exportToken);
+          if (snap) {
+            const expectedByHandle = new Map(
+              (Array.isArray(snap.items) ? snap.items : [])
+                .map((r) => [String(r.handle), Number(r.ppu)])
+            );
+            for (const it of items) {
+              const expected = expectedByHandle.get(it.handle);
+              if (expected === undefined) continue;
+              const got = Math.round(Number(it.unit_price) * 100) / 100;
+              const exp = Math.round(expected * 100) / 100;
+              if (got !== exp) {
+                priceMismatches.push({ handle: it.handle, expected: exp, submitted: got });
+              }
+            }
+            // Use snapshot's links if the upload didn't carry them explicitly.
+            resolvedLineSheetId = resolvedLineSheetId ?? snap.line_sheet_id ?? null;
+            resolvedCustomerId = resolvedCustomerId ?? snap.customer_id ?? null;
+          } else {
+            // Token present but unknown — keep it on the order as a breadcrumb,
+            // but don't pretend we verified anything.
+            exportToken = null;
+          }
+        }
+
         const order = await db.createOrder({
-          customer_id: inheritedCustomerId,
-          line_sheet_id: lineSheetId,
+          customer_id: resolvedCustomerId,
+          line_sheet_id: resolvedLineSheetId,
           name: req.body.name || `Order ${new Date().toISOString().slice(0, 10)}`,
           notes: req.body.notes || null,
           location_ids: locationIds,
           items,
-          source_filename: req.file.originalname || null
+          source_filename: req.file.originalname || null,
+          export_token: exportToken,
+          price_mismatches: priceMismatches
         });
 
         res.json({ order });
@@ -174,6 +211,41 @@ export function createOrdersRouter({
       const row = await db.duplicateOrder(id);
       if (!row) return res.status(404).json({ error: "Not found" });
       res.json({ order: row });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // ------- resolve price mismatches -------
+  // strategy: "snapshot" rewrites unit_price to the originally-exported PPU;
+  //           "customer" accepts the customer's submitted prices.
+  // Either way, price_mismatches is cleared.
+  r.post("/api/orders-draft/:id/resolve-mismatches", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    const strategy = String(req.body?.strategy || "").toLowerCase();
+    if (strategy !== "snapshot" && strategy !== "customer") {
+      return res.status(400).json({ error: "strategy must be 'snapshot' or 'customer'" });
+    }
+    try {
+      const order = await db.getOrder(id);
+      if (!order) return res.status(404).json({ error: "Not found" });
+
+      let ppuByHandle = {};
+      if (strategy === "snapshot") {
+        if (!order.export_token) {
+          return res.status(400).json({ error: "No export token on this draft; cannot restore snapshot prices." });
+        }
+        const snap = await getExportByToken(order.export_token);
+        if (!snap) {
+          return res.status(400).json({ error: "Export snapshot not found for this draft." });
+        }
+        for (const r of (Array.isArray(snap.items) ? snap.items : [])) {
+          ppuByHandle[String(r.handle)] = Math.round(Number(r.ppu) * 100) / 100;
+        }
+      }
+
+      const updated = await db.resolvePriceMismatches(id, strategy, ppuByHandle);
+      if (!updated) return res.status(409).json({ error: "Order is archived or already submitted." });
+      res.json({ order: updated });
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 

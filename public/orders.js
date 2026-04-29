@@ -165,8 +165,13 @@
 
   async function runPreview() {
     if (!state.current) return;
-    state.busy = true; state.busyMsg = "Running availability preview…"; render();
+    state.busy = true; state.busyMsg = "Saving & running availability preview…"; render();
     try {
+      // Flush any in-memory item edits (typed but not yet blurred) before running.
+      await api(`/api/orders-draft/${state.current.id}`, {
+        method: "PUT",
+        body: JSON.stringify({ items: state.current.items })
+      });
       const result = await api(`/api/orders-draft/${state.current.id}/preview`, { method: "POST" });
       state.current = result.order;
       state.previewSnapshot = result.preview?.snapshot || null;
@@ -527,15 +532,15 @@
     } else {
       if (hasPreview) {
         itemsBox.appendChild(el("p", {
-          style: { fontSize: "12px", color: "#555", marginBottom: "6px", marginTop: "0" }
-        }, "✓ = fully allocated · orange → N = partially filled (N units available) · ✕ = none available"));
+          style: { fontSize: "12px", color: "#777", marginBottom: "6px", marginTop: "0" }
+        }, "Each size shows: ordered → [available to fill]. Edit the available column to adjust your order, then re-run the preview."));
       }
 
       const tbl = el("table", { style: { borderCollapse: "collapse" } });
       const headerRow = el("tr", {}, [
-        el("th", {}, "Style"),
-        el("th", {}, "Wholesale"),
-        ...SIZES.map((s) => el("th", { style: { minWidth: "52px" } }, s)),
+        el("th", { style: { textAlign: "left" } }, "Product"),
+        el("th", { style: { textAlign: "left" } }, "Wholesale"),
+        ...SIZES.map((s) => el("th", { style: { textAlign: "center", minWidth: hasPreview ? "90px" : "52px" } }, s)),
         el("th", {}, "Total"),
         el("th", {}, "")
       ]);
@@ -546,84 +551,114 @@
 
       for (let idx = 0; idx < items.length; idx++) {
         const it = items[idx];
-        // Find matching entry in state.current.items by handle so edits go to the right slot.
+        // Find matching entry in state.current.items so in-memory edits go to the right slot.
         const liveItem = (state.current.items || []).find((x) => x.handle === it.handle) || it;
         const sq = liveItem.size_qty || liveItem.sizeQty || {};
         let rowTotal = 0;
 
+        // Product name: prefer stored product_name, then metaByHandle from snapshot, then handle
+        const productName = it.product_name ||
+          state.previewSnapshot?.metaByHandle?.[it.handle]?.title || "";
+        const nameCell = el("td", { style: { paddingRight: "12px", verticalAlign: "middle" } });
+        if (productName && productName !== it.handle) {
+          nameCell.appendChild(el("div", { style: { fontWeight: 500, whiteSpace: "nowrap" } }, productName));
+          nameCell.appendChild(el("div", { style: { fontSize: "11px", color: "#999", whiteSpace: "nowrap" } }, it.handle));
+        } else {
+          nameCell.appendChild(document.createTextNode(it.handle));
+        }
+
         const tds = [
-          el("td", { style: { whiteSpace: "nowrap", paddingRight: "8px" } }, it.handle),
-          el("td", { style: { whiteSpace: "nowrap", paddingRight: "8px" } },
+          nameCell,
+          el("td", { style: { whiteSpace: "nowrap", paddingRight: "12px", verticalAlign: "middle" } },
             `$${Number(it.unit_price ?? it.unitPrice ?? 0).toFixed(2)}`)
         ];
 
         for (const s of SIZES) {
-          const q = Number(sq[s] || 0);
-          rowTotal += q;
-          grand += q;
+          const orderedQty = Number(sq[s] || 0);
+          rowTotal += orderedQty;
+          grand += orderedQty;
 
           const cell = el("td", {
-            style: {
-              padding: "2px 3px",
-              textAlign: "center",
-              verticalAlign: "top"
-            }
+            style: { padding: "3px", textAlign: "center", verticalAlign: "middle" }
           });
 
-          if (isReadOnly) {
-            cell.appendChild(document.createTextNode(q ? String(q) : ""));
+          if (hasPreview) {
+            // Two-part cell: ordered (read-only) → available (editable input)
+            const pd = previewMap.get(`${it.handle}:${s}`);
+            const allocatedQty = pd ? pd.allocated : (orderedQty > 0 ? 0 : null);
+
+            if (orderedQty === 0 && allocatedQty === null) {
+              // Nothing ordered here — blank
+            } else {
+              const wrapper = el("div", {
+                style: { display: "flex", alignItems: "center", justifyContent: "center", gap: "3px" }
+              });
+
+              if (orderedQty > 0) {
+                wrapper.appendChild(el("span", {
+                  style: { fontSize: "13px", color: "#555", minWidth: "18px", textAlign: "right" }
+                }, String(orderedQty)));
+                wrapper.appendChild(el("span", { style: { color: "#ccc", fontSize: "11px" } }, "→"));
+              }
+
+              // Color the available input by fulfillment status
+              const avail = allocatedQty ?? 0;
+              const borderColor = avail === 0 ? "#fca5a5" : avail < orderedQty ? "#fbbf24" : "#86efac";
+              const textColor   = avail === 0 ? "#b91c1c" : avail < orderedQty ? "#b45309" : "#166534";
+
+              const inp = el("input", {
+                type: "number", min: "0",
+                value: String(avail),
+                style: {
+                  width: "44px", textAlign: "center",
+                  border: `1px solid ${borderColor}`,
+                  borderRadius: "3px", padding: "2px 3px",
+                  fontSize: "13px", color: textColor
+                }
+              });
+              inp.addEventListener("input", () => {
+                const newVal = Math.max(0, parseInt(inp.value, 10) || 0);
+                if (!liveItem.size_qty) liveItem.size_qty = {};
+                liveItem.size_qty[s] = newVal;
+              });
+              inp.addEventListener("blur", () => {
+                saveCurrent({ items: state.current.items });
+              });
+
+              wrapper.appendChild(inp);
+              cell.appendChild(wrapper);
+            }
+          } else if (isReadOnly) {
+            cell.appendChild(document.createTextNode(orderedQty ? String(orderedQty) : ""));
           } else {
+            // No preview yet — single editable input
             const inp = el("input", {
-              type: "number",
-              min: "0",
-              value: q > 0 ? String(q) : "",
+              type: "number", min: "0",
+              value: orderedQty > 0 ? String(orderedQty) : "",
               style: {
-                width: "48px",
-                textAlign: "center",
+                width: "48px", textAlign: "center",
                 border: "1px solid #d0d0d0",
-                borderRadius: "3px",
-                padding: "2px 4px",
+                borderRadius: "3px", padding: "2px 4px",
                 fontSize: "13px"
               }
             });
-            // Update the live item in memory as the user types.
             inp.addEventListener("input", () => {
               const newVal = Math.max(0, parseInt(inp.value, 10) || 0);
               if (!liveItem.size_qty) liveItem.size_qty = {};
               liveItem.size_qty[s] = newVal;
             });
-            // Persist on blur.
             inp.addEventListener("blur", () => {
               saveCurrent({ items: state.current.items });
             });
             cell.appendChild(inp);
           }
 
-          // Inline preview indicator
-          if (hasPreview && q > 0) {
-            const pd = previewMap.get(`${it.handle}:${s}`);
-            if (pd) {
-              const tag = el("div", {
-                style: { fontSize: "10px", lineHeight: "1.2", marginTop: "2px", textAlign: "center" }
-              });
-              if (pd.allocated >= pd.requested) {
-                tag.style.color = "#2a6e2a";
-                tag.textContent = "✓";
-              } else if (pd.allocated === 0) {
-                tag.style.color = "#b91c1c";
-                tag.textContent = "✕";
-              } else {
-                tag.style.color = "#d97706";
-                tag.textContent = `→${pd.allocated}`;
-              }
-              cell.appendChild(tag);
-            }
-          }
-
           tds.push(cell);
         }
 
-        tds.push(el("td", { style: { textAlign: "right", paddingLeft: "6px", fontWeight: 500 } }, String(rowTotal)));
+        tds.push(el("td", {
+          style: { textAlign: "right", paddingLeft: "8px", fontWeight: 500, verticalAlign: "middle", whiteSpace: "nowrap" }
+        }, String(rowTotal)));
 
         // Delete row button
         if (!isReadOnly) {
@@ -634,7 +669,7 @@
               saveCurrent({ items: state.current.items });
             }
           }, "×");
-          tds.push(el("td", {}, [delBtn]));
+          tds.push(el("td", { style: { verticalAlign: "middle" } }, [delBtn]));
         } else {
           tds.push(el("td", {}, ""));
         }
