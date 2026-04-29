@@ -13,6 +13,7 @@
     locations: [],
     current: null,       // active draft when view==="edit"
     previews: [],
+    previewSnapshot: null, // full snapshot for the current non-stale preview
     loading: false,
     busy: false,
     busyMsg: ""
@@ -69,6 +70,16 @@
       const { order, previews } = await api(`/api/orders-draft/${id}`);
       state.current = order;
       state.previews = previews || [];
+      state.previewSnapshot = null;
+
+      // Load full data for the current (non-stale) snapshot if one exists.
+      const currentSnap = previews?.find((p) => !p.is_stale);
+      if (currentSnap) {
+        try {
+          const { preview } = await api(`/api/orders-draft/${id}/previews/${currentSnap.id}`);
+          state.previewSnapshot = preview?.snapshot || null;
+        } catch { /* non-fatal */ }
+      }
       state.view = "edit";
     } catch (e) {
       alert("Couldn't open: " + e.message);
@@ -131,6 +142,10 @@
 
   async function saveCurrent(patch) {
     if (!state.current) return;
+    // If items or locations change, the preview is no longer valid.
+    if (patch.items !== undefined || patch.location_ids !== undefined) {
+      state.previewSnapshot = null;
+    }
     state.busy = true; state.busyMsg = "Saving…"; render();
     try {
       const { order } = await api(`/api/orders-draft/${state.current.id}`, {
@@ -152,12 +167,32 @@
     if (!state.current) return;
     state.busy = true; state.busyMsg = "Running availability preview…"; render();
     try {
-      const { order } = await api(`/api/orders-draft/${state.current.id}/preview`, { method: "POST" });
-      state.current = order;
+      const result = await api(`/api/orders-draft/${state.current.id}/preview`, { method: "POST" });
+      state.current = result.order;
+      state.previewSnapshot = result.preview?.snapshot || null;
       const { previews } = await api(`/api/orders-draft/${state.current.id}/previews`);
       state.previews = previews || [];
     } catch (e) {
       alert("Preview failed: " + e.message);
+    } finally {
+      state.busy = false;
+      render();
+    }
+  }
+
+  async function resolveMismatches(strategy) {
+    if (!state.current) return;
+    const label = strategy === "snapshot" ? "original" : "customer";
+    if (!confirm(`Apply ${label} prices to all flagged lines?`)) return;
+    state.busy = true; state.busyMsg = "Applying prices…"; render();
+    try {
+      const { order } = await api(`/api/orders-draft/${state.current.id}/resolve-mismatches`, {
+        method: "POST",
+        body: JSON.stringify({ strategy })
+      });
+      state.current = order;
+    } catch (e) {
+      alert("Resolve failed: " + e.message);
     } finally {
       state.busy = false;
       render();
@@ -264,6 +299,16 @@
     if (!o) return el("div", {}, "No draft.");
     const isReadOnly = o.status === "submitted" || !!o.archived_at;
 
+    // Build a lookup from the current non-stale preview snapshot.
+    // Keys are "handle:size", values are {requested, allocated, dropped}.
+    const previewMap = new Map();
+    if (state.previewSnapshot?.report?.lines) {
+      for (const line of state.previewSnapshot.report.lines) {
+        previewMap.set(`${line.handle}:${line.size}`, line);
+      }
+    }
+    const hasPreview = previewMap.size > 0;
+
     const wrap = el("div");
 
     // Header
@@ -328,16 +373,16 @@
     form.appendChild(el("div", { class: "row" }, [el("label", { style: { width: "120px", alignSelf: "flex-start" } }, "Notes"), notesInp]));
     wrap.appendChild(form);
 
-    // Locations picker (drain order)
+    // Locations picker with drag-to-reorder
     const locBox = el("div", { class: "box" });
     locBox.appendChild(el("h3", { style: { marginTop: 0 } }, "Locations (drain order)"));
-    locBox.appendChild(el("p", { class: "muted" }, "Drag to reorder. Allocation drains the first location first."));
+    locBox.appendChild(el("p", { class: "muted" }, "Check locations to include. Drag checked rows to set drain order — first is drained first."));
     const locList = el("div");
     const selectedLocs = Array.isArray(o.location_ids) ? [...o.location_ids] : [];
-    // Show selected first, then unselected
     const locById = new Map(state.locations.map((l) => [l.id, l]));
     const orderedSelected = selectedLocs.map((id) => locById.get(id)).filter(Boolean);
     const unselected = state.locations.filter((l) => !selectedLocs.includes(l.id));
+
     for (const l of [...orderedSelected, ...unselected]) {
       const checked = selectedLocs.includes(l.id);
       const cb = el("input", { type: "checkbox" });
@@ -347,50 +392,266 @@
         const idx = selectedLocs.indexOf(l.id);
         if (cb.checked && idx < 0) selectedLocs.push(l.id);
         else if (!cb.checked && idx >= 0) selectedLocs.splice(idx, 1);
-        saveCurrent({ location_ids: selectedLocs });
+        saveCurrent({ location_ids: [...selectedLocs] });
       });
-      locList.appendChild(el("div", { class: "loc" }, [cb, el("span", {}, l.name || l.id)]));
+
+      const row = el("div", {
+        class: "loc",
+        draggable: isReadOnly ? "false" : "true",
+        style: { cursor: isReadOnly ? "default" : "grab", userSelect: "none" }
+      });
+      row.dataset.locId = l.id;
+
+      const grip = el("span", {
+        style: { marginRight: "6px", opacity: "0.35", fontSize: "14px", cursor: "grab" }
+      }, "⠿");
+
+      if (!isReadOnly) {
+        row.addEventListener("dragstart", (e) => {
+          e.dataTransfer.effectAllowed = "move";
+          e.dataTransfer.setData("text/plain", l.id);
+          row.style.opacity = "0.45";
+        });
+        row.addEventListener("dragend", () => {
+          row.style.opacity = "";
+        });
+        row.addEventListener("dragover", (e) => {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = "move";
+          row.style.outline = "2px dashed #6b7280";
+        });
+        row.addEventListener("dragleave", () => {
+          row.style.outline = "";
+        });
+        row.addEventListener("drop", (e) => {
+          e.preventDefault();
+          row.style.outline = "";
+          const fromId = e.dataTransfer.getData("text/plain");
+          const toId = l.id;
+          if (fromId === toId) return;
+          const fromIdx = selectedLocs.indexOf(fromId);
+          const toIdx = selectedLocs.indexOf(toId);
+          // Only reorder within the selected set
+          if (fromIdx < 0 || toIdx < 0) return;
+          selectedLocs.splice(fromIdx, 1);
+          selectedLocs.splice(toIdx, 0, fromId);
+          saveCurrent({ location_ids: [...selectedLocs] });
+        });
+      }
+
+      row.appendChild(grip);
+      row.appendChild(cb);
+      row.appendChild(el("span", { style: { marginLeft: "4px" } }, l.name || l.id));
+      locList.appendChild(row);
     }
     locBox.appendChild(locList);
     wrap.appendChild(locBox);
 
-    // Items table
+    // Price-mismatch banner
+    const mismatches = Array.isArray(o.price_mismatches) ? o.price_mismatches : [];
+    if (mismatches.length) {
+      const banner = el("div", {
+        class: "box",
+        style: {
+          background: "#fff7e6",
+          borderLeft: "4px solid #d97706",
+          marginTop: "12px"
+        }
+      });
+      banner.appendChild(el("h3", { style: { marginTop: 0, color: "#92400e" } },
+        `${mismatches.length} price ${mismatches.length === 1 ? "change" : "changes"} vs. the original order form`));
+      const list = el("table", { style: { marginBottom: "8px" } });
+      list.appendChild(el("thead", {}, [el("tr", {}, [
+        el("th", {}, "Style"),
+        el("th", {}, "Original"),
+        el("th", {}, "Customer typed"),
+        el("th", {}, "Δ")
+      ])]));
+      const tb = el("tbody");
+      for (const m of mismatches) {
+        const delta = Number(m.submitted) - Number(m.expected);
+        const sign = delta > 0 ? "+" : "";
+        tb.appendChild(el("tr", {}, [
+          el("td", {}, m.handle),
+          el("td", {}, `$${Number(m.expected).toFixed(2)}`),
+          el("td", {}, `$${Number(m.submitted).toFixed(2)}`),
+          el("td", { style: { color: delta < 0 ? "#b91c1c" : "#065f46" } },
+            `${sign}$${delta.toFixed(2)}`)
+        ]));
+      }
+      list.appendChild(tb);
+      banner.appendChild(list);
+      if (!isReadOnly) {
+        const btnRow = el("div", { class: "row" });
+        btnRow.appendChild(el("button", { class: "primary",
+          onclick: () => resolveMismatches("snapshot") }, "Use my original prices"));
+        btnRow.appendChild(el("button", {
+          onclick: () => resolveMismatches("customer") }, "Accept customer prices"));
+        banner.appendChild(btnRow);
+      }
+      wrap.appendChild(banner);
+    } else if (o.export_token) {
+      wrap.appendChild(el("p", { class: "muted", style: { marginTop: "8px" } },
+        `Verified against original export ${o.export_token}.`));
+    }
+
+    // Items table — editable spreadsheet grid
     const itemsBox = el("div", { class: "box" });
-    itemsBox.appendChild(el("h3", { style: { marginTop: 0 } }, "Items"));
-    const items = Array.isArray(o.items) ? o.items : [];
+    const itemsHeader = el("div", { class: "row", style: { marginBottom: "8px" } });
+    itemsHeader.appendChild(el("h3", { style: { margin: 0 } }, "Items"));
+
+    if (hasPreview) {
+      const rep = state.previewSnapshot.report;
+      const ranAt = state.previewSnapshot.ranAt
+        ? new Date(state.previewSnapshot.ranAt).toLocaleString() : "";
+      const summaryParts = [
+        `Requested: ${rep.requestedUnits}`,
+        `Allocated: ${rep.allocatedUnits}`,
+        rep.droppedUnits > 0 ? `⚠ Short: ${rep.droppedUnits}` : null
+      ].filter(Boolean);
+      const summaryEl = el("span", {
+        style: { fontSize: "13px", color: rep.droppedUnits > 0 ? "#d97706" : "#2a6e2a" }
+      }, `Preview ${ranAt} — ${summaryParts.join(" · ")}`);
+      itemsHeader.appendChild(summaryEl);
+    }
+    itemsBox.appendChild(itemsHeader);
+
+    // Only show items that have at least one non-zero quantity ordered.
+    const items = (Array.isArray(o.items) ? o.items : []).filter((it) => {
+      const sq = it.size_qty || it.sizeQty || {};
+      return SIZES.some((s) => Number(sq[s] || 0) > 0);
+    });
+
     if (!items.length) {
       itemsBox.appendChild(el("p", { class: "muted" }, "No items yet. Drafts created from a customer's filled order form will land here automatically."));
     } else {
-      const tbl = el("table");
-      tbl.appendChild(el("thead", {}, [el("tr", {}, [
+      if (hasPreview) {
+        itemsBox.appendChild(el("p", {
+          style: { fontSize: "12px", color: "#555", marginBottom: "6px", marginTop: "0" }
+        }, "✓ = fully allocated · orange → N = partially filled (N units available) · ✕ = none available"));
+      }
+
+      const tbl = el("table", { style: { borderCollapse: "collapse" } });
+      const headerRow = el("tr", {}, [
         el("th", {}, "Style"),
         el("th", {}, "Wholesale"),
-        ...SIZES.map((s) => el("th", {}, s)),
-        el("th", {}, "Total")
-      ])]));
+        ...SIZES.map((s) => el("th", { style: { minWidth: "52px" } }, s)),
+        el("th", {}, "Total"),
+        el("th", {}, "")
+      ]);
+      tbl.appendChild(el("thead", {}, [headerRow]));
+
       const tbody = el("tbody");
       let grand = 0;
-      for (const it of items) {
-        const sq = it.size_qty || it.sizeQty || {};
+
+      for (let idx = 0; idx < items.length; idx++) {
+        const it = items[idx];
+        // Find matching entry in state.current.items by handle so edits go to the right slot.
+        const liveItem = (state.current.items || []).find((x) => x.handle === it.handle) || it;
+        const sq = liveItem.size_qty || liveItem.sizeQty || {};
         let rowTotal = 0;
+
         const tds = [
-          el("td", {}, it.handle),
-          el("td", {}, `$${Number(it.unit_price ?? it.unitPrice ?? 0).toFixed(2)}`)
+          el("td", { style: { whiteSpace: "nowrap", paddingRight: "8px" } }, it.handle),
+          el("td", { style: { whiteSpace: "nowrap", paddingRight: "8px" } },
+            `$${Number(it.unit_price ?? it.unitPrice ?? 0).toFixed(2)}`)
         ];
+
         for (const s of SIZES) {
           const q = Number(sq[s] || 0);
           rowTotal += q;
-          tds.push(el("td", {}, q ? String(q) : ""));
+          grand += q;
+
+          const cell = el("td", {
+            style: {
+              padding: "2px 3px",
+              textAlign: "center",
+              verticalAlign: "top"
+            }
+          });
+
+          if (isReadOnly) {
+            cell.appendChild(document.createTextNode(q ? String(q) : ""));
+          } else {
+            const inp = el("input", {
+              type: "number",
+              min: "0",
+              value: q > 0 ? String(q) : "",
+              style: {
+                width: "48px",
+                textAlign: "center",
+                border: "1px solid #d0d0d0",
+                borderRadius: "3px",
+                padding: "2px 4px",
+                fontSize: "13px"
+              }
+            });
+            // Update the live item in memory as the user types.
+            inp.addEventListener("input", () => {
+              const newVal = Math.max(0, parseInt(inp.value, 10) || 0);
+              if (!liveItem.size_qty) liveItem.size_qty = {};
+              liveItem.size_qty[s] = newVal;
+            });
+            // Persist on blur.
+            inp.addEventListener("blur", () => {
+              saveCurrent({ items: state.current.items });
+            });
+            cell.appendChild(inp);
+          }
+
+          // Inline preview indicator
+          if (hasPreview && q > 0) {
+            const pd = previewMap.get(`${it.handle}:${s}`);
+            if (pd) {
+              const tag = el("div", {
+                style: { fontSize: "10px", lineHeight: "1.2", marginTop: "2px", textAlign: "center" }
+              });
+              if (pd.allocated >= pd.requested) {
+                tag.style.color = "#2a6e2a";
+                tag.textContent = "✓";
+              } else if (pd.allocated === 0) {
+                tag.style.color = "#b91c1c";
+                tag.textContent = "✕";
+              } else {
+                tag.style.color = "#d97706";
+                tag.textContent = `→${pd.allocated}`;
+              }
+              cell.appendChild(tag);
+            }
+          }
+
+          tds.push(cell);
         }
-        tds.push(el("td", {}, String(rowTotal)));
-        grand += rowTotal;
+
+        tds.push(el("td", { style: { textAlign: "right", paddingLeft: "6px", fontWeight: 500 } }, String(rowTotal)));
+
+        // Delete row button
+        if (!isReadOnly) {
+          const delBtn = el("button", {
+            style: { padding: "0 5px", fontSize: "12px", lineHeight: "18px", marginLeft: "4px" },
+            onclick: () => {
+              state.current.items = (state.current.items || []).filter((x) => x.handle !== it.handle);
+              saveCurrent({ items: state.current.items });
+            }
+          }, "×");
+          tds.push(el("td", {}, [delBtn]));
+        } else {
+          tds.push(el("td", {}, ""));
+        }
+
         tbody.appendChild(el("tr", {}, tds));
       }
-      tbody.appendChild(el("tr", {}, [
-        el("td", { colspan: "2", style: { textAlign: "right", fontWeight: 600 } }, "Total units"),
+
+      // Grand total row
+      tbody.appendChild(el("tr", {
+        style: { borderTop: "2px solid #ccc" }
+      }, [
+        el("td", { colspan: "2", style: { textAlign: "right", fontWeight: 600, paddingRight: "8px" } }, "Total units"),
         ...SIZES.map(() => el("td", {}, "")),
-        el("td", { style: { fontWeight: 600 } }, String(grand))
+        el("td", { style: { fontWeight: 600, textAlign: "right", paddingLeft: "6px" } }, String(grand)),
+        el("td", {}, "")
       ]));
+
       tbl.appendChild(tbody);
       itemsBox.appendChild(tbl);
     }
@@ -427,7 +688,7 @@
     }
     wrap.appendChild(actions);
 
-    // Preview history
+    // Preview history (compact)
     if (state.previews.length) {
       const histBox = el("div", { class: "box" });
       histBox.appendChild(el("h3", { style: { marginTop: 0 } }, "Preview History"));

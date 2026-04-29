@@ -4,7 +4,7 @@
 //   - Legacy headers: product_handle, unit_price, XXS, XS, S, M, L, XL, XXL
 //   - Customer-friendly headers: Style, Wholesale (or MSRP fallback), size names
 //
-// Returns: { items: [{handle, unitPrice, sizeQty:{XXS..XXL}}], lineSheetId }
+// Returns: { items: [{handle, unitPrice, sizeQty:{XXS..XXL}}], lineSheetId, exportToken }
 import XLSX from "xlsx";
 import path from "path";
 
@@ -109,7 +109,7 @@ export function parseOrderUpload(file) {
       totalQty += q;
     }
 
-    if (totalQty === 0 && unitPrice === 0) continue; // fully empty row
+    if (totalQty === 0) continue; // no quantities ordered — skip
     items.push({ handle, unitPrice, sizeQty });
   }
 
@@ -118,7 +118,25 @@ export function parseOrderUpload(file) {
   const m = String(workbookSubject || "").match(/line_sheet_id:(\d+)/);
   if (m) lineSheetId = Number(m[1]);
 
-  return { items, lineSheetId };
+  // Detect export token. Prefer the workbook subject (resists cell edits);
+  // fall back to scanning the first ~10 rows for "Reference: TOKEN" — needed
+  // because Google Sheets round-trips strip xlsx custom properties.
+  let exportToken = null;
+  const tm = String(workbookSubject || "").match(/export_token:([A-Z0-9]{6,16})/i);
+  if (tm) exportToken = tm[1].toUpperCase();
+  if (!exportToken && Array.isArray(rows2d)) {
+    for (let i = 0; i < Math.min(rows2d.length, 10); i++) {
+      const row = rows2d[i] || [];
+      for (const cell of row) {
+        const s = String(cell ?? "");
+        const cm = s.match(/Reference:\s*([A-Z0-9]{6,16})\b/i);
+        if (cm) { exportToken = cm[1].toUpperCase(); break; }
+      }
+      if (exportToken) break;
+    }
+  }
+
+  return { items, lineSheetId, exportToken };
 }
 
 // Minimal CSV line splitter that handles double-quoted fields.
