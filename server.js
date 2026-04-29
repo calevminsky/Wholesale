@@ -2817,7 +2817,8 @@ app.use(createOrdersRouter({
   upload,
   submitAllocationToShopify,
   sendEmailWithAttachments,
-  getAllLocations
+  getAllLocations,
+  renderPdfFromHtml
 }));
 
 async function runMigrations() {

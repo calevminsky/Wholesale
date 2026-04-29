@@ -8,6 +8,7 @@ import * as db from "./db.js";
 import * as customersDb from "../customers/db.js";
 import { parseOrderUpload } from "./parse-upload.js";
 import { getExportByToken } from "../linesheets/exports-db.js";
+import { buildDraftOrderHtml } from "./draft-order-template.js";
 
 // Default locations to pre-select on a brand-new draft. Substring match against
 // location names from getAllLocations(). Edit if the org's defaults change.
@@ -34,7 +35,8 @@ export function createOrdersRouter({
   upload,
   submitAllocationToShopify,
   sendEmailWithAttachments,
-  getAllLocations
+  getAllLocations,
+  renderPdfFromHtml
 } = {}) {
   const r = Router();
 
@@ -435,6 +437,39 @@ export function createOrdersRouter({
         report: allocResult.report,
         emailStatus
       });
+    } catch (e) {
+      res.status(500).json({ error: String(e?.message || e) });
+    }
+  });
+
+  // ------- draft order PDF -------
+  r.get("/api/orders-draft/:id/draft-order.pdf", async (req, res) => {
+    if (!renderPdfFromHtml) {
+      return res.status(503).json({ error: "PDF renderer not wired into orders router." });
+    }
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const order = await db.getOrder(id);
+      if (!order) return res.status(404).json({ error: "Not found" });
+
+      // Use the latest preview snapshot (even if stale) so the PDF reflects
+      // the most recent allocation run. Falls back gracefully if none exists.
+      const snap = await db.getLatestPreviewSnapshot(id);
+      const snapshot = snap?.snapshot || null;
+
+      const html = buildDraftOrderHtml({ order, snapshot });
+      const { pdfBuffer } = await renderPdfFromHtml(html, null, {
+        format: "Letter",
+        printBackground: true
+      });
+      if (!pdfBuffer) return res.status(500).json({ error: "PDF generation failed." });
+
+      const safe = String(order.name || `draft-${id}`)
+        .replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || `draft-${id}`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="${safe}_order.pdf"`);
+      res.send(Buffer.from(pdfBuffer));
     } catch (e) {
       res.status(500).json({ error: String(e?.message || e) });
     }

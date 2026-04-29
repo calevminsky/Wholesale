@@ -721,6 +721,16 @@
       else hint = "Ready to submit.";
       actions.appendChild(el("span", { class: "muted", style: { marginLeft: "8px" } }, hint));
     }
+
+    // Print button — available as long as there are items, whether or not preview has run.
+    if (items.length > 0) {
+      const printBtn = el("button", {
+        style: { marginLeft: "auto" },
+        onclick: () => window.open(`/api/orders-draft/${o.id}/draft-order.pdf`, "_blank")
+      }, hasPreview ? "Print Order Confirmation" : "Print Draft Order");
+      actions.appendChild(printBtn);
+    }
+
     wrap.appendChild(actions);
 
     // Preview history (compact)
