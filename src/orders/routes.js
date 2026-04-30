@@ -10,6 +10,7 @@ import { parseOrderUpload } from "./parse-upload.js";
 import { getExportByToken } from "../linesheets/exports-db.js";
 import { buildDraftOrderHtml } from "./draft-order-template.js";
 import { buildAllocationReportHtml } from "./allocation-report-template.js";
+import { buildPickListHtml } from "./pick-list-template.js";
 
 // Default locations to pre-select on a brand-new draft. Substring match against
 // location names from getAllLocations(). Edit if the org's defaults change.
@@ -170,6 +171,83 @@ export function createOrdersRouter({
         });
 
         res.json({ order });
+      } catch (e) {
+        res.status(400).json({ error: String(e?.message || e) });
+      }
+    });
+  }
+
+  // Merge an additional order-form upload into an existing draft.
+  // New handles are appended; existing handles have their size quantities summed.
+  // Useful for combining a full-price and an off-price form into one order.
+  if (upload) {
+    r.post("/api/orders-draft/:id/upload-more", upload.single("file"), async (req, res) => {
+      const id = parseId(req.params.id);
+      if (id === null) return res.status(404).json({ error: "Not found" });
+      try {
+        const order = await db.getOrder(id);
+        if (!order) return res.status(404).json({ error: "Not found" });
+        if (order.archived_at) return res.status(409).json({ error: "Order is archived." });
+        if (order.status === "submitted") return res.status(409).json({ error: "Order already submitted." });
+        if (!req.file?.buffer) return res.status(400).json({ error: "Missing file." });
+
+        const parsed = parseOrderUpload(req.file);
+        if (!parsed.items.length) {
+          return res.status(400).json({ error: "No order rows found in the file." });
+        }
+
+        // Price mismatch detection against export token from this file (if any)
+        let newMismatches = [];
+        if (parsed.exportToken) {
+          const snap = await getExportByToken(parsed.exportToken);
+          if (snap) {
+            const expectedByHandle = new Map(
+              (Array.isArray(snap.items) ? snap.items : []).map(r => [String(r.handle), Math.round(Number(r.ppu) * 100) / 100])
+            );
+            for (const it of parsed.items) {
+              const expected = expectedByHandle.get(it.handle);
+              if (expected === undefined) continue;
+              const got = Math.round(Number(it.unitPrice) * 100) / 100;
+              if (got !== expected) newMismatches.push({ handle: it.handle, expected, submitted: got });
+            }
+          }
+        }
+
+        // Merge: add sizes to existing handles, append new handles
+        const mergedItems = Array.isArray(order.items) ? order.items.map(it => ({ ...it })) : [];
+        const byHandle = new Map(mergedItems.map(it => [it.handle, it]));
+
+        for (const newIt of parsed.items) {
+          const existing = byHandle.get(newIt.handle);
+          if (existing) {
+            const sq = { ...(existing.size_qty || {}) };
+            for (const [size, qty] of Object.entries(newIt.sizeQty || {})) {
+              if (qty > 0) sq[size] = (Number(sq[size] || 0) + qty);
+            }
+            existing.size_qty = sq;
+          } else {
+            const item = {
+              handle: newIt.handle,
+              unit_price: newIt.unitPrice,
+              size_qty: newIt.sizeQty || {},
+              product_name: newIt.productName || null
+            };
+            mergedItems.push(item);
+            byHandle.set(newIt.handle, item);
+          }
+        }
+
+        // Merge price mismatches (don't duplicate handles already flagged)
+        const existingMismatches = Array.isArray(order.price_mismatches) ? order.price_mismatches : [];
+        const existingHandles = new Set(existingMismatches.map(m => m.handle));
+        const allMismatches = [
+          ...existingMismatches,
+          ...newMismatches.filter(m => !existingHandles.has(m.handle))
+        ];
+
+        const updated = await db.updateOrder(id, { items: mergedItems, price_mismatches: allMismatches });
+        if (!updated) return res.status(409).json({ error: "Could not update order." });
+        res.json({ order: updated });
       } catch (e) {
         res.status(400).json({ error: String(e?.message || e) });
       }
@@ -374,9 +452,11 @@ export function createOrdersRouter({
         .filter((it) => it.handle);
 
       let customerName = "";
+      let customerShopifyId = null;
       if (order.customer_id) {
         const c = await customersDb.getCustomer(order.customer_id);
         customerName = c?.name || "";
+        customerShopifyId = c?.shopify_id || null;
       }
 
       const allocResult = await runAllocation({
@@ -397,7 +477,8 @@ export function createOrdersRouter({
       const reserveHours = Number(req.body?.reserveHours ?? 48);
       const { orderResults, attachments } = await submitAllocationToShopify({
         ...allocResult,
-        reserveHours
+        reserveHours,
+        customerId: customerShopifyId
       });
 
       const first = orderResults[0];
@@ -503,6 +584,45 @@ export function createOrdersRouter({
         .replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || `draft-${id}`;
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `inline; filename="${safe}_allocation.pdf"`);
+      res.send(Buffer.from(pdfBuffer));
+    } catch (e) {
+      res.status(500).json({ error: String(e?.message || e) });
+    }
+  });
+
+  // ------- pick list PDF -------
+  // Per-location pages + optional combined Bogota+Warehouse + Total.
+  // Requires a preview snapshot (run Preview first).
+  r.get("/api/orders-draft/:id/pick-list.pdf", async (req, res) => {
+    if (!renderPdfFromHtml) {
+      return res.status(503).json({ error: "PDF renderer not wired into orders router." });
+    }
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const order = await db.getOrder(id);
+      if (!order) return res.status(404).json({ error: "Not found" });
+
+      const snap = await db.getLatestPreviewSnapshot(id);
+      if (!snap?.snapshot) {
+        return res.status(400).json({ error: "No preview snapshot. Run Preview first." });
+      }
+
+      const html = buildPickListHtml({
+        order,
+        snapshot: snap.snapshot,
+        snapshotIsStale: snap.is_stale
+      });
+      const { pdfBuffer } = await renderPdfFromHtml(html, null, {
+        format: "Letter",
+        printBackground: true
+      });
+      if (!pdfBuffer) return res.status(500).json({ error: "PDF generation failed." });
+
+      const safe = String(order.name || `draft-${id}`)
+        .replace(/[^A-Za-z0-9\-_ ]+/g, "").replace(/\s+/g, "_") || `draft-${id}`;
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `inline; filename="${safe}_pick-list.pdf"`);
       res.send(Buffer.from(pdfBuffer));
     } catch (e) {
       res.status(500).json({ error: String(e?.message || e) });

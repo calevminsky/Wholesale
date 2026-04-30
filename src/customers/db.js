@@ -2,7 +2,7 @@
 import { query } from "../pg.js";
 
 const BASE_COLS = `
-  id, name, email, phone, shipping_address,
+  id, name, email, phone, shopify_id, shipping_address,
   discount_pct_off_msrp, default_location_ids, notes,
   archived_at, created_at, updated_at
 `;
@@ -23,6 +23,17 @@ export async function listCustomers({ search } = {}) {
     params
   );
   return rows;
+}
+
+export async function findByShopifyId(shopifyId) {
+  if (!shopifyId) return null;
+  const { rows } = await query(
+    `SELECT ${BASE_COLS} FROM customers
+      WHERE shopify_id = $1 AND archived_at IS NULL
+      LIMIT 1`,
+    [shopifyId]
+  );
+  return rows[0] || null;
 }
 
 export async function findByEmail(email) {
@@ -49,6 +60,7 @@ export async function createCustomer(payload) {
     name,
     email = null,
     phone = null,
+    shopify_id = null,
     shipping_address = {},
     discount_pct_off_msrp = null,
     default_location_ids = [],
@@ -60,14 +72,15 @@ export async function createCustomer(payload) {
   }
 
   const { rows } = await query(
-    `INSERT INTO customers (name, email, phone, shipping_address,
+    `INSERT INTO customers (name, email, phone, shopify_id, shipping_address,
                             discount_pct_off_msrp, default_location_ids, notes)
-     VALUES ($1,$2,$3,$4,$5,$6,$7)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
      RETURNING ${BASE_COLS}`,
     [
       String(name).trim(),
       email,
       phone,
+      shopify_id,
       shipping_address,
       discount_pct_off_msrp,
       default_location_ids,
@@ -88,6 +101,7 @@ export async function updateCustomer(id, payload) {
   set("name", payload.name);
   set("email", payload.email);
   set("phone", payload.phone);
+  set("shopify_id", payload.shopify_id);
   set("shipping_address", payload.shipping_address);
   set("discount_pct_off_msrp", payload.discount_pct_off_msrp);
   set("default_location_ids", payload.default_location_ids);

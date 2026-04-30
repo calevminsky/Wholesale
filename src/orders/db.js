@@ -107,6 +107,7 @@ export async function updateOrder(id, payload) {
   set("notes", payload.notes);
   set("location_ids", payload.location_ids);
   set("items", payload.items, (v) => JSON.stringify(v));
+  set("price_mismatches", payload.price_mismatches, (v) => JSON.stringify(v));
   set("source_filename", payload.source_filename);
 
   // Edits to a previewed order revert it to draft and mark snapshots stale.

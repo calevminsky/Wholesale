@@ -122,6 +122,46 @@
     inp.click();
   }
 
+  async function mergeUpload() {
+    if (!state.current) return;
+    const inp = document.createElement("input");
+    inp.type = "file";
+    inp.accept = ".xlsx,.xls,.csv";
+    inp.onchange = async () => {
+      const f = inp.files?.[0];
+      if (!f) return;
+      const fd = new FormData();
+      fd.append("file", f);
+      state.busy = true; state.busyMsg = "Merging order form into draft…"; render();
+      try {
+        const { order } = await api(`/api/orders-draft/${state.current.id}/upload-more`, { method: "POST", body: fd });
+        state.current = order;
+        state.previewSnapshot = null;
+        const { previews } = await api(`/api/orders-draft/${state.current.id}/previews`);
+        state.previews = previews || [];
+      } catch (e) {
+        alert("Merge failed: " + e.message);
+      } finally {
+        state.busy = false;
+        render();
+      }
+    };
+    inp.click();
+  }
+
+  async function duplicateDraft(id) {
+    state.busy = true; state.busyMsg = "Duplicating draft…"; render();
+    try {
+      const { order } = await api(`/api/orders-draft/${id}/duplicate`, { method: "POST" });
+      state.busy = false;
+      await openDraft(order.id);
+    } catch (e) {
+      state.busy = false;
+      alert("Duplicate failed: " + e.message);
+      render();
+    }
+  }
+
   async function newBlankDraft() {
     const name = prompt("Name this draft (e.g. 'Spring 26 - Boutique X'):", "");
     if (!name) return;
@@ -287,6 +327,8 @@
         el("td", {}, updated),
         el("td", { style: { textAlign: "right" } }, [
           el("button", { onclick: () => openDraft(o.id) }, "Open"),
+          " ",
+          el("button", { onclick: () => duplicateDraft(o.id) }, "Duplicate"),
           " ",
           o.status !== "submitted"
             ? el("button", { onclick: () => deleteDraft(o) }, "Archive")
@@ -606,6 +648,14 @@
     const itemsHeader = el("div", { class: "row", style: { marginBottom: "8px" } });
     itemsHeader.appendChild(el("h3", { style: { margin: 0 } }, "Items"));
 
+    // "Add another order form" button for merging a second upload
+    if (!isReadOnly) {
+      itemsHeader.appendChild(el("button", {
+        style: { marginLeft: "auto" },
+        onclick: mergeUpload
+      }, "+ Add items from order form"));
+    }
+
     if (hasPreview) {
       const rep = state.previewSnapshot.report;
       const ranAt = state.previewSnapshot.ranAt
@@ -622,8 +672,117 @@
     }
     itemsBox.appendChild(itemsHeader);
 
-    // Only show items that have at least one non-zero quantity ordered.
+    // Product search — lets the manager add any Shopify product directly,
+    // including items not on any line sheet.
+    if (!isReadOnly) {
+      const searchWrap = el("div", { style: { position: "relative", marginBottom: "12px" } });
+      const searchInp = el("input", {
+        type: "text",
+        placeholder: "Search products to add (any Shopify product)…",
+        style: {
+          width: "100%", padding: "7px 10px", border: "1px solid #d0d0d0",
+          borderRadius: "4px", fontSize: "13px", boxSizing: "border-box"
+        }
+      });
+      const searchDrop = el("div", {
+        style: {
+          display: "none", position: "absolute", top: "100%", left: "0", right: "0",
+          background: "#fff", border: "1px solid #ccc", borderRadius: "4px",
+          boxShadow: "0 4px 14px rgba(0,0,0,.13)", zIndex: 100, maxHeight: "320px",
+          overflowY: "auto", marginTop: "2px"
+        }
+      });
+
+      let prodSearchTimer = null;
+      searchInp.addEventListener("input", () => {
+        clearTimeout(prodSearchTimer);
+        const q = searchInp.value.trim();
+        if (q.length < 2) { searchDrop.style.display = "none"; return; }
+        prodSearchTimer = setTimeout(async () => {
+          try {
+            const { products } = await api(`/api/products/search?q=${encodeURIComponent(q)}`);
+            searchDrop.innerHTML = "";
+            if (!products || !products.length) {
+              searchDrop.appendChild(el("div", {
+                style: { padding: "10px", color: "#aaa", fontSize: "12px" }
+              }, "No products found."));
+              searchDrop.style.display = "block";
+              return;
+            }
+            for (const p of products) {
+              const alreadyIn = (state.current.items || []).some(it => it.handle === p.handle);
+              const row = el("div", {
+                style: {
+                  display: "flex", alignItems: "center", gap: "10px",
+                  padding: "8px 10px", cursor: alreadyIn ? "default" : "pointer",
+                  borderBottom: "1px solid #f3f3f3",
+                  background: alreadyIn ? "#fafafa" : "#fff",
+                  opacity: alreadyIn ? "0.55" : "1"
+                }
+              });
+              if (p.imageUrl) {
+                row.appendChild(el("img", {
+                  src: p.imageUrl + "?width=48",
+                  style: { width: "36px", height: "36px", objectFit: "cover", borderRadius: "3px", flexShrink: "0" }
+                }));
+              }
+              const info = el("div", { style: { flex: "1", minWidth: "0" } });
+              info.appendChild(el("div", {
+                style: { fontWeight: 600, fontSize: "13px", lineHeight: "1.2" }
+              }, p.title || p.handle));
+              info.appendChild(el("div", {
+                style: { fontSize: "11px", color: "#888", marginTop: "1px" }
+              }, [
+                p.handle,
+                p.retailPrice ? ` — $${Number(p.retailPrice).toFixed(2)} retail` : "",
+                alreadyIn ? " — already added" : ""
+              ].join("")));
+              row.appendChild(info);
+              if (!alreadyIn) {
+                row.addEventListener("mouseover", () => { row.style.background = "#f0f5ff"; });
+                row.addEventListener("mouseout",  () => { row.style.background = "#fff"; });
+                row.addEventListener("mousedown", (e) => {
+                  e.preventDefault();
+                  searchDrop.style.display = "none";
+                  searchInp.value = "";
+                  const defaultPrice = p.retailPrice > 0
+                    ? Math.round(p.retailPrice * 0.5 * 100) / 100
+                    : 0;
+                  const newItem = {
+                    handle: p.handle,
+                    unit_price: defaultPrice,
+                    size_qty: Object.fromEntries(SIZES.map(s => [s, 0])),
+                    product_name: p.title || null
+                  };
+                  state.current.items = [...(state.current.items || []), newItem];
+                  saveCurrent({ items: state.current.items });
+                });
+              }
+              searchDrop.appendChild(row);
+            }
+            searchDrop.style.display = "block";
+          } catch { /* silently ignore */ }
+        }, 280);
+      });
+      searchInp.addEventListener("keydown", e => {
+        if (e.key === "Escape") { searchDrop.style.display = "none"; searchInp.value = ""; }
+      });
+      document.addEventListener("click", function hideDrop(e) {
+        if (!searchWrap.contains(e.target)) {
+          searchDrop.style.display = "none";
+          document.removeEventListener("click", hideDrop);
+        }
+      }, { capture: true });
+
+      searchWrap.appendChild(searchInp);
+      searchWrap.appendChild(searchDrop);
+      itemsBox.appendChild(searchWrap);
+    }
+
+    // In read-only mode filter out rows that are entirely zero (clean display).
+    // In edit mode show all rows so newly-added products are visible before qtys are filled.
     const items = (Array.isArray(o.items) ? o.items : []).filter((it) => {
+      if (!isReadOnly) return true;
       const sq = it.size_qty || it.sizeQty || {};
       return SIZES.some((s) => Number(sq[s] || 0) > 0);
     });
@@ -823,21 +982,39 @@
       actions.appendChild(el("span", { class: "muted", style: { marginLeft: "8px" } }, hint));
     }
 
-    // Print button — available as long as there are items, whether or not preview has run.
+    // Print / export buttons — on the right side of the action bar
     if (items.length > 0) {
-      const printBtn = el("button", {
-        style: { marginLeft: "auto" },
+      const printRow = el("div", {
+        class: "row",
+        style: { marginLeft: "auto", gap: "6px" }
+      });
+
+      printRow.appendChild(el("button", {
         onclick: () => window.open(`/api/orders-draft/${o.id}/draft-order.pdf`, "_blank")
-      }, hasPreview ? "Print Order Confirmation" : "Print Draft Order");
-      actions.appendChild(printBtn);
+      }, hasPreview ? "Print Order Confirmation" : "Print Draft Order"));
 
       if (hasPreview) {
-        const allocBtn = el("button", {
-          style: { marginLeft: "8px" },
+        printRow.appendChild(el("button", {
           onclick: () => window.open(`/api/orders-draft/${o.id}/allocation-report.pdf`, "_blank")
-        }, "Print Internal Report");
-        actions.appendChild(allocBtn);
+        }, "Print Internal Report"));
+
+        printRow.appendChild(el("button", {
+          class: "primary",
+          onclick: () => window.open(`/api/orders-draft/${o.id}/pick-list.pdf`, "_blank"),
+          title: "Per-location pick list for warehouse and store teams"
+        }, "Print Pick List"));
       }
+
+      if (!isReadOnly) {
+        // nothing extra — Duplicate lives in the list view
+      } else {
+        printRow.appendChild(el("button", {
+          onclick: () => duplicateDraft(o.id),
+          title: "Copy this order as a new draft"
+        }, "Duplicate as New Draft"));
+      }
+
+      actions.appendChild(printRow);
     }
 
     wrap.appendChild(actions);

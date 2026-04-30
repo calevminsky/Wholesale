@@ -61,15 +61,27 @@ export function createCustomersRouter({ shopifyGraphQL } = {}) {
   });
 
   // Upsert a Shopify customer into the local customers table.
-  // Matches by email if possible; otherwise creates a new record.
-  // Returns the local customer row so the caller can use its integer id.
+  // Lookup priority: shopify_id → email → create new.
+  // Always stores/updates the shopify_id so future lookups are fast.
   r.post("/api/customers/from-shopify", async (req, res) => {
     const { shopify_id, name, email, phone } = req.body || {};
     if (!name) return res.status(400).json({ error: "name required" });
     try {
-      const existing = email ? await db.findByEmail(email) : null;
-      if (existing) return res.json({ customer: existing });
-      const row = await db.createCustomer({ name, email: email || null, phone: phone || null });
+      const byShopifyId = shopify_id ? await db.findByShopifyId(shopify_id) : null;
+      if (byShopifyId) {
+        const updated = await db.updateCustomer(byShopifyId.id, {
+          email: email || byShopifyId.email,
+          phone: phone || byShopifyId.phone,
+          shopify_id
+        });
+        return res.json({ customer: updated || byShopifyId });
+      }
+      const byEmail = email ? await db.findByEmail(email) : null;
+      if (byEmail) {
+        const updated = await db.updateCustomer(byEmail.id, { shopify_id: shopify_id || byEmail.shopify_id });
+        return res.json({ customer: updated || byEmail });
+      }
+      const row = await db.createCustomer({ name, email: email || null, phone: phone || null, shopify_id: shopify_id || null });
       res.json({ customer: row });
     } catch (e) {
       res.status(400).json({ error: String(e?.message || e) });
