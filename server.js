@@ -398,7 +398,7 @@ async function inventoryAdjustQuantities({ changes, reason = "movement_created" 
 }
 
 // Draft create with Wholesale tag + priceOverride + optional reserveInventoryUntil
-async function draftOrderCreate({ lineItems, reserveHours }) {
+async function draftOrderCreate({ lineItems, reserveHours, customerId = null }) {
   const reserveUntilIso =
     reserveHours && Number(reserveHours) > 0
       ? new Date(Date.now() + Number(reserveHours) * 3600_000).toISOString()
@@ -425,6 +425,8 @@ async function draftOrderCreate({ lineItems, reserveHours }) {
   };
 
   if (reserveUntilIso) input.reserveInventoryUntil = reserveUntilIso;
+  // Link Shopify customer so the order appears in their account and order history
+  if (customerId) input.customerId = customerId;
 
   const data = await shopifyGraphQL(mutation, { input });
   const errs = data.draftOrderCreate.userErrors || [];
@@ -2088,7 +2090,8 @@ async function submitAllocationToShopify({
   notes,
   uploadFileName,
   report,
-  reserveHours = 48
+  reserveHours = 48,
+  customerId = null   // Shopify customer GID — links the order to the customer account
 }) {
   if (!Array.isArray(draftLineItems) || draftLineItems.length === 0) {
     throw new Error("Nothing fulfillable from selected locations. No order created.");
@@ -2113,7 +2116,8 @@ async function submitAllocationToShopify({
 
       const draft = await draftOrderCreate({
         lineItems: chunk,
-        reserveHours: Number(reserveHours)
+        reserveHours: Number(reserveHours),
+        customerId
       });
       const order = await draftOrderComplete(draft.id);
       await waitForFulfillmentOrders(order.id);

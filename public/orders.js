@@ -254,7 +254,32 @@
         body: JSON.stringify({ reserveHours: 48 })
       });
       state.current = resp.order;
-      alert(`Submitted. Shopify order: ${resp.order?.shopify_order_name || resp.order?.shopify_order_id || "(see report)"}`);
+
+      const results = resp.orderResults || [];
+      const totalBlocked = results.reduce((n, r) => n + (r.blockedMoves?.length || 0), 0);
+      const anySettleFailed = results.some(r => r.settlement && !r.settlement.ok);
+      const orderName = resp.order?.shopify_order_name || resp.order?.shopify_order_id || "created";
+
+      if (totalBlocked > 0 || anySettleFailed) {
+        // Fulfillment location assignment didn't fully land — manager needs to know
+        const lines = [
+          `Order ${orderName} was created in Shopify, but there may be a problem with fulfillment location assignment.`,
+          "",
+          totalBlocked > 0
+            ? `⚠ ${totalBlocked} variant-location move${totalBlocked > 1 ? "s were" : " was"} blocked — some items may be assigned to the wrong location in Shopify.`
+            : null,
+          anySettleFailed
+            ? `⚠ Shopify did not confirm all location assignments within 60 seconds.`
+            : null,
+          "",
+          "The packing slip in your email reflects Shopify's actual state and is the ground truth.",
+          "The pick list PDF shows the intended allocation — compare it against the packing slip.",
+          "Check Shopify admin to verify and correct fulfillment locations if needed."
+        ].filter(l => l !== null).join("\n");
+        alert(lines);
+      } else {
+        alert(`Submitted. Shopify order: ${orderName}`);
+      }
     } catch (e) {
       alert("Submit failed: " + e.message);
     } finally {
