@@ -337,6 +337,34 @@ export async function getLatestPreviewSnapshot(orderId) {
   return rows[0] || null;
 }
 
+// Save the allocation snapshot produced at submission time without changing
+// the order status (it's already 'submitted'). Marks all prior snapshots stale
+// so post-submit PDFs (pick list, allocation report) reflect the actual numbers.
+export async function saveSubmitSnapshot(orderId, snapshot) {
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    await client.query(
+      `UPDATE wholesale_order_previews SET is_stale = TRUE WHERE order_id = $1`,
+      [orderId]
+    );
+    const { rows } = await client.query(
+      `INSERT INTO wholesale_order_previews (order_id, snapshot)
+       VALUES ($1, $2)
+       RETURNING id, order_id, snapshot, is_stale, created_at`,
+      [orderId, snapshot]
+    );
+    await client.query("COMMIT");
+    return rows[0];
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
 export async function markSubmitted(orderId, { shopify_order_id, shopify_order_name }) {
   const { rows } = await query(
     `UPDATE wholesale_orders

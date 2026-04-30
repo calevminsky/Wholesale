@@ -1,6 +1,5 @@
 // Pick list PDF for warehouse and store workers.
-// Generates one page per location, an optional combined Bogota+Warehouse page,
-// and a Total page at the end.
+// Page order: Total → Bogota+Warehouse combined → stores → Warehouse → Bogota.
 const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 
 function esc(s) {
@@ -37,7 +36,7 @@ export function buildPickListHtml({ order, snapshot, snapshotIsStale }) {
     lid => perLocAlloc[lid] && Object.keys(perLocAlloc[lid]).length > 0
   );
 
-  // Product name: prefer allocator metadata, then stored name, then handle
+  // Product name lookup
   const metaByHandle = snapshot.metaByHandle || {};
   const allItems = Array.isArray(order.items) ? order.items : [];
   const nameByHandle = {};
@@ -48,7 +47,7 @@ export function buildPickListHtml({ order, snapshot, snapshotIsStale }) {
     if (!nameByHandle[h]) nameByHandle[h] = m.title || h;
   }
 
-  // All handles that appear in any location's allocation, sorted by product name
+  // All handles sorted by product name
   const allHandles = [...new Set(
     activeLocIds.flatMap(lid => Object.keys(perLocAlloc[lid] || {}))
   )].sort((a, b) => (nameByHandle[a] || a).localeCompare(nameByHandle[b] || b));
@@ -60,41 +59,58 @@ export function buildPickListHtml({ order, snapshot, snapshotIsStale }) {
   const dateStr = new Date().toLocaleDateString("en-US", {
     year: "numeric", month: "long", day: "numeric"
   });
-  const ranAt = snapshot.ranAt
-    ? new Date(snapshot.ranAt).toLocaleString("en-US", {
+  const submittedAt = snapshot.submittedAt || snapshot.ranAt;
+  const ranAt = submittedAt
+    ? new Date(submittedAt).toLocaleString("en-US", {
         month: "short", day: "numeric", year: "numeric",
         hour: "numeric", minute: "2-digit"
       })
     : "";
+  const ranLabel = snapshot.submittedAt ? "Submitted" : "Preview";
 
-  // Determine if combined Bogota+Warehouse page is needed
+  // ---- classify locations ----
   const bogotaIds    = activeLocIds.filter(lid => (locationIdToName[lid] || "").toLowerCase().includes("bogota"));
   const warehouseIds = activeLocIds.filter(lid => (locationIdToName[lid] || "").toLowerCase().includes("warehouse"));
-  const showCombined = bogotaIds.length > 0 && warehouseIds.length > 0;
+  const storeIds     = activeLocIds.filter(
+    lid => !bogotaIds.includes(lid) && !warehouseIds.includes(lid)
+  );
   const combinedIds  = [...bogotaIds, ...warehouseIds];
-  // If combined covers every active location, the combined page IS the total — skip a redundant total
-  const combinedIsTotal = showCombined && combinedIds.length === activeLocIds.length;
+  const showCombined = bogotaIds.length > 0 && warehouseIds.length > 0;
 
-  const sections = activeLocIds.map(lid => ({
-    title: locationIdToName[lid] || lid,
-    locIds: [lid]
-  }));
+  // ---- page order: Total → Combined → stores → Warehouse → Bogota ----
+  const sections = [];
 
+  // 1. Total
+  sections.push({ title: "Total — All Locations", locIds: activeLocIds, isTotal: true });
+
+  // 2. Combined Bogota + Warehouse
   if (showCombined) {
-    const combinedTitle = combinedIds.map(id => locationIdToName[id]).join(" + ")
-      + (combinedIsTotal ? "" : " (Combined)");
-    sections.push({ title: combinedTitle, locIds: combinedIds });
+    sections.push({
+      title: combinedIds.map(id => locationIdToName[id]).join(" + "),
+      locIds: combinedIds
+    });
   }
 
-  if (!combinedIsTotal) {
-    sections.push({ title: "Total — All Locations", locIds: activeLocIds });
+  // 3. Store locations (anything that isn't Bogota or Warehouse)
+  for (const lid of storeIds) {
+    sections.push({ title: locationIdToName[lid] || lid, locIds: [lid] });
+  }
+
+  // 4. Warehouse (individual)
+  for (const lid of warehouseIds) {
+    sections.push({ title: locationIdToName[lid] || lid, locIds: [lid] });
+  }
+
+  // 5. Bogota (individual)
+  for (const lid of bogotaIds) {
+    sections.push({ title: locationIdToName[lid] || lid, locIds: [lid] });
   }
 
   const staleBar = snapshotIsStale
-    ? `<div class="stale">⚠ Preview may be outdated — re-run Preview for current availability</div>`
+    ? `<div class="stale">⚠ Snapshot may be outdated — re-run Preview for current availability</div>`
     : "";
 
-  const meta = { customerName, draftName, orderNum, notes, dateStr, ranAt, staleBar };
+  const meta = { customerName, draftName, orderNum, notes, dateStr, ranAt, ranLabel, staleBar };
   const pages = sections.map((sec, i) =>
     renderPage({ ...sec, allHandles, perLocAlloc, nameByHandle, meta, isLast: i === sections.length - 1 })
   );
@@ -111,7 +127,7 @@ ${pages.join("\n")}
 </html>`;
 }
 
-function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta, isLast }) {
+function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta, isLast, isTotal }) {
   // Sum allocation across the given locations
   const pageData = {};
   for (const locId of locIds) {
@@ -132,18 +148,17 @@ function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta
 
   if (!handles.length) {
     return `<div class="${pageClass}">
-      ${renderHeader(title, meta)}
+      ${renderHeader(title, meta, isTotal)}
       <p class="empty">No items allocated to this location.</p>
     </div>`;
   }
 
-  // Only show sizes that have a non-zero qty on this page
   const activeSizes = SIZES.filter(s => handles.some(h => (pageData[h]?.[s] || 0) > 0));
 
   const colTotals = Object.fromEntries(activeSizes.map(s => [s, 0]));
   let grandTotal = 0;
 
-  const rowsHtml = handles.map(handle => {
+  const rowsHtml = handles.map((handle, rowIdx) => {
     const d = pageData[handle] || {};
     let rowTotal = 0;
     const cells = activeSizes.map(s => {
@@ -156,10 +171,11 @@ function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta
 
     const name = nameByHandle[handle] || handle;
     const showHandle = name !== handle;
-    return `<tr>
+    const rowClass = rowIdx % 2 === 0 ? "row-even" : "row-odd";
+    return `<tr class="${rowClass}">
       <td class="pn">
-        <div class="pn-title">${esc(name)}</div>
-        ${showHandle ? `<div class="pn-handle">${esc(handle)}</div>` : ""}
+        <span class="pn-title">${esc(name)}</span>
+        ${showHandle ? `<br><span class="pn-handle">${esc(handle)}</span>` : ""}
       </td>
       ${cells}
       <td class="tot">${rowTotal}</td>
@@ -167,11 +183,11 @@ function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta
   }).join("");
 
   const footCells = activeSizes.map(s =>
-    `<td class="sz">${colTotals[s] || ""}</td>`
+    `<td class="sz foot-sz">${colTotals[s] || ""}</td>`
   ).join("");
 
   return `<div class="${pageClass}">
-    ${renderHeader(title, meta)}
+    ${renderHeader(title, meta, isTotal)}
     <table class="pt">
       <thead>
         <tr>
@@ -182,29 +198,31 @@ function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta
       </thead>
       <tbody>${rowsHtml}</tbody>
       <tfoot>
-        <tr class="tr-foot">
-          <td class="pn">TOTAL</td>
+        <tr>
+          <td class="pn foot-label">TOTAL</td>
           ${footCells}
-          <td class="tot">${grandTotal}</td>
+          <td class="tot foot-sz">${grandTotal}</td>
         </tr>
       </tfoot>
     </table>
   </div>`;
 }
 
-function renderHeader(title, { customerName, draftName, orderNum, notes, dateStr, ranAt, staleBar }) {
+function renderHeader(title, { customerName, draftName, orderNum, notes, dateStr, ranAt, ranLabel, staleBar }, isTotal) {
   const parts = [
     orderNum
       ? `<span class="ml">Order</span> <span class="mv">${esc(orderNum)}</span>`
       : `<span class="ml">Draft</span> <span class="mv">${esc(draftName)}</span>`,
     customerName ? `<span class="ml">Customer</span> <span class="mv">${esc(customerName)}</span>` : null,
     notes ? `<span class="ml">Notes</span> <span class="mv">${esc(notes)}</span>` : null,
-    ranAt ? `<span class="ml muted">Preview</span> <span class="mv muted">${esc(ranAt)}</span>` : null
+    ranAt ? `<span class="ml muted">${esc(ranLabel)}</span> <span class="mv muted">${esc(ranAt)}</span>` : null
   ].filter(Boolean).join(`<span class="sep"> &middot; </span>`);
+
+  const titleClass = isTotal ? "loc-name loc-total" : "loc-name";
 
   return `
     <div class="page-hd">
-      <div class="loc-name">${esc(title)}</div>
+      <div class="${titleClass}">${esc(title)}</div>
       <div class="hd-date">${esc(dateStr)}</div>
     </div>
     ${staleBar}
@@ -226,13 +244,14 @@ body {
 
 .page-hd {
   display: flex; justify-content: space-between; align-items: flex-end;
-  border-bottom: 2.5px solid #111;
-  padding-bottom: 5px; margin-bottom: 7px;
+  border-bottom: 2px solid #111;
+  padding-bottom: 5px; margin-bottom: 6px;
 }
 .loc-name {
-  font-size: 22px; font-weight: 700; letter-spacing: -0.3px;
+  font-size: 20px; font-weight: 700; letter-spacing: -0.2px;
   text-transform: uppercase; line-height: 1;
 }
+.loc-total { color: #1a3a7a; }
 .hd-date { font-size: 10px; color: #666; }
 
 .stale {
@@ -241,43 +260,73 @@ body {
 }
 
 .meta-bar {
-  background: #f5f5f5; border: 1px solid #e0e0e0; border-radius: 3px;
-  padding: 5px 10px; margin-bottom: 10px;
-  font-size: 10.5px; line-height: 1.6; color: #333;
+  background: #f0f4f8; border: 1px solid #d0dae8; border-radius: 2px;
+  padding: 4px 8px; margin-bottom: 8px;
+  font-size: 10px; line-height: 1.6; color: #333;
 }
-.ml  { font-weight: 700; color: #222; margin-right: 3px; }
+.ml  { font-weight: 700; color: #1a3a7a; margin-right: 3px; }
 .mv  { color: #222; }
-.sep { color: #bbb; margin: 0 6px; }
+.sep { color: #bbb; margin: 0 5px; }
 .muted { color: #aaa; }
 
-.pt { width: 100%; border-collapse: collapse; font-size: 11px; }
+/* spreadsheet-style table */
+.pt {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  border: 1.5px solid #9ab;
+}
 
 .pt thead th {
-  background: #111; color: #fff;
-  padding: 5px 8px;
-  font-size: 9.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px;
+  background: #d0dcea;
+  color: #1a2a4a;
+  padding: 5px 7px;
+  font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
+  border: 1px solid #9ab;
+  white-space: nowrap;
 }
 .pt th.pn  { text-align: left; }
-.pt th.sz  { text-align: center; min-width: 30px; }
-.pt th.tot { text-align: right; min-width: 44px; }
-
-.pt tbody tr:nth-child(even) { background: #f9f9f9; }
-.pt tbody tr { page-break-inside: avoid; }
-.pt tbody td { padding: 5px 8px; border-bottom: 1px solid #ebebeb; vertical-align: middle; }
-
-.pt td.sz  { text-align: center; }
-.pt td.tot { text-align: right; font-weight: 600; }
-.zero { color: #ddd; }
-
-.pn-title  { font-size: 12px; font-weight: 600; line-height: 1.2; }
-.pn-handle { font-size: 9px; color: #aaa; margin-top: 1px; }
-
-.pt tfoot .tr-foot td {
-  background: #e8e8e8; font-weight: 700;
-  border-top: 2px solid #111; border-bottom: none;
-  padding: 6px 8px;
-  text-transform: uppercase; letter-spacing: 0.3px; font-size: 10.5px; color: #333;
+.pt th.sz  { text-align: center; min-width: 32px; }
+.pt th.tot {
+  text-align: right; min-width: 44px;
+  background: #c4d8c4; color: #1a3a1a;
 }
 
-.empty { color: #999; font-style: italic; padding: 20px 0; font-size: 11px; }
+.pt tbody td {
+  padding: 4px 7px;
+  border: 1px solid #cdd5dd;
+  vertical-align: middle;
+}
+.row-even td { background: #ffffff; }
+.row-odd  td { background: #f3f6f9; }
+.pt tbody tr { page-break-inside: avoid; }
+
+.pt td.sz  { text-align: center; }
+.pt td.tot {
+  text-align: right; font-weight: 600;
+  background: #eaf2ea;
+  border-left: 1.5px solid #9ab;
+}
+.row-odd td.tot  { background: #e2ede2; }
+.zero { color: #ccc; }
+
+.pn-title  { font-size: 11.5px; font-weight: 600; }
+.pn-handle { font-size: 9px; color: #aaa; }
+
+/* footer total row */
+.pt tfoot td {
+  background: #d0dcea;
+  font-weight: 700; font-size: 11px;
+  border: 1px solid #9ab;
+  border-top: 2px solid #6a8aaa;
+  padding: 5px 7px;
+}
+.pt tfoot .foot-label {
+  text-transform: uppercase; letter-spacing: 0.3px;
+  font-size: 10px; color: #1a2a4a;
+}
+.pt tfoot .foot-sz  { text-align: center; }
+.pt tfoot td.tot    { background: #c4d8c4; color: #1a3a1a; text-align: right; border-left: 1.5px solid #9ab; }
+
+.empty { color: #999; font-style: italic; padding: 16px 0; font-size: 11px; }
 `;

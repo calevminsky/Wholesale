@@ -752,7 +752,8 @@
                     handle: p.handle,
                     unit_price: defaultPrice,
                     size_qty: Object.fromEntries(SIZES.map(s => [s, 0])),
-                    product_name: p.title || null
+                    product_name: p.title || null,
+                    _sources: ["(manual)"]
                   };
                   state.current.items = [...(state.current.items || []), newItem];
                   saveCurrent({ items: state.current.items });
@@ -786,6 +787,36 @@
       const sq = it.size_qty || it.sizeQty || {};
       return SIZES.some((s) => Number(sq[s] || 0) > 0);
     });
+
+    // Source summary — show which files contributed to this order
+    const allSources = [...new Set(
+      (Array.isArray(o.items) ? o.items : []).flatMap(it => {
+        const s = it._sources;
+        return Array.isArray(s) ? s : (s ? [s] : []);
+      })
+    )];
+    if (allSources.length > 0) {
+      const sourceBar = el("div", {
+        style: {
+          display: "flex", flexWrap: "wrap", gap: "6px",
+          marginBottom: "10px", alignItems: "center"
+        }
+      });
+      sourceBar.appendChild(el("span", {
+        style: { fontSize: "11px", color: "#888", marginRight: "2px" }
+      }, "Sources:"));
+      for (const src of allSources) {
+        const chip = el("span", {
+          style: {
+            fontSize: "11px", background: "#e8f0fe", color: "#1a3a7a",
+            border: "1px solid #c0d0ee", borderRadius: "3px",
+            padding: "1px 7px", fontFamily: "monospace"
+          }
+        }, src);
+        sourceBar.appendChild(chip);
+      }
+      itemsBox.appendChild(sourceBar);
+    }
 
     if (!items.length) {
       itemsBox.appendChild(el("p", { class: "muted" }, "No items yet. Drafts created from a customer's filled order form will land here automatically."));
@@ -825,6 +856,25 @@
           nameCell.appendChild(el("div", { style: { fontSize: "11px", color: "#999", whiteSpace: "nowrap" } }, it.handle));
         } else {
           nameCell.appendChild(document.createTextNode(it.handle));
+        }
+        // Source chip(s) — show which file(s) this item came from
+        const itemSources = Array.isArray(it._sources) ? it._sources : (it._sources ? [it._sources] : []);
+        if (itemSources.length > 0) {
+          const chipWrap = el("div", { style: { marginTop: "2px", display: "flex", gap: "3px", flexWrap: "wrap" } });
+          for (const src of itemSources) {
+            const shortSrc = src.length > 24 ? src.slice(0, 22) + "…" : src;
+            chipWrap.appendChild(el("span", {
+              title: src,
+              style: {
+                fontSize: "9px", background: src === "(manual)" ? "#f0fdf4" : "#eef3ff",
+                color: src === "(manual)" ? "#166534" : "#1e40af",
+                border: `1px solid ${src === "(manual)" ? "#bbf7d0" : "#c7d7f9"}`,
+                borderRadius: "2px", padding: "0 4px", lineHeight: "15px",
+                whiteSpace: "nowrap", fontFamily: "monospace"
+              }
+            }, shortSrc));
+          }
+          nameCell.appendChild(chipWrap);
         }
 
         const tds = [

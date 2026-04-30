@@ -118,11 +118,13 @@ export function createOrdersRouter({
           // associated with the line sheet, which is the more important link.
         }
 
+        const uploadSource = req.file.originalname || "upload";
         const items = parsed.items.map((it) => ({
           handle: it.handle,
           unit_price: it.unitPrice,
           size_qty: it.sizeQty,
-          product_name: it.productName || null
+          product_name: it.productName || null,
+          _sources: [uploadSource]
         }));
 
         // If we recognize the export token, diff submitted PPUs against the
@@ -214,6 +216,7 @@ export function createOrdersRouter({
         }
 
         // Merge: add sizes to existing handles, append new handles
+        const mergeSource = req.file.originalname || "upload";
         const mergedItems = Array.isArray(order.items) ? order.items.map(it => ({ ...it })) : [];
         const byHandle = new Map(mergedItems.map(it => [it.handle, it]));
 
@@ -225,12 +228,17 @@ export function createOrdersRouter({
               if (qty > 0) sq[size] = (Number(sq[size] || 0) + qty);
             }
             existing.size_qty = sq;
+            // Track this file as an additional source
+            const srcs = Array.isArray(existing._sources) ? existing._sources : (existing._sources ? [existing._sources] : []);
+            if (!srcs.includes(mergeSource)) srcs.push(mergeSource);
+            existing._sources = srcs;
           } else {
             const item = {
               handle: newIt.handle,
               unit_price: newIt.unitPrice,
               size_qty: newIt.sizeQty || {},
-              product_name: newIt.productName || null
+              product_name: newIt.productName || null,
+              _sources: [mergeSource]
             };
             mergedItems.push(item);
             byHandle.set(newIt.handle, item);
@@ -486,6 +494,23 @@ export function createOrdersRouter({
         shopify_order_id: first?.orderId || null,
         shopify_order_name: first?.orderName || null
       });
+
+      // Save the submit-time allocation as the canonical snapshot so all
+      // post-submit documents (pick list, allocation report) match the actual
+      // Shopify order — not the preview that may have been run earlier.
+      try {
+        await db.saveSubmitSnapshot(id, {
+          report: allocResult.report,
+          locationIdToName: allocResult.locationIdToName,
+          locationIdsInOrder: allocResult.locationIdsInOrder,
+          metaByHandle: allocResult.metaByHandle,
+          customer: customerName,
+          notes: order.notes || "",
+          uploadFileName: order.source_filename || `${(order.name || "draft").replace(/\W+/g, "_")}.xlsx`,
+          ranAt: new Date().toISOString(),
+          submittedAt: new Date().toISOString()
+        });
+      } catch { /* non-fatal — order is already submitted */ }
 
       // Send the same email the legacy /api/import sends. If SendGrid isn't
       // configured this is a no-op.
