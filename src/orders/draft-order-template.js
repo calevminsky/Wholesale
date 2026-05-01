@@ -183,6 +183,7 @@ export function buildDraftOrderHtml({ order, snapshot }) {
 
     .sheet-tbl { width: 100%; border-collapse: collapse; table-layout: fixed; }
     .sheet-tbl thead { display: table-header-group; }
+    .sheet-tbl tfoot { display: table-row-group; }
     .sheet-tbl th {
       background: #fafafa; border-bottom: 1.5px solid #1a1a1a;
       padding: 4px; text-align: left;
