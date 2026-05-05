@@ -520,6 +520,8 @@ function buildCurrentAllocationFromFOs(fos) {
   const byVariant = new Map();
 
   for (const fo of fos) {
+    // Only OPEN fulfillment orders can be moved; skip closed/cancelled/in-progress
+    if (fo.status !== "OPEN") continue;
     const locId = fo.assignedLocation?.location?.id || null;
     if (!locId) continue;
 
@@ -2121,14 +2123,34 @@ async function submitAllocationToShopify({
       });
       const order = await draftOrderComplete(draft.id);
       await waitForFulfillmentOrders(order.id);
-      await new Promise((r) => setTimeout(r, 1000));
+      await new Promise((r) => setTimeout(r, 2000));
 
-      const rebalance = await enforceFulfillmentLocationsRebalance({
+      let rebalance = await enforceFulfillmentLocationsRebalance({
         orderId: order.id,
         allocationPlan: chunkAllocationPlan,
         allowedLocationIds,
         drainOrderLocationIds: allowedLocationIds
       });
+
+      if (rebalance.blocked.length > 0) {
+        console.warn(`[rebalance] ${rebalance.blocked.length} blocked moves on first pass for order ${order.id} — retrying in 5s`);
+        await new Promise((r) => setTimeout(r, 5000));
+        const retry = await enforceFulfillmentLocationsRebalance({
+          orderId: order.id,
+          allocationPlan: chunkAllocationPlan,
+          allowedLocationIds,
+          drainOrderLocationIds: allowedLocationIds
+        });
+        rebalance = {
+          moveLog: [...rebalance.moveLog, ...retry.moveLog],
+          blocked: retry.blocked
+        };
+        if (rebalance.blocked.length > 0) {
+          console.error(`[rebalance] ${rebalance.blocked.length} moves still blocked after retry for order ${order.id}:`,
+            rebalance.blocked.map(b => `${b.reason} — variant ${b.variantId} → loc ${b.toLocationId} qty ${b.blockedQty ?? b.attemptedQty}`).join("; ")
+          );
+        }
+      }
 
       const settled = await waitForFulfillmentSettlement({
         orderId: order.id,
