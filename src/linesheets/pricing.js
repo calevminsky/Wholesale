@@ -1,6 +1,6 @@
 // Resolve per-product effective pricing from a pricing JSONB block:
 // {
-//   default_mode: "pct_off_compare_at" | "pct_off_current" | "fixed",
+//   default_mode: "pct_off_compare_at" | "pct_off_current" | "fixed" | "pct_of_higher",
 //   default_value: number,
 //   additional_discount_pct: number,   // applied on top of default/override
 //   overrides: { "gid://shopify/Product/123": 42.00, ... }
@@ -34,6 +34,13 @@ export function computeSuggestedPrice(product, pricing) {
     }
     case "fixed":
       return round2(val);
+    case "pct_of_higher": {
+      // Price = val% of whichever is higher: compare_at_price or unit_cost
+      const cost = Number(product.unit_cost || 0);
+      const base = Math.max(compareAt > 0 ? compareAt : current, cost);
+      if (base <= 0) return null;
+      return round2(base * (val / 100));
+    }
     default:
       return null;
   }

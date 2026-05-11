@@ -81,7 +81,7 @@ export async function buildRenderedPayload(sheet, { shopifyGraphQL, liveCheck = 
     try {
       const ids = products.map((p) => p.product_id);
       const liveMap = await livecheckProducts(ids, shopifyGraphQL, {
-        includeCost: opts.layout === "internal"
+        includeCost: opts.layout === "internal" || pricing.default_mode === "pct_of_higher"
       });
       const staleBehavior = opts.stale_behavior || "drop";
       const filtered = [];

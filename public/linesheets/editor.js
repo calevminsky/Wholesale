@@ -1020,6 +1020,7 @@
     const count = Object.keys(state.pricing.overrides || {}).length;
     const label = m === "fixed" ? `Fixed $${v}` :
                   m === "pct_off_current" ? `${v}% off current` :
+                  m === "pct_of_higher" ? `${v}% of higher of MSRP or cost` :
                   `${v}% off MSRP`;
     const addLabel = add > 0 ? ` · then ${add}% extra off` : "";
     return `Pricing: ${label}${addLabel}${count ? ` · ${count} overrides` : ""}`;

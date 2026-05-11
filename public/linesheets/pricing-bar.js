@@ -28,7 +28,8 @@
     const modeSel = el("select", null, [
       el("option", { value: "pct_off_compare_at" }, "% off MSRP"),
       el("option", { value: "pct_off_current" }, "% off current sale price"),
-      el("option", { value: "fixed" }, "fixed $")
+      el("option", { value: "fixed" }, "fixed $"),
+      el("option", { value: "pct_of_higher" }, "% of higher of MSRP or cost")
     ]);
     modeSel.value = mode;
     modeSel.addEventListener("change", () => { pricing.default_mode = modeSel.value; onChange(); });
