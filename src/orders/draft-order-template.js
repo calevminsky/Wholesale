@@ -145,7 +145,8 @@ export function buildDraftOrderHtml({ order, snapshot }) {
     try {
       ranAtStr = new Date(snapshot.ranAt).toLocaleString("en-US", {
         year: "numeric", month: "short", day: "numeric",
-        hour: "numeric", minute: "2-digit"
+        hour: "numeric", minute: "2-digit",
+        timeZone: "America/New_York", timeZoneName: "short"
       });
     } catch { /* ignore */ }
   }
