@@ -39,7 +39,7 @@ export function computeSuggestedPrice(product, pricing) {
       const cost = Number(product.unit_cost || 0);
       const base = Math.max(compareAt > 0 ? compareAt : current, cost);
       if (base <= 0) return null;
-      return round2(base * (val / 100));
+      return Math.round(base * (val / 100));
     }
     default:
       return null;
