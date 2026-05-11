@@ -35,11 +35,13 @@ export function computeSuggestedPrice(product, pricing) {
     case "fixed":
       return round2(val);
     case "pct_of_higher": {
-      // Price = val% of whichever is higher: compare_at_price or unit_cost
+      // Price = higher of (val% of compare_at) vs cost — never drops below cost
       const cost = Number(product.unit_cost || 0);
-      const base = Math.max(compareAt > 0 ? compareAt : current, cost);
+      const msrpBase = compareAt > 0 ? compareAt : current;
+      const pctOfMsrp = msrpBase * (val / 100);
+      const base = Math.max(pctOfMsrp, cost);
       if (base <= 0) return null;
-      return Math.round(base * (val / 100));
+      return Math.round(base);
     }
     default:
       return null;
