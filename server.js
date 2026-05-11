@@ -1749,7 +1749,7 @@ app.get("/api/products/search", async (req, res) => {
     const q = String(req.query.q || "").trim();
     if (q.length < 2) return res.json({ products: [] });
 
-    const limit = Math.min(20, Math.max(1, Number(req.query.limit || 12)));
+    const limit = Math.min(100, Math.max(1, Number(req.query.limit || 50)));
 
     const gql = `
       query SearchProducts($query: String!, $first: Int!) {
