@@ -7,6 +7,7 @@ import { runFilter, loadProductsByIds } from "./query.js";
 import { applyPricing, defaultPricing } from "./pricing.js";
 import { buildRenderedPayload, renderHtml } from "./render-pdf.js";
 import { resolveLineSheetReferences } from "./linesheet-filter.js";
+import { livecheckProducts } from "./shopify-livecheck.js";
 import { buildOrderFormXlsx } from "./order-form-xlsx.js";
 import { buildExportItems, createExport } from "./exports-db.js";
 import * as customersDb from "../customers/db.js";
@@ -129,7 +130,7 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
         pricing: body.pricing || defaultPricing(),
         display_opts: body.display_opts || {}
       };
-      res.json(await computePreview(sheet));
+      res.json(await computePreview(sheet, { shopifyGraphQL }));
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
@@ -198,7 +199,7 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     try {
       const sheet = await db.getLineSheet(id);
       if (!sheet) return res.status(404).json({ error: "Not found" });
-      const preview = await computePreview(sheet);
+      const preview = await computePreview(sheet, { shopifyGraphQL });
       res.json({ linesheet: sheet, ...preview });
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
@@ -386,7 +387,7 @@ async function distinctLocations() {
   return rows;
 }
 
-async function computePreview(sheet) {
+async function computePreview(sheet, { shopifyGraphQL } = {}) {
   const rawTree = sheet.filter_tree || { include: [], globals: [] };
   const pricing = { ...defaultPricing(), ...(sheet.pricing || {}) };
   const opts = sheet.display_opts || {};
@@ -410,6 +411,20 @@ async function computePreview(sheet) {
   for (const p of pinned) {
     if (matchedIds.has(p.product_id)) continue;
     all.push({ ...p, source: "pinned" });
+  }
+
+  // Fetch cost from Shopify when the pricing mode requires it
+  if (pricing.default_mode === "pct_of_higher" && shopifyGraphQL) {
+    try {
+      const ids = all.map((p) => p.product_id);
+      const liveMap = await livecheckProducts(ids, shopifyGraphQL, { includeCost: true });
+      for (const p of all) {
+        const live = liveMap.get(p.product_id);
+        if (live && Number.isFinite(live.unit_cost) && live.unit_cost > 0) p.unit_cost = live.unit_cost;
+      }
+    } catch (err) {
+      console.warn("cost fetch for preview failed:", err?.message || err);
+    }
   }
 
   const priced = applyPricing(all, pricing);
