@@ -1763,14 +1763,6 @@ app.get("/api/products/search", async (req, res) => {
               minVariantPrice { amount currencyCode }
             }
             options { name values }
-            variants(first: 100) {
-              nodes {
-                id
-                title
-                price
-                selectedOptions { name value }
-              }
-            }
           }
         }
       }
@@ -1780,17 +1772,14 @@ app.get("/api/products/search", async (req, res) => {
     const raw = data?.products?.nodes || [];
 
     const products = raw.map(p => {
-      // Detect available sizes from variant selectedOptions or variant titles
+      // Detect available sizes from product options (no need to fetch all variants)
       const sizesFound = new Set();
-      for (const v of p.variants?.nodes || []) {
-        for (const opt of v.selectedOptions || []) {
-          if (String(opt.name || "").toLowerCase().includes("size") && SIZES.includes(opt.value)) {
-            sizesFound.add(opt.value);
+      for (const opt of p.options || []) {
+        if (String(opt.name || "").toLowerCase().includes("size")) {
+          for (const v of opt.values || []) {
+            if (SIZES.includes(v)) sizesFound.add(v);
           }
         }
-        // Fallback: match variant title directly
-        const vt = String(v.title || "").trim();
-        if (SIZES.includes(vt)) sizesFound.add(vt);
       }
       const availableSizes = SIZES.filter(s => sizesFound.has(s));
       const retailPrice = Number(p.priceRangeV2?.minVariantPrice?.amount || 0);
