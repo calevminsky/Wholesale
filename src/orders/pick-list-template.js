@@ -36,15 +36,17 @@ export function buildPickListHtml({ order, snapshot, snapshotIsStale }) {
     lid => perLocAlloc[lid] && Object.keys(perLocAlloc[lid]).length > 0
   );
 
-  // Product name lookup
+  // Product name / image lookup
   const metaByHandle = snapshot.metaByHandle || {};
   const allItems = Array.isArray(order.items) ? order.items : [];
   const nameByHandle = {};
+  const imageByHandle = {};
   for (const it of allItems) {
     nameByHandle[it.handle] = metaByHandle[it.handle]?.title || it.product_name || it.handle;
   }
   for (const [h, m] of Object.entries(metaByHandle)) {
     if (!nameByHandle[h]) nameByHandle[h] = m.title || h;
+    if (m.imageUrl) imageByHandle[h] = m.imageUrl;
   }
 
   // All handles sorted by product name
@@ -112,7 +114,7 @@ export function buildPickListHtml({ order, snapshot, snapshotIsStale }) {
 
   const meta = { customerName, draftName, orderNum, notes, dateStr, ranAt, ranLabel, staleBar };
   const pages = sections.map((sec, i) =>
-    renderPage({ ...sec, allHandles, perLocAlloc, nameByHandle, meta, isLast: i === sections.length - 1 })
+    renderPage({ ...sec, allHandles, perLocAlloc, nameByHandle, imageByHandle, meta, isLast: i === sections.length - 1 })
   );
 
   return `<!DOCTYPE html>
@@ -127,7 +129,7 @@ ${pages.join("\n")}
 </html>`;
 }
 
-function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta, isLast, isTotal }) {
+function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, imageByHandle, meta, isLast, isTotal }) {
   // Sum allocation across the given locations
   const pageData = {};
   for (const locId of locIds) {
@@ -154,6 +156,7 @@ function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta
   }
 
   const activeSizes = SIZES.filter(s => handles.some(h => (pageData[h]?.[s] || 0) > 0));
+  const hasImages = handles.some(h => imageByHandle?.[h]);
 
   const colTotals = Object.fromEntries(activeSizes.map(s => [s, 0]));
   let grandTotal = 0;
@@ -172,7 +175,12 @@ function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta
     const name = nameByHandle[handle] || handle;
     const showHandle = name !== handle;
     const rowClass = rowIdx % 2 === 0 ? "row-even" : "row-odd";
+    const imgUrl = imageByHandle?.[handle];
+    const imgCell = hasImages
+      ? `<td class="img-cell">${imgUrl ? `<img src="${esc(imgUrl)}?width=100" alt="">` : ""}</td>`
+      : "";
     return `<tr class="${rowClass}">
+      ${imgCell}
       <td class="pn">
         <span class="pn-title">${esc(name)}</span>
         ${showHandle ? `<br><span class="pn-handle">${esc(handle)}</span>` : ""}
@@ -186,11 +194,15 @@ function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta
     `<td class="sz foot-sz">${colTotals[s] || ""}</td>`
   ).join("");
 
+  const imgHeader = hasImages ? `<th class="img-cell"></th>` : "";
+  const imgFooter = hasImages ? `<td class="img-cell"></td>` : "";
+
   return `<div class="${pageClass}">
     ${renderHeader(title, meta, isTotal)}
     <table class="pt">
       <thead>
         <tr>
+          ${imgHeader}
           <th class="pn">Product</th>
           ${activeSizes.map(s => `<th class="sz">${esc(s)}</th>`).join("")}
           <th class="tot">Total</th>
@@ -199,6 +211,7 @@ function renderPage({ title, locIds, allHandles, perLocAlloc, nameByHandle, meta
       <tbody>${rowsHtml}</tbody>
       <tfoot>
         <tr>
+          ${imgFooter}
           <td class="pn foot-label">TOTAL</td>
           ${footCells}
           <td class="tot foot-sz">${grandTotal}</td>
@@ -312,6 +325,9 @@ body {
 
 .pn-title  { font-size: 11.5px; font-weight: 600; }
 .pn-handle { font-size: 9px; color: #aaa; }
+
+.img-cell { width: 54px; padding: 3px 4px; text-align: center; border: 1px solid #cdd5dd; }
+.img-cell img { width: 46px; height: 46px; object-fit: contain; display: block; margin: 0 auto; }
 
 /* footer total row */
 .pt tfoot td {
