@@ -799,7 +799,7 @@
       td.innerHTML = "";
       const inp = el("input", {
         type: "number",
-        step: "0.01",
+        step: "1",
         min: "0",
         class: "ls-price-input",
         value: String(p.effective_price ?? 0)
@@ -817,7 +817,8 @@
           const n = Number(raw);
           if (Number.isFinite(n) && n >= 0) {
             state.pricing.overrides = state.pricing.overrides || {};
-            state.pricing.overrides[p.product_id] = Math.round(n * 100) / 100;
+            // Wholesale prices are whole dollars — round so they end in .00.
+            state.pricing.overrides[p.product_id] = Math.round(n);
           }
         }
         debouncePreview();

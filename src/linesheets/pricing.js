@@ -10,9 +10,10 @@ export function defaultPricing() {
   return { default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, overrides: {} };
 }
 
-function round2(n) {
+// Wholesale prices are always whole dollars (end in .00) — no .99 endings.
+function roundWhole(n) {
   if (!Number.isFinite(n)) return 0;
-  return Math.round(n * 100) / 100;
+  return Math.round(n);
 }
 
 export function computeSuggestedPrice(product, pricing) {
@@ -26,14 +27,14 @@ export function computeSuggestedPrice(product, pricing) {
   switch (mode) {
     case "pct_off_compare_at": {
       const base = compareAt > 0 ? compareAt : current;
-      return round2(base * (1 - val / 100));
+      return roundWhole(base * (1 - val / 100));
     }
     case "pct_off_current": {
       const base = current > 0 ? current : compareAt;
-      return round2(base * (1 - val / 100));
+      return roundWhole(base * (1 - val / 100));
     }
     case "fixed":
-      return round2(val);
+      return roundWhole(val);
     case "pct_of_higher": {
       // Price = higher of (val% of compare_at) vs cost — never drops below cost
       const cost = Number(product.unit_cost || 0);
@@ -56,9 +57,9 @@ export function applyPricing(products, pricing) {
     const suggested = computeSuggestedPrice(p, pricing);
     const override = overrides[p.product_id];
     const hasOverride = override !== undefined && override !== null && override !== "";
-    const baseWholesale = hasOverride ? round2(Number(override)) : suggested;
+    const baseWholesale = hasOverride ? roundWhole(Number(override)) : suggested;
     const finalPrice = hasAdditional && Number.isFinite(baseWholesale)
-      ? round2(baseWholesale * (1 - addPct / 100))
+      ? roundWhole(baseWholesale * (1 - addPct / 100))
       : baseWholesale;
     return {
       ...p,
