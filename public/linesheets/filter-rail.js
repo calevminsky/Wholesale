@@ -56,7 +56,8 @@
       priceMax: null,
       hasInventory: null,
       hasImage: null,
-      stockMin: null
+      stockMin: null,
+      markdown: null
     };
 
     if (!tree || typeof tree !== "object") return out;
@@ -99,6 +100,15 @@
       }
       if (c.field === "has_inventory") { out.hasInventory = !!c.value; continue; }
       if (c.field === "has_image")     { out.hasImage     = !!c.value; continue; }
+      if (c.field === "markdown") {
+        if (c.op !== "=") {
+          out.simple = false;
+          out.complexReason = `Markdown uses op "${c.op}"`;
+          return out;
+        }
+        out.markdown = c.value != null ? String(c.value) : null;
+        continue;
+      }
       if (c.field === "inventory_min") {
         const n = Number(c.value);
         if (Number.isFinite(n) && n >= 0) out.stockMin = n;
@@ -125,6 +135,9 @@
       conditions.push({ field: "price", op: ">=", value: simple.priceMin });
     } else if (simple.priceMax != null) {
       conditions.push({ field: "price", op: "<=", value: simple.priceMax });
+    }
+    if (simple.markdown) {
+      conditions.push({ field: "markdown", op: "=", value: simple.markdown });
     }
     const globals = [];
     if (simple.hasInventory) globals.push({ field: "has_inventory", op: "=", value: true });
@@ -226,6 +239,12 @@
     root.appendChild(renderPriceSection(compiled, (next) => {
       compiled.priceMin = next.priceMin;
       compiled.priceMax = next.priceMax;
+      applyTree(tree, compiled, onChange);
+    }));
+
+    // Markdown status.
+    root.appendChild(renderMarkdownSection(compiled, (next) => {
+      compiled.markdown = next;
       applyTree(tree, compiled, onChange);
     }));
 
@@ -438,6 +457,38 @@
       el("span", { class: "muted", style: "padding:0 4px;" }, "to"),
       maxInp
     ]));
+    sec.appendChild(body);
+    return sec;
+  }
+
+  // Markdown options. "" = no filter. "any"/"none" use all three markdown
+  // signals (price < MSRP, custom.sale set, custom.last_marked_down_at set);
+  // the numeric thresholds match on discount off MSRP.
+  const MARKDOWN_OPTIONS = [
+    { value: "",     label: "All products" },
+    { value: "any",  label: "Marked down (any)" },
+    { value: "10",   label: "10% or more off" },
+    { value: "25",   label: "25% or more off" },
+    { value: "40",   label: "40% or more off" },
+    { value: "50",   label: "50% or more off" },
+    { value: "none", label: "Not marked down" }
+  ];
+
+  function renderMarkdownSection(compiled, onChange) {
+    const sec = el("div", { class: "ls-rail-sec" });
+    const current = compiled.markdown || "";
+    const chosen = MARKDOWN_OPTIONS.find((o) => o.value === current);
+    sec.appendChild(el("div", { class: "ls-rail-sec-hd" }, [
+      el("span", { class: "ls-rail-sec-title" }, "Markdown"),
+      el("span", { class: "ls-rail-sec-count" }, current ? " (set)" : "")
+    ]));
+    const body = el("div", { class: "ls-rail-sec-body" });
+    const sel = el("select", { class: "ls-rail-num", style: "width:100%;" },
+      MARKDOWN_OPTIONS.map((o) => el("option", { value: o.value }, o.label))
+    );
+    sel.value = chosen ? chosen.value : "";
+    sel.addEventListener("change", () => onChange(sel.value || null));
+    body.appendChild(sel);
     sec.appendChild(body);
     return sec;
   }

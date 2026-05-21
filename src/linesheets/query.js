@@ -12,6 +12,67 @@ import { query } from "../pg.js";
 
 const SIZE_BUCKETS = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 
+// --- Markdown metafield detection -------------------------------------------
+// The `markdown` filter treats a product as marked down if ANY of:
+//   1. its price is below its compare-at (MSRP)         — always available
+//   2. the custom.sale metafield is not blank           — needs a column
+//   3. the custom.last_marked_down_at metafield is set  — needs a column
+// Signals 2 & 3 depend on those Shopify metafields being synced into
+// `inventory_items` as columns. Sync tools name such columns inconsistently,
+// so we probe a list of likely names; an env var can override. If no column
+// is found the markdown filter still works on signal 1 alone.
+// `sale_value` / `sale_set_at` are how this reporting DB names the
+// custom.sale and custom.last_marked_down_at metafields; the rest are
+// fallbacks for other sync naming conventions.
+const SALE_COL_CANDIDATES = [
+  process.env.MARKDOWN_SALE_COLUMN,
+  "sale_value",
+  "custom_sale", "mf_custom_sale", "metafield_custom_sale", "metafields_custom_sale"
+].filter(Boolean);
+const MARKED_DOWN_COL_CANDIDATES = [
+  process.env.MARKDOWN_MARKED_DOWN_COLUMN,
+  "sale_set_at",
+  "custom_last_marked_down_at", "mf_custom_last_marked_down_at",
+  "metafield_custom_last_marked_down_at", "metafields_custom_last_marked_down_at"
+].filter(Boolean);
+
+function pickColumn(candidates, columns) {
+  if (!(columns instanceof Set)) return null;
+  for (const name of candidates) if (columns.has(name)) return name;
+  return null;
+}
+
+// SQL fragment (boolean): TRUE when a metafield column holds a non-blank value.
+// Cast to text so it works regardless of the column's stored type.
+function metafieldNotBlank(col) {
+  return `(ii.${col} IS NOT NULL`
+    + ` AND btrim(ii.${col}::text) <> ''`
+    + ` AND lower(btrim(ii.${col}::text)) NOT IN ('[]','{}','null','false','0'))`;
+}
+
+// One-time (cached) probe of inventory_items' columns, used for markdown
+// metafield detection. Failure degrades to an empty set, not an error.
+let _columnsPromise = null;
+export async function getInventoryColumns() {
+  if (!_columnsPromise) {
+    _columnsPromise = query(
+      `SELECT column_name FROM information_schema.columns
+        WHERE table_name = 'inventory_items'`
+    ).then((r) => new Set(r.rows.map((x) => x.column_name)))
+     .catch(() => new Set());
+  }
+  return _columnsPromise;
+}
+
+// Resolve which metafield columns back the markdown filter, for diagnostics.
+export async function detectMarkdownColumns() {
+  const columns = await getInventoryColumns();
+  return {
+    sale: pickColumn(SALE_COL_CANDIDATES, columns),
+    markedDown: pickColumn(MARKED_DOWN_COL_CANDIDATES, columns)
+  };
+}
+
 // Build a safe parameter counter.
 function ctx() {
   return { params: [], push(v) { this.params.push(v); return `$${this.params.length}`; } };
@@ -71,6 +132,27 @@ function emitCondition(cond, c) {
       if (value === "full_price") return `min_price >= min_compare_at`;
       if (value === "off_price") return `min_price <  min_compare_at`;
       return "TRUE";
+    }
+
+    case "markdown": {
+      // A product is "marked down" if ANY of: price below MSRP, the
+      // custom.sale metafield set, or custom.last_marked_down_at set. The two
+      // metafield signals come from has_sale_mf / has_marked_down_mf, which
+      // compileFilterTree emits as constant FALSE when those columns aren't
+      // present — so this expression is always valid.
+      const anyMarkdown =
+        `((min_compare_at IS NOT NULL AND min_compare_at > 0 AND min_price < min_compare_at)`
+        + ` OR has_sale_mf OR has_marked_down_mf)`;
+      const v = String(value == null ? "" : value);
+      if (v === "" || v === "any") return anyMarkdown;
+      if (v === "none") return `NOT ${anyMarkdown}`;
+      // A numeric value is a minimum discount-off-MSRP percentage.
+      const pct = Number(v);
+      if (Number.isFinite(pct) && pct > 0) {
+        return `(min_compare_at IS NOT NULL AND min_compare_at > 0`
+          + ` AND min_price <= min_compare_at * ${c.push(1 - pct / 100)})`;
+      }
+      return anyMarkdown;
     }
 
     case "price": {
@@ -158,6 +240,21 @@ export function compileFilterTree(tree, opts = {}) {
   const useAtsOverride = Array.isArray(opts.atsLocations) && opts.atsLocations.length > 0;
   const filterLocsParam = c.push(filterLocations || []);
 
+  // Markdown metafield columns (if synced into inventory_items). When absent,
+  // the per-variant flags fall back to FALSE so the `markdown` filter still
+  // works on the price-vs-MSRP signal alone.
+  const columns = opts.inventoryColumns instanceof Set ? opts.inventoryColumns : new Set();
+  const mdSaleCol = pickColumn(SALE_COL_CANDIDATES, columns);
+  const mdMarkedCol = pickColumn(MARKED_DOWN_COL_CANDIDATES, columns);
+  const mdSaleFlagSelect = mdSaleCol
+    ? `${metafieldNotBlank(mdSaleCol)} AS md_sale_flag,`
+    : `FALSE AS md_sale_flag,`;
+  const mdMarkedFlagSelect = mdMarkedCol
+    ? `${metafieldNotBlank(mdMarkedCol)} AS md_marked_flag,`
+    : `FALSE AS md_marked_flag,`;
+  const mdGroupBy =
+    (mdSaleCol ? `, ii.${mdSaleCol}` : "") + (mdMarkedCol ? `, ii.${mdMarkedCol}` : "");
+
   const includeExpr = include.length === 0
     ? "TRUE"
     : `(${include.map((g) => emitGroup(g, c)).join(" OR ")})`;
@@ -215,6 +312,9 @@ export function compileFilterTree(tree, opts = {}) {
               WHERE t ~* '^length:[[:space:]]*[0-9]+'
               LIMIT 1
            ) sub) AS length_val,
+        -- Markdown metafield flags (FALSE when the columns aren't synced).
+        ${mdSaleFlagSelect}
+        ${mdMarkedFlagSelect}
         ${useAtsOverride
           ? `COALESCE(SUM(il.available) FILTER (WHERE il.location_id = ANY(${filterLocsParam}::text[])), 0)::int AS variant_total_inv,`
           : `COALESCE(SUM(il.available), 0)::int AS variant_total_inv,`}
@@ -224,7 +324,7 @@ export function compileFilterTree(tree, opts = {}) {
       WHERE UPPER(COALESCE(ii.product_status, 'ACTIVE')) = 'ACTIVE'
       GROUP BY ii.variant_id, ii.product_id, ii.variant_title, ii.product_title,
                ii.style_name, ii.product_type, ii.product_group, ii.product_image,
-               ii.season, ii.class, ii.tags, ii.price, ii.compare_at_price
+               ii.season, ii.class, ii.tags, ii.price, ii.compare_at_price${mdGroupBy}
     ),
     size_agg AS (
       SELECT product_id,
@@ -255,7 +355,9 @@ export function compileFilterTree(tree, opts = {}) {
         MIN(vi.compare_at_price) AS min_compare_at,
         sm.inventory_by_size  AS inventory_by_size,
         SUM(vi.variant_total_inv)::int    AS total_inventory,
-        SUM(vi.variant_filtered_inv)::int AS filtered_inventory
+        SUM(vi.variant_filtered_inv)::int AS filtered_inventory,
+        bool_or(vi.md_sale_flag)   AS has_sale_mf,
+        bool_or(vi.md_marked_flag) AS has_marked_down_mf
       FROM variant_inv vi
       LEFT JOIN size_map sm USING (product_id)
       GROUP BY vi.product_id, sm.inventory_by_size
@@ -272,7 +374,11 @@ export function compileFilterTree(tree, opts = {}) {
 
 // Run a filter tree and return aggregated product rows.
 export async function runFilter(tree, opts = {}) {
-  const { sql, params } = compileFilterTree(tree || { include: [], globals: [] }, opts);
+  const inventoryColumns = await getInventoryColumns();
+  const { sql, params } = compileFilterTree(
+    tree || { include: [], globals: [] },
+    { ...opts, inventoryColumns }
+  );
   const { rows } = await query(sql, params);
   return rows.map(normalizeRow);
 }
@@ -280,10 +386,11 @@ export async function runFilter(tree, opts = {}) {
 // Load extra products by explicit product_id (used for pins).
 export async function loadProductsByIds(productIds, opts = {}) {
   if (!productIds || productIds.length === 0) return [];
+  const inventoryColumns = await getInventoryColumns();
   const { sql, params } = compileFilterTree({
     include: [{ conditions: [{ field: "product", op: "any_of", value: productIds }] }],
     globals: []
-  }, opts);
+  }, { ...opts, inventoryColumns });
   const { rows } = await query(sql, params);
   return rows.map(normalizeRow);
 }
@@ -313,6 +420,7 @@ function normalizeRow(r) {
     compare_at_price: num(r.min_compare_at),
     current_price: num(r.min_price),
     price_tier: (num(r.min_price) < num(r.min_compare_at)) ? "off_price" : "full_price",
+    is_markdown: (num(r.min_price) < num(r.min_compare_at)) || !!r.has_sale_mf || !!r.has_marked_down_mf,
     inventory_by_size: sized,
     inventory_total: Number(r.total_inventory || 0)
   };

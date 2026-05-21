@@ -3,7 +3,7 @@
 import { Router } from "express";
 import { pgAvailable, query } from "../pg.js";
 import * as db from "./db.js";
-import { runFilter, loadProductsByIds } from "./query.js";
+import { runFilter, loadProductsByIds, detectMarkdownColumns } from "./query.js";
 import { applyPricing, defaultPricing } from "./pricing.js";
 import { buildRenderedPayload, renderHtml } from "./render-pdf.js";
 import { resolveLineSheetReferences } from "./linesheet-filter.js";
@@ -144,14 +144,32 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
       catch (e) { warnings.push(`${label}: ${e?.message || e}`); return null; }
     };
     try {
-      const [seasons, classes, types, lengths, locations, linesheets] = await Promise.all([
+      const [seasons, classes, types, lengths, locations, linesheets, markdownCols] = await Promise.all([
         safe("seasons",       () => distinct("season")),
         safe("classes",       () => distinct("class")),
         safe("product_types", () => distinct("product_type")),
         safe("lengths",       () => distinctLengths()),
         safe("locations",     () => distinctLocations()),
-        safe("linesheets",    () => db.listLineSheets({}))
+        safe("linesheets",    () => db.listLineSheets({})),
+        safe("markdown",      () => detectMarkdownColumns())
       ]);
+
+      // Which markdown signals are actually backed by data. The price-vs-MSRP
+      // signal is always available; the two metafield signals depend on those
+      // columns being synced into inventory_items.
+      const markdown = {
+        price: true,
+        sale_metafield: !!(markdownCols && markdownCols.sale),
+        marked_down_metafield: !!(markdownCols && markdownCols.markedDown)
+      };
+      if (!markdown.sale_metafield && !markdown.marked_down_metafield) {
+        warnings.push(
+          "markdown: custom.sale / custom.last_marked_down_at metafields not found " +
+          "in inventory_items — the Markdown filter uses price vs. MSRP only. " +
+          "Set MARKDOWN_SALE_COLUMN / MARKDOWN_MARKED_DOWN_COLUMN if those columns " +
+          "exist under different names."
+        );
+      }
 
       // Trim line sheet rows to just what the filter UI needs.
       const linesheetSummaries = (linesheets || []).map((l) => ({
@@ -170,6 +188,7 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
         lengths:       (lengths || []).filter(Boolean),
         locations:     locations || [],
         linesheets:    linesheetSummaries,
+        markdown,
         warnings
       });
     } catch (e) {

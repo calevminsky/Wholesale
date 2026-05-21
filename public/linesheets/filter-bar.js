@@ -18,6 +18,14 @@
       { value: "full_price",  label: "Full price" },
       { value: "off_price",   label: "Off price" }
     ] },
+    markdown:      { label: "Markdown",        type: "single", defaultOp: "=", options: [
+      { value: "any",  label: "Marked down (any)" },
+      { value: "10",   label: "10% or more off" },
+      { value: "25",   label: "25% or more off" },
+      { value: "40",   label: "40% or more off" },
+      { value: "50",   label: "50% or more off" },
+      { value: "none", label: "Not marked down" }
+    ] },
     price:         { label: "Price",           type: "num-range", defaultOp: "between" },
     length:        { label: "Length",          type: "num-cmp",   defaultOp: ">=" },
     title:         { label: "Title contains",  type: "text",      defaultOp: "contains" },
