@@ -233,6 +233,39 @@ export function createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }) {
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
+  // Freeze the sheet's currently rendered wholesale prices into per-product
+  // overrides. Useful before turning off a sitewide sale that's baked into
+  // Shopify product.price: after locking, the sheet renders from the override
+  // map alone, so reverting Shopify prices doesn't move wholesale numbers.
+  // `additional_discount_pct` is cleared because it's now baked into the
+  // overrides; otherwise it would double-apply.
+  r.post("/api/linesheets/:id/snapshot-prices", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const sheet = await db.getLineSheet(id);
+      if (!sheet) return res.status(404).json({ error: "Not found" });
+      const preview = await computePreview(sheet, { shopifyGraphQL });
+      const overrides = { ...(sheet.pricing?.overrides || {}) };
+      let locked = 0;
+      for (const p of preview.products) {
+        if (p.excluded) continue;
+        const price = Number(p.effective_price);
+        if (!Number.isFinite(price) || price <= 0) continue;
+        overrides[p.product_id] = Math.round(price);
+        locked++;
+      }
+      const newPricing = {
+        ...(sheet.pricing || {}),
+        additional_discount_pct: 0,
+        overrides
+      };
+      const row = await db.updateLineSheet(id, { pricing: newPricing });
+      if (!row) return res.status(404).json({ error: "Not found" });
+      res.json({ linesheet: row, locked });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
   r.post("/api/linesheets/:id/duplicate", async (req, res) => {
     const id = parseId(req.params.id);
     if (id === null) return res.status(404).json({ error: "Not found" });

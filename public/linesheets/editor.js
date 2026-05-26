@@ -990,6 +990,22 @@
       onResetOverrides: () => { state.pricing.overrides = {}; debouncePreview(); },
       overrideCount
     });
+
+    // Lock in current prices: snapshot today's effective prices into the
+    // overrides map so the sheet is immune to upstream MSRP / sale changes.
+    const lockRow = el("div", { style: "margin-top:14px;padding-top:10px;border-top:1px solid #eee;" });
+    const lockBtn = el("button", {
+      onclick: lockInPrices,
+      title: state.id
+        ? "Copies each product's current wholesale price into a fixed per-product override. Use this before a sitewide sale ends so the sheet's prices don't move when the sale comes off."
+        : "Save the view first."
+    }, "Lock in current prices");
+    if (!state.id) lockBtn.setAttribute("disabled", "disabled");
+    lockRow.appendChild(lockBtn);
+    lockRow.appendChild(el("span", { class: "muted", style: "margin-left:10px;font-size:11px;" },
+      "Freezes today's wholesale prices into per-product overrides — the sheet won't change even if MSRP or Shopify sale prices move later."));
+    pb.appendChild(lockRow);
+
     box.appendChild(pricingDet);
 
     // Display options
@@ -1263,6 +1279,36 @@
       if (!id) return; // user cancelled the name prompt or save failed
     }
     window.open(`/api/linesheets/${id}/${urlPath}`, "_blank");
+  }
+
+  async function lockInPrices() {
+    if (!state.id) return alert("Save the view first.");
+    const visible = (state.products || []).filter((p) => !p.excluded).length;
+    if (!visible) return alert("No products to lock in.");
+    if (!confirm(
+      `Lock in current prices for ${visible} product(s)?\n\n` +
+      `Each product's price will be written as a fixed override, so the sheet ` +
+      `won't change even if MSRP or Shopify sale prices move later. ` +
+      `You can still edit individual prices afterward.`
+    )) return;
+
+    // Flush any local edits so we lock in what the user sees on screen.
+    clearTimeout(autosaveTimer);
+    while (savingNow) await new Promise((r) => setTimeout(r, 50));
+    if (isDirty()) {
+      const saved = await save({ silent: true });
+      if (!saved) return;
+    }
+
+    const r = await fetch(`/api/linesheets/${state.id}/snapshot-prices`, { method: "POST" });
+    if (!r.ok) {
+      const msg = await r.text();
+      alert("Lock failed: " + msg);
+      return;
+    }
+    const j = await r.json();
+    flash(`Locked ${j.locked} price${j.locked === 1 ? "" : "s"}`);
+    await openSaved(state.id);
   }
 
   async function exportPdf()       { return flushAndExport("render.pdf"); }
