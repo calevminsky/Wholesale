@@ -97,7 +97,7 @@
       saved_filter_name: null,
       pins: [],
       excludes: [],
-      pricing: { default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, overrides: {} },
+      pricing: { default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, live_storefront_discount_pct: 0, overrides: {} },
       display_opts: { ats_locations: defaultStockLocationIds() },
       products: [],
       counts: {},
@@ -187,7 +187,7 @@
       saved_filter_name: l.saved_filter_name || null,
       pins: l.pins || [],
       excludes: l.excludes || [],
-      pricing: Object.assign({ default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, overrides: {} }, l.pricing || {}),
+      pricing: Object.assign({ default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, live_storefront_discount_pct: 0, overrides: {} }, l.pricing || {}),
       display_opts: Object.assign({ ats_locations: [] }, l.display_opts || {}),
       products: j.products || [],
       counts: j.counts || {},
@@ -1034,9 +1034,13 @@
     const m = state.pricing.default_mode;
     const v = state.pricing.default_value;
     const add = Number(state.pricing.additional_discount_pct) || 0;
+    const live = Number(state.pricing.live_storefront_discount_pct) || 0;
     const count = Object.keys(state.pricing.overrides || {}).length;
+    const currentLabel = live > 0 && m === "pct_off_current"
+      ? `${v}% off pre-sale price (gross up ${live}%)`
+      : `${v}% off current`;
     const label = m === "fixed" ? `Fixed $${v}` :
-                  m === "pct_off_current" ? `${v}% off current` :
+                  m === "pct_off_current" ? currentLabel :
                   m === "pct_of_higher" ? `${v}% of higher of MSRP or cost` :
                   `${v}% off MSRP`;
     const addLabel = add > 0 ? ` · then ${add}% extra off` : "";

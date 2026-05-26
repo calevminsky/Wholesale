@@ -3,11 +3,17 @@
 //   default_mode: "pct_off_compare_at" | "pct_off_current" | "fixed" | "pct_of_higher",
 //   default_value: number,
 //   additional_discount_pct: number,   // applied on top of default/override
+//   live_storefront_discount_pct: number, // % already baked into Shopify
+//                                         // product.price (e.g. a sitewide
+//                                         // sale). Grosses current_price back
+//                                         // up before pct_off_current is
+//                                         // applied — so "50% off current"
+//                                         // gives 50% off the pre-sale price.
 //   overrides: { "gid://shopify/Product/123": 42.00, ... }
 // }
 
 export function defaultPricing() {
-  return { default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, overrides: {} };
+  return { default_mode: "pct_off_compare_at", default_value: 50, additional_discount_pct: 0, live_storefront_discount_pct: 0, overrides: {} };
 }
 
 // Wholesale prices are always whole dollars (end in .00) — no .99 endings.
@@ -22,7 +28,13 @@ export function computeSuggestedPrice(product, pricing) {
   if (!Number.isFinite(val)) return null;
 
   const compareAt = Number(product.compare_at_price || 0);
-  const current   = Number(product.current_price || 0);
+  const currentRaw = Number(product.current_price || 0);
+  // Gross up current_price to "undo" a live storefront sale that's baked
+  // into product.price. Only meaningful for pct_off_current — the other
+  // modes don't use current_price directly.
+  const liveDisc = Number(pricing?.live_storefront_discount_pct) || 0;
+  const grossUpFactor = liveDisc > 0 && liveDisc < 100 ? 1 / (1 - liveDisc / 100) : 1;
+  const current = currentRaw * grossUpFactor;
 
   switch (mode) {
     case "pct_off_compare_at": {

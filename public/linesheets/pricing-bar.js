@@ -68,6 +68,25 @@
     addRow.appendChild(el("span", { class: "muted", style: "margin-left:10px;font-size:11px;" },
       "Stacks on top of the default and any per-product overrides."));
     root.appendChild(addRow);
+
+    // Live storefront sale already baked into Shopify product.price (e.g. a
+    // sitewide "additional 30% off markdowns" promo). Grosses current_price
+    // back up before "% off current" applies, so the wholesale math is
+    // against the pre-promo markdown price instead of the discounted one.
+    const liveDisc = Number(pricing.live_storefront_discount_pct) || 0;
+    const liveRow = el("div", { style: "margin-top:10px;" });
+    liveRow.appendChild(el("label", null, [el("strong", null, "Live storefront sale: ")]));
+    const liveInp = el("input", { type: "number", value: liveDisc, step: "0.5", min: "0", max: "99", style: "width:80px;" });
+    liveInp.addEventListener("input", () => {
+      pricing.live_storefront_discount_pct = Number(liveInp.value) || 0;
+      onChange();
+    });
+    liveRow.appendChild(liveInp);
+    liveRow.appendChild(el("span", null, "% already baked into Shopify prices"));
+    liveRow.appendChild(el("span", { class: "muted", style: "margin-left:10px;font-size:11px;" },
+      "Use this if you're running a sitewide promo that lowered product.price. " +
+      "\"% off current\" will then apply to the pre-promo price, not the discounted one."));
+    root.appendChild(liveRow);
   }
 
   w.LineSheets.renderPricingBar = render;
