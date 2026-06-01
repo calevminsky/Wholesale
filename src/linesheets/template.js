@@ -26,6 +26,9 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
   const title = sheet.name || "Line Sheet";
   const customer = sheet.customer || "";
   const showMSRP = opts.show_msrp !== false;
+  // Hide the wholesale price entirely (e.g. when the buyer dictates pricing and
+  // you only want to show them MSRP). Default: show the price.
+  const showPrice = opts.hide_price !== true;
   // Default: hide inventory from the customer. `hide_inventory` (new) wins;
   // fall back to legacy `show_inventory` if it's explicitly set.
   const showInventory = opts.hide_inventory !== undefined
@@ -67,7 +70,7 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
     columns.push({ key: "image", label: "", width: "12%" });
     columns.push({ key: "product", label: "Product", width: "32%" });
     if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "8%", num: true });
-    columns.push({ key: "price", label: "Price", width: "12%", num: true });
+    if (showPrice) columns.push({ key: "price", label: "Price", width: "12%", num: true });
     if (showPairs) columns.push({ key: "pairs", label: "Pairs With", width: "13%" });
     if (showNotes) columns.push({ key: "notes", label: "Notes", width: "13%" });
     for (const s of SIZE_COLS) columns.push({ key: `sz_${s}`, label: s, width: "4%", num: true });
@@ -78,12 +81,13 @@ export function buildLineSheetHtml({ sheet, products, groups }) {
       let w = 50;
       if (showPairs) w -= 14;
       if (showNotes) w -= 14;
+      if (!showPrice) w += 12;   // reclaim the hidden Price column's width
       return w + "%";
     })();
     columns.push({ key: "image", label: "", width: "20%" });
     columns.push({ key: "product", label: "Product", width: productWidth });
     if (showMSRP) columns.push({ key: "msrp", label: "MSRP", width: "9%", num: true });
-    columns.push({ key: "price", label: "Price", width: "12%", num: true });
+    if (showPrice) columns.push({ key: "price", label: "Price", width: "12%", num: true });
     if (showPairs) columns.push({ key: "pairs", label: "Pairs With", width: "14%" });
     if (showNotes) columns.push({ key: "notes", label: "Notes", width: "14%" });
   }

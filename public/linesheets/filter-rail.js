@@ -167,11 +167,18 @@
     const compiled = compile(tree);
 
     if (!compiled.simple) {
+      const isOrGroups = compiled.complexReason === "Multiple OR groups";
       root.appendChild(el("div", { class: "ls-rail-complex" }, [
-        el("div", { class: "ls-rail-complex-title" }, "Advanced filter active"),
-        el("div", { class: "muted", style: "margin:6px 0 10px 0; font-size:12px;" }, compiled.complexReason || ""),
+        el("div", { class: "ls-rail-complex-title" },
+          isOrGroups ? "Multiple match groups (OR)" : "Advanced filter active"),
+        el("div", { class: "muted", style: "margin:6px 0 10px 0; font-size:12px;" },
+          isOrGroups
+            ? "This sheet includes products matching ANY of several criteria sets."
+            : (compiled.complexReason || "")),
         el("div", { class: "muted", style: "margin-bottom:10px; font-size:12px;" },
-          "Use the Advanced filter expander below to edit. Switching to simple filters will discard rules the simple view can't represent."),
+          isOrGroups
+            ? "Edit the groups in the Advanced filter expander below. Switching to simple filters keeps only the first group."
+            : "Use the Advanced filter expander below to edit. Switching to simple filters will discard rules the simple view can't represent."),
         el("button", {
           class: "primary",
           style: "width:100%;",

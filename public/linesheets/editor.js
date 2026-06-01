@@ -270,8 +270,10 @@
     w.LineSheets.renderFilterRail(railRoot, state.filter_tree, meta, railOpts);
     wrap.appendChild(railRoot);
 
-    // Advanced filter expandable: kept available for power users.
-    const advWrap = el("details", { class: "ls-rail-adv" });
+    // Advanced filter expandable: kept available for power users. Auto-open it
+    // when the sheet uses multiple OR groups (the simple rail can't show them).
+    const hasOrGroups = Array.isArray(state.filter_tree?.include) && state.filter_tree.include.length > 1;
+    const advWrap = el("details", hasOrGroups ? { class: "ls-rail-adv", open: "" } : { class: "ls-rail-adv" });
     advWrap.appendChild(el("summary", null, "Advanced filter…"));
     const advBar = el("div", { class: "lsf-bar" });
     w.LineSheets.renderFilterBar(advBar, state.filter_tree, meta, () => {
@@ -1069,6 +1071,7 @@
     body.appendChild(el("div", { class: "ls-row" }, [
       makeCheckbox("hide_inventory", "Hide inventory from customer (PDF)", true),
       makeCheckbox("show_msrp", "Show MSRP on PDF", true),
+      makeCheckbox("hide_price", "Hide wholesale price on PDF (customer sets pricing)", false),
       makeCheckbox("show_notes", "Show notes column on PDF", true),
       makeCheckbox("show_pairs", "Show pairs-with column on PDF", true)
     ]));

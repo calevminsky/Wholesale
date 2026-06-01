@@ -130,6 +130,15 @@
       .lsf-add, .lsf-clear { padding:5px 10px; border:1px dashed #bbb; background:#fff; color:#333; border-radius:999px; font-size:13px; cursor:pointer; }
       .lsf-add:hover { border-color:#333; }
       .lsf-clear { border-style:solid; border-color:#ddd; color:#777; }
+      /* OR groups: each set of AND'd chips is a group; groups are OR'd. */
+      .lsf-group { display:inline-flex; flex-wrap:wrap; align-items:center; gap:6px; }
+      .lsf-group-multi { padding:6px 8px; border:1px solid #e2e2ea; border-radius:10px; background:#fbfbfd; }
+      .lsf-or { font-weight:700; font-size:11px; letter-spacing:0.5px; color:#8a8aa0; padding:0 2px; }
+      .lsf-add-or { padding:5px 10px; border:1px dashed #9aa3c0; background:#fff; color:#3a4a8a; border-radius:999px; font-size:13px; cursor:pointer; }
+      .lsf-add-or:hover { border-color:#3a4a8a; background:#f5f7ff; }
+      .lsf-group-rm { background:transparent; border:none; color:#a55; font-size:11px; cursor:pointer; padding:2px 4px; }
+      .lsf-group-rm:hover { text-decoration:underline; }
+      .lsf-bar-footer { display:flex; gap:6px; flex-basis:100%; margin-top:2px; }
 
       /* Filter popover */
       .lsf-pop { background:#fff; border:1px solid #d8d8d8; border-radius:10px; box-shadow:0 10px 30px rgba(0,0,0,0.14); padding:10px 12px; min-width:260px; max-width:340px; font-size:13px; }

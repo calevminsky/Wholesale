@@ -1,7 +1,8 @@
-// Flat pill-bar filter UI. Each chip = one condition AND'd with the rest.
-// Wire format stays { include: [{ conditions: [...] }], globals: [] }.
-// Trees with multiple include-groups or globals are read-only from the bar
-// (shown as a single "Advanced filter" chip that opens the legacy builder).
+// Pill-bar filter UI with OR-group support. Each chip = one condition; chips
+// within a group are AND'd, and groups are OR'd ("match ANY group").
+// Wire format: { include: [{ conditions: [...] }, ...], globals: [] }.
+// Globals (stock/inventory rules) are AND'd across everything and shown here
+// as a read-only badge — they're edited via the simple rail's Stock section.
 (function () {
   const w = window;
   w.LineSheets = w.LineSheets || {};
@@ -451,114 +452,167 @@
     }, 0);
   }
 
+  // Ensure the tree has at least one include group, each with a conditions array.
+  function ensureGroups(tree) {
+    if (!Array.isArray(tree.include) || tree.include.length === 0) {
+      tree.include = [{ conditions: [] }];
+    }
+    for (const g of tree.include) {
+      if (!Array.isArray(g.conditions)) g.conditions = [];
+    }
+    return tree.include;
+  }
+
+  // One editable filter chip bound to conds[idx]. `rerender` repaints the
+  // whole bar after a structural change (add/remove).
+  function makeChip(conds, idx, meta, rerender, onChange) {
+    const cond = conds[idx];
+    const chip = el("button", {
+      class: "lsf-chip" + (isIncomplete(cond) ? " lsf-chip-incomplete" : ""),
+      title: "Edit filter",
+      onclick: (ev) => {
+        ev.stopPropagation();
+        openConditionPopover(chip, cond, meta, () => {
+          chip.firstChild.textContent = chipSummary(cond, meta);
+          onChange();
+        }, () => {
+          conds.splice(idx, 1);
+          rerender();
+          onChange();
+        });
+      }
+    }, [
+      document.createTextNode(chipSummary(cond, meta)),
+      el("span", {
+        class: "lsf-chip-x",
+        title: "Remove",
+        onclick: (ev) => {
+          ev.stopPropagation();
+          conds.splice(idx, 1);
+          rerender();
+          onChange();
+        }
+      }, "×")
+    ]);
+    return chip;
+  }
+
+  // Filter bar with OR-group support. The wire format is
+  // { include: [ {conditions:[...]}, ... ], globals: [...] }: conditions within
+  // a group are AND'd, and the groups are OR'd. A product matches the sheet if
+  // it satisfies ANY group. `globals` (stock/inventory rules set by the simple
+  // rail) are AND'd across everything and shown here as a read-only badge.
   function renderBar(root, tree, meta, onChange) {
     root.innerHTML = "";
     root.classList.add("lsf-bar");
+    const groups = ensureGroups(tree);
+    const multi = groups.length > 1;
+    root.classList.toggle("lsf-bar-multi", multi);
 
-    // Always render chips for the first include group, even when the tree
-    // has extras (additional include groups or globals). The extras are
-    // surfaced as a non-destructive badge that the user can choose to clear
-    // separately — adding/editing chips no longer requires throwing away
-    // anything they didn't see.
-    const conds = getConditions(tree);
-    const used = new Set(conds.map(c => c.field));
+    const rerender = () => renderBar(root, tree, meta, onChange);
 
-    const extraGroupCount = (Array.isArray(tree.include) ? tree.include.length : 0) - 1;
-    const globalCount     = Array.isArray(tree.globals) ? tree.globals.length : 0;
-    const extras = Math.max(0, extraGroupCount) + globalCount;
-
-    if (extras > 0) {
+    // Globals (e.g. min-inventory @ locations) come from the simple rail's
+    // Stock section and aren't editable as chips here.
+    const globalCount = Array.isArray(tree.globals) ? tree.globals.length : 0;
+    if (globalCount > 0) {
       root.appendChild(el("span", {
         class: "lsf-chip lsf-chip-adv",
-        title: "Extra rules from an older filter format. Click to clear them; your visible filters stay."
+        title: "Stock/inventory rules set in the Stock section. Clear them there or here."
       }, [
-        document.createTextNode(`+ ${extras} advanced rule${extras === 1 ? "" : "s"}`),
+        document.createTextNode(`+ ${globalCount} stock rule${globalCount === 1 ? "" : "s"}`),
         el("button", {
-          title: "Clear advanced rules (keeps the chips below)",
+          title: "Clear stock rules",
           onclick: () => {
-            if (!confirm(`Clear ${extras} advanced rule${extras === 1 ? "" : "s"}? Your visible chips below will stay.`)) return;
-            tree.include = [tree.include?.[0] || { conditions: conds }];
+            if (!confirm(`Clear ${globalCount} stock rule${globalCount === 1 ? "" : "s"}?`)) return;
             tree.globals = [];
-            renderBar(root, tree, meta, onChange);
+            rerender();
             onChange();
           }
         }, "Clear")
       ]));
     }
 
-    conds.forEach((cond, idx) => {
-      const chip = el("button", {
-        class: "lsf-chip" + (isIncomplete(cond) ? " lsf-chip-incomplete" : ""),
-        title: "Edit filter",
+    groups.forEach((group, gi) => {
+      if (gi > 0) root.appendChild(el("span", { class: "lsf-or" }, "OR"));
+
+      const conds = group.conditions;
+      const groupEl = el("div", { class: "lsf-group" + (multi ? " lsf-group-multi" : "") });
+
+      conds.forEach((_, idx) => {
+        groupEl.appendChild(makeChip(conds, idx, meta, rerender, onChange));
+      });
+
+      const addBtn = el("button", {
+        class: "lsf-add",
         onclick: (ev) => {
           ev.stopPropagation();
-          openConditionPopover(chip, cond, meta, () => {
-            // Rebuild chip summary in place
-            chip.firstChild.textContent = chipSummary(cond, meta);
-            onChange();
-          }, () => {
-            conds.splice(idx, 1);
-            renderBar(root, tree, meta, onChange);
+          openAddMenu(addBtn, new Set(conds.map(c => c.field)), (fieldKey) => {
+            const f = FIELDS[fieldKey];
+            const cond = { field: fieldKey, op: f.defaultOp, value: defaultValueFor(fieldKey) };
+            conds.push(cond);
+            rerender();
+            // Open the editor on the just-added chip (last chip in this group).
+            const groupEls = root.querySelectorAll(".lsf-group");
+            const chips = groupEls[gi] ? groupEls[gi].querySelectorAll(".lsf-chip") : [];
+            const last = chips[chips.length - 1];
+            if (last) {
+              openConditionPopover(last, cond, meta, () => {
+                last.firstChild.textContent = chipSummary(cond, meta);
+                onChange();
+              }, () => {
+                const i = conds.indexOf(cond);
+                if (i >= 0) conds.splice(i, 1);
+                rerender();
+                onChange();
+              });
+            }
             onChange();
           });
         }
-      }, [
-        document.createTextNode(chipSummary(cond, meta)),
-        el("span", {
-          class: "lsf-chip-x",
-          title: "Remove",
-          onclick: (ev) => {
-            ev.stopPropagation();
-            conds.splice(idx, 1);
-            renderBar(root, tree, meta, onChange);
+      }, "+ Add filter");
+      groupEl.appendChild(addBtn);
+
+      // Removing a whole OR group only makes sense when there's more than one.
+      if (multi) {
+        groupEl.appendChild(el("button", {
+          class: "lsf-group-rm",
+          title: "Remove this OR group",
+          onclick: () => {
+            groups.splice(gi, 1);
+            if (groups.length === 0) tree.include = [{ conditions: [] }];
+            rerender();
             onChange();
           }
-        }, "×")
-      ]);
-      root.appendChild(chip);
+        }, "× group"));
+      }
+
+      root.appendChild(groupEl);
     });
 
-    const addBtn = el("button", {
-      class: "lsf-add",
-      onclick: (ev) => {
-        ev.stopPropagation();
-        openAddMenu(addBtn, used, (fieldKey) => {
-          const f = FIELDS[fieldKey];
-          const cond = { field: fieldKey, op: f.defaultOp, value: defaultValueFor(fieldKey) };
-          conds.push(cond);
-          renderBar(root, tree, meta, onChange);
-          // Open editor on the just-added chip
-          const chips = root.querySelectorAll(".lsf-chip");
-          const last = chips[chips.length - 1];
-          if (last) {
-            openConditionPopover(last, cond, meta, () => {
-              last.firstChild.textContent = chipSummary(cond, meta);
-              onChange();
-            }, () => {
-              const i = conds.indexOf(cond);
-              if (i >= 0) conds.splice(i, 1);
-              renderBar(root, tree, meta, onChange);
-              onChange();
-            });
-          }
-          onChange();
-        });
+    // Footer: add another OR group, and clear everything.
+    const footer = el("div", { class: "lsf-bar-footer" });
+    footer.appendChild(el("button", {
+      class: "lsf-add-or",
+      title: "Add a second set of criteria — products matching ANY group are included",
+      onclick: () => {
+        groups.push({ conditions: [] });
+        rerender();
+        onChange();
       }
-    }, "+ Add filter");
-    root.appendChild(addBtn);
+    }, "+ Add OR group"));
 
-    if (conds.length > 0) {
-      const clear = el("button", {
+    if (groups.some(g => g.conditions.length > 0)) {
+      footer.appendChild(el("button", {
         class: "lsf-clear",
         onclick: () => {
           if (!confirm("Clear all filters?")) return;
           tree.include = [{ conditions: [] }];
-          renderBar(root, tree, meta, onChange);
+          rerender();
           onChange();
         }
-      }, "Clear all");
-      root.appendChild(clear);
+      }, "Clear all"));
     }
+    root.appendChild(footer);
   }
 
   function isIncomplete(cond) {
