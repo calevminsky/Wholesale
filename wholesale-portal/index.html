@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yakira Bella — Wholesale</title>
+<link rel="icon" href="data:,">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap headrow">
+    <div class="brand">
+      <h1><span class="sub">Yakira Bella · Wholesale</span><span id="offerName">F26 Collection</span></h1>
+      <div class="acct" id="acctLine">Browsing as <b>Guest</b></div>
+    </div>
+    <div class="cartmini">
+      <div class="stat"><div class="n" id="miniStyles">0</div><div class="l">Styles</div></div>
+      <div class="stat"><div class="n" id="miniUnits">0</div><div class="l">Units</div></div>
+      <div class="stat"><div class="n" id="miniSubtotal">$0</div><div class="l">Subtotal</div></div>
+      <button class="btn primary" id="reviewBtn" disabled>Review &amp; Submit</button>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="tierbar" id="tierSeg">
+      <button class="tiertab" data-v="">All products <span class="b" id="cAll">0</span></button>
+      <button class="tiertab on" data-v="full">Full price <span class="b" id="cFull">0</span></button>
+      <button class="tiertab" data-v="off">Off price <span class="b" id="cOff">0</span></button>
+    </div>
+    <div class="row">
+      <label class="search"><input id="q" type="search" placeholder="Search style or color…" autocomplete="off"></label>
+      <select id="fType"><option value="">Any type</option></select>
+      <select id="fColor"><option value="">Any color</option></select>
+      <select id="sort">
+        <option value="title_asc">Title A→Z</option>
+        <option value="price_desc">Price high→low</option>
+        <option value="price_asc">Price low→high</option>
+        <option value="avail_desc">Most available</option>
+      </select>
+      <div class="seg" id="viewSeg" title="Combine colors of the same style into one card">
+        <button data-v="style">By style</button>
+        <button data-v="color" class="on">By color</button>
+      </div>
+      <div class="seg" id="densitySeg">
+        <button data-v="comfortable" class="on">Comfy</button>
+        <button data-v="compact">Compact</button>
+      </div>
+      <span class="count" id="count">0 styles</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="banner" id="noticeBanner" style="display:none"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none"><div class="big">No styles match</div><div>Try clearing a filter or search.</div></div>
+</div>
+
+<!-- sticky cart footer -->
+<div class="cartbar" id="cartbar">
+  <div class="wrap inner">
+    <div class="totals">
+      <div class="stat"><div class="n" id="barStyles">0</div><div class="l">Styles</div></div>
+      <div class="stat"><div class="n" id="barUnits">0</div><div class="l">Units</div></div>
+      <div class="stat"><div class="n" id="barSubtotal">$0</div><div class="l">Subtotal</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost sm" id="clearCart">Clear cart</button>
+    <button class="btn primary" id="reviewBtn2">Review &amp; Submit</button>
+  </div>
+</div>
+
+<!-- review overlay -->
+<div class="overlay" id="reviewOverlay">
+  <div class="sheet">
+    <header>
+      <h2>Review order</h2>
+      <button class="close" id="closeReview">&times;</button>
+    </header>
+    <div class="content" id="reviewContent"></div>
+    <footer>
+      <div class="note-info" id="reviewFootInfo"></div>
+      <div class="spacer" style="flex:1"></div>
+      <button class="btn ghost" id="backToBrowse">Keep shopping</button>
+      <button class="btn primary" id="submitBtn">Submit order</button>
+    </footer>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

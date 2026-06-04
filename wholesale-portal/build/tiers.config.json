@@ -1,0 +1,25 @@
+{
+  "_comment": "Per-tier wholesale pricing rules. These map onto the SAME pricing engine the internal line-sheet builder uses (src/linesheets/pricing.js), so portal prices never drift from the interface. All wholesale prices are rounded to whole dollars. Edit the values below to change pricing, then re-run the catalog build.",
+  "_modes": {
+    "pct_off_compare_at": "price = compare_at (MSRP) * (1 - value/100); falls back to current price if no compare_at",
+    "pct_off_current": "price = current price * (1 - value/100); value 0 = ride current price as-is. Use this for a flat % off the live price.",
+    "fixed": "price = value (a flat dollar amount for every style in the tier)",
+    "pct_of_higher": "price = max(compare_at * value/100, unit_cost) — never below cost; falls back to current price if no compare_at"
+  },
+  "full": {
+    "_desc": "Full-price styles: 50% of MSRP (compare-at), floored at unit cost.",
+    "default_mode": "pct_of_higher",
+    "default_value": 50,
+    "additional_discount_pct": 0,
+    "live_storefront_discount_pct": 0,
+    "overrides": {}
+  },
+  "off": {
+    "_desc": "Off-price styles: ride the current (already-marked-down) price. To switch to a flat % off retail instead, set default_value to the % and keep default_mode 'pct_off_current' (off the live price) or change to 'pct_off_compare_at' (off MSRP).",
+    "default_mode": "pct_off_current",
+    "default_value": 0,
+    "additional_discount_pct": 0,
+    "live_storefront_discount_pct": 0,
+    "overrides": {}
+  }
+}

@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yakira Bella — Off-Price Rules</title>
+<link rel="icon" href="data:,">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#FAF7F2;--card:#FFF;--ink:#211C17;--muted:#8A8178;--line:#E7E0D6;--accent:#7C3A2E;--accent-soft:#F1E3DE;--off:#B5612A;--off-soft:#F6E7D8;--full:#2E5A3F;--amber:#B8791A;--amber-soft:#F6EBD6;--shadow:0 1px 2px rgba(33,28,23,.06),0 6px 18px rgba(33,28,23,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header.top{background:var(--card);border-bottom:1px solid var(--line);padding:20px 0}
+h1{font-family:Fraunces,serif;font-weight:500;font-size:24px;margin:0}
+h1 .sub{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-family:Inter;font-weight:600;margin-bottom:7px}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px;margin:18px 0}
+.panel h2{font-family:Fraunces,serif;font-size:17px;margin:0 0 4px}
+.panel .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
+.ruleRow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+.fld{display:flex;flex-direction:column;gap:5px}
+.fld label{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
+select,input{border:1px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;font-size:14px;background:var(--card)}
+select:focus,input:focus{outline:none;border-color:var(--accent)}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;font-size:13px;padding:9px 16px;border-radius:999px;cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:disabled{opacity:.5;cursor:not-allowed}
+.btn.go{background:var(--full);border-color:var(--full);color:#fff}
+.bar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.status{font-size:13px;color:var(--muted)}
+.status.ok{color:var(--full)}.status.err{color:var(--accent)}
+.log{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;white-space:pre-wrap;background:#211C17;color:#f3ebe2;border-radius:9px;padding:12px 14px;margin-top:12px;max-height:240px;overflow:auto;display:none}
+.toolbar2{display:flex;gap:10px;align-items:center;margin:6px 0 12px;flex-wrap:wrap}
+.toolbar2 input{flex:1;min-width:200px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th{text-align:left;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
+td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:hover td{background:var(--paper)}
+.thumb{width:34px;height:44px;object-fit:cover;border-radius:5px;background:var(--paper)}
+.tname{font-weight:600}.tcolor{color:var(--muted);font-size:12px}
+.num{text-align:right;font-variant-numeric:tabular-nums}
+.ovr{width:78px;text-align:right}
+.ovr.set{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.computed{color:var(--muted)}
+.tablewrap{max-height:60vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.muted{color:var(--muted)}
+.pill{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--off-soft);color:var(--off)}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap"><h1><span class="sub">Yakira Bella · Wholesale Admin</span>Off-price rules</h1></div></header>
+<div class="wrap">
+
+  <div class="panel">
+    <h2>Default off-price rule</h2>
+    <p class="hint">Applies to every <span class="pill">Off price</span> style except those with a per-style override below. Full-price styles are always 50% of MSRP and aren’t affected here.</p>
+    <div class="ruleRow">
+      <div class="fld"><label>Rule</label><select id="mode"></select></div>
+      <div class="fld" id="valWrap"><label id="valLabel">Value</label><input id="value" type="number" min="0" step="1" style="width:120px"></div>
+      <button class="btn primary" id="saveRule">Save rule</button>
+      <button class="btn go" id="rebuild">Save &amp; rebuild catalog</button>
+    </div>
+    <div class="bar"><span class="status" id="status">Loading…</span></div>
+    <div class="log" id="log"></div>
+  </div>
+
+  <div class="panel">
+    <h2>Per-style overrides</h2>
+    <p class="hint">Set an exact wholesale price for any off-price style. Leave blank to use the rule above. Prices shown are whole dollars.</p>
+    <div class="toolbar2">
+      <input id="search" type="search" placeholder="Search style or color…" autocomplete="off">
+      <span class="muted" id="ovrCount"></span>
+      <button class="btn" id="clearOvr">Clear all overrides</button>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>Style</th><th class="num">MSRP</th><th class="num">Current</th><th class="num">Rule price</th><th class="num">Override $</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+<script src="/admin/admin.js"></script>
+</body>
+</html>
