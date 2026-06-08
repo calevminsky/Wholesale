@@ -57,6 +57,7 @@
         <button data-v="compact">Compact</button>
       </div>
       <span class="count" id="count">0 styles</span>
+      <button class="btn ghost sm" id="printBtn" title="Print a line sheet of the styles shown">Print line sheet</button>
     </div>
   </div>
 </div>
@@ -97,6 +98,9 @@
     </footer>
   </div>
 </div>
+
+<!-- print-only line sheet (built on demand, hidden on screen) -->
+<div id="printRoot" aria-hidden="true"></div>
 
 <div class="toast" id="toast"></div>
 

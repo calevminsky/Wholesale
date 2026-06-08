@@ -480,6 +480,74 @@
     toast("Order files downloaded — hand to the wholesale team to upload.");
   }
 
+  // ---------- print line sheet ----------
+  // Builds a clean, paper-friendly line sheet from exactly what's on screen
+  // (current filters + sort, one row per orderable option) into #printRoot, then
+  // hands off to the browser's print dialog — works for paper or Save-as-PDF.
+  function printPriceHTML(p) {
+    const msrp = Math.max(p.compare_at || 0, p.retail_price || 0);
+    const ws = p.wholesale_price;
+    if (p.preorder && (ws == null || !Number.isFinite(ws))) {
+      return `<span class="pm">MSRP ${msrp > 0 ? money(msrp) : "—"}</span><span class="pw tbd">Wholesale TBD</span>`;
+    }
+    const list = Number(p.list_wholesale) || ws;
+    const slashed = p.tier === "off" && list > ws + 0.5;
+    return `<span class="pm">MSRP ${money(msrp)}</span><span class="pw">${slashed ? `<s>${money(list)}</s> ` : ""}WS ${money(ws)}</span>`;
+  }
+  function printSizesHTML(p) {
+    if (p.preorder && (p.wholesale_price == null || !Number.isFinite(p.wholesale_price))) return `<span class="pmuted">Not yet priced</span>`;
+    return p.sizes.map((s) => {
+      if (p.preorder) return `<span class="psz"><b>${esc(s.size)}</b><i>inc</i></span>`;
+      const a = s.available;
+      return `<span class="psz ${a <= 0 ? "out" : ""}"><b>${esc(s.size)}</b><i>${a <= 0 ? "0" : a}</i></span>`;
+    }).join("");
+  }
+  function printRowHTML(p) {
+    const img = p.image ? `<img src="${esc(p.image)}" alt="">` : `<span class="noimg"></span>`;
+    const meta = [p.type, p.color].filter(Boolean).map(esc).join(" · ");
+    return `<div class="prow-item">
+      <div class="pimg">${img}</div>
+      <div class="pmain">
+        <div class="pt">${esc(p.title)}</div>
+        <div class="pmeta">${meta}</div>
+        <div class="psizes">${printSizesHTML(p)}</div>
+      </div>
+      <div class="pprice">${printPriceHTML(p)}<span class="pdel">${esc(deliveryLabel(p))}</span></div>
+    </div>`;
+  }
+  function printFilterSummary() {
+    const parts = [];
+    if (filters.q) parts.push(`Search “${esc(filters.q)}”`);
+    if (filters.type) parts.push(esc(filters.type));
+    if (filters.color) parts.push(esc(filters.color));
+    if (filters.deliv) parts.push("By " + fmtShort(new Date(filters.deliv + "T00:00:00")));
+    return parts.length ? `Filtered: ${parts.join(" · ")}` : "";
+  }
+  function printCatalog() {
+    const matched = sortItems(PRODUCTS.filter(matches),
+      { title: (p) => p.title || "", price: (p) => p.wholesale_price, avail: (p) => p.total_available || 0, deliv: deliveryTime });
+    const root = $("#printRoot");
+    if (!matched.length) { toast("Nothing to print — no styles match the current filters."); return; }
+    const dateStr = new Date().toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+    const tiers = [["full", "Full Price"], ["off", "Off Price"]];
+    const sections = tiers.map(([key, label]) => {
+      const arr = matched.filter((p) => p.tier === key);
+      if (!arr.length) return "";
+      return `<section class="psec"><h3>${label} <span>${arr.length} option${arr.length === 1 ? "" : "s"}</span></h3>${arr.map(printRowHTML).join("")}</section>`;
+    }).join("");
+    const summary = printFilterSummary();
+    root.innerHTML = `<div class="psheet">
+      <header class="phead">
+        <div><div class="psub">Yakira Bella · Wholesale</div><div class="ph1">${esc(CATALOG?.offer || "")} Line Sheet</div></div>
+        <div class="phr"><div>Account: <b>${esc(account.name)}</b></div><div>${dateStr}</div><div>${matched.length} option${matched.length === 1 ? "" : "s"}</div></div>
+      </header>
+      ${summary ? `<div class="pfilters">${summary}</div>` : ""}
+      ${sections}
+      <footer class="pfoot">Prices are wholesale, whole dollars. Availability shown is at time of print. — ${esc(account.name)}</footer>
+    </div>`;
+    window.print();
+  }
+
   // ---------- toast ----------
   let toastT;
   function toast(msg) {
@@ -510,6 +578,7 @@
       const b = e.target.closest("button"); if (!b) return;
       filters.density = b.dataset.v; $$("#densitySeg button").forEach((x) => x.classList.toggle("on", x === b)); render();
     });
+    $("#printBtn").addEventListener("click", printCatalog);
     $("#reviewBtn").addEventListener("click", openReview);
     $("#reviewBtn2").addEventListener("click", openReview);
     $("#closeReview").addEventListener("click", closeReview);
