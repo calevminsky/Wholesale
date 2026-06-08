@@ -483,7 +483,24 @@
   // ---------- print ----------
   // Print exactly what's on screen: the print stylesheet hides the chrome
   // (header, toolbar, cart bar) and keeps the live card grid as-is.
-  function printCatalog() { window.print(); }
+  // Card images are loading="lazy", so anything below the first screen hasn't
+  // loaded — it would print blank. Eager-load every image and wait before print.
+  async function printCatalog() {
+    const imgs = $$("#grid img");
+    const waits = imgs.map((im) => {
+      if (im.complete && im.naturalWidth > 0) return Promise.resolve();
+      im.loading = "eager";
+      return new Promise((res) => {
+        im.addEventListener("load", res, { once: true });
+        im.addEventListener("error", res, { once: true });
+        const src = im.currentSrc || im.getAttribute("src"); // nudge images the lazy loader never started
+        if (src) { im.removeAttribute("src"); im.setAttribute("src", src); }
+      });
+    });
+    // don't hang forever if a stray image 404s
+    await Promise.race([Promise.all(waits), new Promise((r) => setTimeout(r, 10000))]);
+    window.print();
+  }
 
   // ---------- toast ----------
   let toastT;
