@@ -172,15 +172,36 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
 .sizecell.pre input{border-style:dashed}
 .prenote{font-size:11.5px;color:var(--amber);background:var(--amber-soft);border:1px solid #e9d3a6;border-radius:8px;padding:7px 10px}
 
-/* ---- Print: render the live card grid exactly as shown, minus the chrome ---- */
+/* ---- Print: the same cards, scaled down to a tidy grid that fits a page ---- */
 @media print{
-  @page{margin:12mm}
+  @page{margin:10mm}
   html,body{background:#fff}
   *{-webkit-print-color-adjust:exact;print-color-adjust:exact}
   /* drop everything that isn't the catalog */
   header.top,.toolbar,.cartbar,.overlay,.toast,#noticeBanner{display:none !important}
   .wrap{max-width:none;padding:0}
-  .grid,.grid.compact{padding:0;gap:10px}
-  .card{break-inside:avoid;box-shadow:none;border-color:var(--line)}
-  .card.has-qty{box-shadow:none}
+
+  /* fixed, dense column count so cards shrink to fit instead of running off-page */
+  .grid,.grid.compact{display:grid !important;grid-template-columns:repeat(5,1fr) !important;gap:8px;padding:0}
+  .card{break-inside:avoid;box-shadow:none !important;border-color:var(--line)}
+  .card .imgwrap{aspect-ratio:auto;height:120px}
+  .card .body{padding:6px 7px 7px;gap:4px}
+  .card .title{font-size:10.5px;line-height:1.2}
+  .card .meta{font-size:9px}
+  .badge{font-size:8px;padding:2px 6px}
+
+  /* prices */
+  .price .ws{font-size:13px}
+  .price .pmsrp{font-size:10.5px}
+  .price .pold{font-size:9.5px}
+  .plabel{width:46px;font-size:8px}
+  .deliv{font-size:8.5px}
+
+  /* size run: keep the write-in boxes, just smaller */
+  .sizerun{gap:3px}
+  .sizecell{width:30px}
+  .sizecell .sz{font-size:8px}
+  .sizecell input{font-size:10px;padding:2px 1px;border-radius:5px}
+  .sizecell .av{font-size:7px}
+  .linesub{display:none}
 }
