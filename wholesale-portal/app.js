@@ -99,14 +99,19 @@
     }
     return true;
   }
-  function matches(p) { return (!filters.tier || p.tier === filters.tier) && matchesBase(p); }
+  function matches(p) {
+    if (filters.tier === "preorder") return p.preorder && matchesBase(p);
+    if (filters.tier) return !p.preorder && p.tier === filters.tier && matchesBase(p);
+    return matchesBase(p); // "All" includes pre-order
+  }
 
-  // group variants of the same style+tier into one card
+  // group variants of the same style into one card (pre-order kept separate from
+  // the in-stock tiers so a "book now" style never merges into a Full-price card)
   function groupsOf(list) {
     const map = new Map();
     for (const p of list) {
-      const key = baseTitle(p.title) + "|" + p.tier;
-      if (!map.has(key)) map.set(key, { key, base: baseTitle(p.title), tier: p.tier, type: p.type, variants: [] });
+      const key = baseTitle(p.title) + "|" + (p.preorder ? "pre" : p.tier);
+      if (!map.has(key)) map.set(key, { key, base: baseTitle(p.title), tier: p.tier, preorder: !!p.preorder, type: p.type, variants: [] });
       map.get(key).variants.push(p);
     }
     const groups = [...map.values()];
@@ -134,13 +139,21 @@
     const base = PRODUCTS.filter(matchesBase);
     const count = (arr) => filters.view === "style" ? groupsOf(arr).length : arr.length;
     $("#cAll").textContent = count(base);
-    $("#cFull").textContent = count(base.filter((p) => p.tier === "full"));
+    $("#cFull").textContent = count(base.filter((p) => p.tier === "full" && !p.preorder));
     $("#cOff").textContent = count(base.filter((p) => p.tier === "off"));
+    const pre = $("#cPre"); if (pre) pre.textContent = count(base.filter((p) => p.preorder));
   }
 
   // ---------- render ----------
   function render() {
     setTierCounts();
+    const banner = $("#noticeBanner");
+    if (banner) {
+      if (filters.tier === "preorder") {
+        banner.style.display = "block";
+        banner.innerHTML = `<b>Pre-order · F26</b> — book now; these arrive when the season lands. No live stock counts, and a few are still being priced.`;
+      } else banner.style.display = "none";
+    }
     const grid = $("#grid"), empty = $("#empty");
     grid.className = "grid" + (filters.density === "compact" ? " compact" : "");
     const matched = PRODUCTS.filter(matches);
@@ -168,6 +181,12 @@
     // wholesale slashed next to the lower off price.
     const msrp = Math.max(p.compare_at || 0, p.retail_price || 0);
     const ws = p.wholesale_price;
+    // Pre-order styles still being priced: no wholesale figure yet.
+    if (p.preorder && (ws == null || !Number.isFinite(ws))) {
+      return `
+        <div class="prow"><span class="plabel">${msrp > 0 ? "MSRP" : ""}</span><span class="pmsrp">${msrp > 0 ? money(msrp) : ""}</span></div>
+        <div class="prow"><span class="plabel">Wholesale</span><span class="ws tbd">Price TBD</span></div>`;
+    }
     const list = Number(p.list_wholesale) || ws;
     const slashed = p.tier === "off" && list > ws + 0.5;
     return `
@@ -179,6 +198,20 @@
   }
 
   function sizeRunHTML(p) {
+    // Pre-order: no live availability. Unpriced ones can't be ordered yet.
+    if (p.preorder) {
+      if (p.wholesale_price == null || !Number.isFinite(p.wholesale_price)) {
+        return `<div class="prenote">Not yet priced — check back to order.</div>`;
+      }
+      return p.sizes.map((s) => {
+        const q = Number((cart[p.gid] || {})[s.size] || 0);
+        return `<div class="sizecell pre">
+          <span class="sz">${s.size}</span>
+          <input type="number" min="0" inputmode="numeric" data-gid="${p.gid}" data-size="${s.size}" data-avail="" value="${q || ""}" placeholder="0" class="${q > 0 ? "has" : ""}">
+          <span class="av pre">pre-order</span>
+        </div>`;
+      }).join("");
+    }
     return p.sizes.map((s) => {
       const q = Number((cart[p.gid] || {})[s.size] || 0);
       const sold = s.available <= 0;
@@ -191,14 +224,18 @@
     }).join("");
   }
 
-  function badgeHTML(tier) { return `<div class="badges"><span class="badge ${tier}">${tier === "full" ? "Full price" : "Off price"}</span></div>`; }
+  function badgeHTML(o) {
+    if (o && o.preorder) return `<div class="badges"><span class="badge preorder">Pre-order</span></div>`;
+    const tier = o && o.tier;
+    return `<div class="badges"><span class="badge ${tier}">${tier === "full" ? "Full price" : "Off price"}</span></div>`;
+  }
 
   // flat (by color) card
   function flatCardHTML(p) {
     const has = lineUnits(p.gid) > 0;
     const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.title)}" loading="lazy">` : "";
     return `<div class="card ${has ? "has-qty" : ""}" data-gid="${p.gid}">
-      <div class="imgwrap">${badgeHTML(p.tier)}${img}</div>
+      <div class="imgwrap">${badgeHTML(p)}${img}</div>
       <div class="body">
         <div class="title">${esc(p.title)}</div>
         <div class="meta">${p.type ? esc(p.type) : ""}${p.type && p.color ? '<span class="dot"></span>' : ""}${p.color ? esc(p.color) : ""}</div>
@@ -234,7 +271,7 @@
 
     const img = selP.image ? `<img class="mainimg" src="${esc(selP.image)}" alt="${esc(g.base)}" loading="lazy">` : `<img class="mainimg">`;
     return `<div class="card group ${anyHas ? "has-qty" : ""}" data-group="${esc(g.key)}">
-      <div class="imgwrap">${badgeHTML(g.tier)}${img}</div>
+      <div class="imgwrap">${badgeHTML(g)}${img}</div>
       <div class="body">
         <div class="title">${esc(g.base)}</div>
         <div class="meta">${g.type ? esc(g.type) : ""}${g.type ? '<span class="dot"></span>' : ""}${g.variants.length} color${g.variants.length === 1 ? "" : "s"}</div>
@@ -274,7 +311,8 @@
   function onQtyInput(e) {
     const inp = e.target;
     const gid = inp.dataset.gid, size = inp.dataset.size;
-    const avail = Number(inp.dataset.avail);
+    // Pre-order inputs carry an empty data-avail → no stock ceiling.
+    const avail = inp.dataset.avail === "" ? Infinity : Number(inp.dataset.avail);
     let v = parseInt(inp.value, 10);
     if (!Number.isFinite(v) || v < 0) v = 0;
     if (!cart[gid]) cart[gid] = {};

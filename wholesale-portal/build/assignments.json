@@ -172,7 +172,11 @@
     "7492656726113",
     "7427739746401",
     "7246263451745",
-    "7492659314785"
+    "7492659314785",
+    "7579036516449",
+    "7581349511265",
+    "7546465747041",
+    "7572646166625"
   ],
   "off": [
     "7113862578273",
@@ -3739,6 +3743,42 @@
       "compare_at": 88,
       "units": 36,
       "assignment": "off"
+    },
+    {
+      "id": "7579036516449",
+      "gid": "gid://shopify/Product/7579036516449",
+      "title": "Valentina Dress (Ivory Khaki)",
+      "season": "Fall 2026",
+      "type": "Dress",
+      "assignment": "full",
+      "_source": "airtable:wholesale-fall2026"
+    },
+    {
+      "id": "7581349511265",
+      "gid": "gid://shopify/Product/7581349511265",
+      "title": "Tate Top (Khaki)",
+      "season": "Fall 2026",
+      "type": "Top",
+      "assignment": "full",
+      "_source": "airtable:wholesale-fall2026"
+    },
+    {
+      "id": "7546465747041",
+      "gid": "gid://shopify/Product/7546465747041",
+      "title": "Myla Skirt (Black)",
+      "season": "Fall 2026",
+      "type": "Skirt",
+      "assignment": "full",
+      "_source": "airtable:wholesale-fall2026"
+    },
+    {
+      "id": "7572646166625",
+      "gid": "gid://shopify/Product/7572646166625",
+      "title": "Lennon Dress (Pink)",
+      "season": "Fall 2026",
+      "type": "Dress",
+      "assignment": "full",
+      "_source": "airtable:wholesale-fall2026"
     }
   ]
 }

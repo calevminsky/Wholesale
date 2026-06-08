@@ -1,0 +1,27 @@
+{
+  "fetched_at": "2026-06-08T00:00:00.000Z",
+  "source": "apprgpWpvIhpTw15g/tblb5qTBvAdDuxdvB",
+  "checkbox": "Wholesale Fall2026",
+  "_note": "PARTIAL SEED generated from the Wholesale Fall2026 view (price-ready styles + a couple not-yet-priced samples). Re-run `AIRTABLE_API_KEY=pat... node build/airtable-preorder.mjs` to pull the full checked set, including styles still missing a price.",
+  "count": 18,
+  "records": [
+    { "airtable_id": "rec4foCynrGTEOfgc", "name": "Aimee Skirt (Dark Brown)", "color": "Dark Brown", "msrp": 88, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "rec7jomlAciHoPodk", "name": "Marianne Skirt (Black Plaid)", "color": "Black Plaid", "msrp": 98, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recAC3K8rwixoZHCE", "name": "Carine Dress (Grey)", "color": "Grey", "msrp": 128, "status": "Placed", "type": "Dress", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recDzzNKUlHXEzWRI", "name": "Christa Skirt (Burgundy Ground)", "color": "Burgundy Ground", "msrp": 78, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recI7D56MzJyMW65Q", "name": "Kiera Dress (Brown Plaid)", "color": "Brown Plaid", "msrp": 128, "status": "Placed", "type": "Dress", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recLfEgmxyezgnGPY", "name": "Kiera Dress (Black Plaid)", "color": "Black Plaid", "msrp": 128, "status": "Placed", "type": "Dress", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recQgl5Yzh4Y2ndXY", "name": "Sandra Dress (Ivory Ground)", "color": "Ivory Ground", "msrp": 128, "status": "Confirmed", "type": "Dress", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recRh84gpLEhLlijq", "name": "Lenny Dress (Burgundy)", "color": "Burgundy", "msrp": 118, "status": "Placed", "type": "Dress", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recSrjDto8wo899iF", "name": "Christa Skirt (Black Ground)", "color": "Black Ground", "msrp": 78, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recjvKiZppOTrVo2Q", "name": "Trina Skirt (Camel)", "color": "Camel", "msrp": 98, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recPhUEigXTKYUBYO", "name": "Delia Skirt (Brown)", "color": "Brown", "msrp": 88, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recelIrM1vpj66eTl", "name": "Delia Skirt (Black)", "color": "Black", "msrp": 88, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recsBehIwW8j9mdYR", "name": "Maggie Dress (Burgundy)", "color": "Burgundy", "msrp": 98, "status": "Placed", "type": "Dress", "class": "Banger", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recvyxVjtDJqfDLnb", "name": "Aimee Skirt (Black Pattern)", "color": "Black Pattern", "msrp": 88, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recrOjldI6PTljdzr", "name": "Trina Skirt (Black)", "color": "Black", "msrp": 98, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recWelRxOfIZQ5r5s", "name": "Christa Skirt (Brown)", "color": "Brown", "msrp": 78, "status": "Placed", "type": "Skirt", "class": "Fashion", "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "rec44GeuIIFdyRNIO", "name": "Ania Skirt (Green)", "color": "Green", "msrp": 0, "status": "Placed", "type": "Skirt", "class": null, "size_scale": "XS-XL", "shopify_gid": null, "handle": null },
+    { "airtable_id": "recdKTFItXuQz8gL2", "name": "Priya Top (Black)", "color": "Black", "msrp": 0, "status": "Placed", "type": "Top", "class": null, "size_scale": "XS-XL", "shopify_gid": null, "handle": null }
+  ]
+}

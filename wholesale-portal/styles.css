@@ -163,3 +163,11 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
   .headrow{align-items:flex-start}
   .cartbar .inner{flex-wrap:wrap;gap:12px}
 }
+
+/* ---- Pre-order (F26 "book now") styles ---- */
+.badge.preorder{background:var(--amber-soft);border-color:#e9d3a6;color:var(--amber)}
+.tiertab.on[data-v=preorder]{background:var(--amber);border-color:var(--amber)}
+.price .ws.tbd{font-size:13px;font-weight:600;color:var(--amber);font-family:Inter,system-ui,sans-serif}
+.sizecell.pre .av.pre{color:var(--amber);font-weight:600}
+.sizecell.pre input{border-style:dashed}
+.prenote{font-size:11.5px;color:var(--amber);background:var(--amber-soft);border:1px solid #e9d3a6;border-radius:8px;padding:7px 10px}

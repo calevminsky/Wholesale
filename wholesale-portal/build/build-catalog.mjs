@@ -31,6 +31,25 @@ import { fileURLToPath } from "node:url";
 import pg from "pg";
 import { applyPricing } from "../../src/linesheets/pricing.js";
 import { loadOffPricing, offToPricing } from "./off-pricing.mjs";
+import { loadPreorderSnapshot, preorderRecordsToRows, normTitle } from "./airtable-preorder.mjs";
+
+const HIDDEN_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "hidden.json");
+// Optional manual hide list (build/hidden.json): { ids:[], handles:[], titles:[] }.
+// Anything matched is excluded from the catalog — used to drop pre-order styles
+// that are still missing info. (You can also just uncheck "Wholesale Fall2026"
+// in Airtable and re-fetch.)
+function loadHidden() {
+  const empty = { ids: new Set(), handles: new Set(), titles: new Set() };
+  if (!fs.existsSync(HIDDEN_PATH)) return empty;
+  try {
+    const j = JSON.parse(fs.readFileSync(HIDDEN_PATH, "utf8"));
+    return {
+      ids: new Set(j.ids || []),
+      handles: new Set(j.handles || []),
+      titles: new Set((j.titles || []).map(normTitle))
+    };
+  } catch { return empty; }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, ".."); // wholesale-portal/
@@ -291,6 +310,51 @@ async function main() {
     });
   }
 
+  // ---- Pre-order styles from Airtable (not-yet-in-Shopify F26 buys) ----
+  // Merge AFTER the Shopify-sourced products and de-dupe by normalized title so
+  // anything already coming from Shopify is never doubled. Priced with the SAME
+  // full-tier engine (50% of MSRP); no live availability ("book now").
+  const hidden = loadHidden();
+  const existingTitles = new Set(products.map((p) => normTitle(p.title)));
+  const preRows = preorderRecordsToRows(loadPreorderSnapshot().records);
+  const pricedPre = applyPricing(
+    preRows.map((r) => ({ product_id: r.airtable_id, compare_at_price: r.msrp, current_price: r.msrp, unit_cost: 0 })),
+    tiers.full
+  );
+  const preWs = new Map(pricedPre.map((p) => [p.product_id, p.effective_price]));
+  const preStats = { added: 0, dup_title: 0, hidden: 0, no_price: 0 };
+  for (const r of preRows) {
+    const nt = normTitle(r.title);
+    if (hidden.ids.has(r.airtable_id) || hidden.handles.has(r.handle) || hidden.titles.has(nt)) { preStats.hidden++; continue; }
+    if (existingTitles.has(nt)) { preStats.dup_title++; continue; } // already from Shopify
+    const ws = preWs.get(r.airtable_id);
+    const hasPrice = Number.isFinite(ws) && ws > 0;
+    if (!hasPrice) preStats.no_price++;
+    const msrp = r.msrp > 0 ? r.msrp : null;
+    products.push({
+      product_id: r.airtable_id,
+      gid: `airtable:${r.airtable_id}`,
+      handle: r.handle,
+      title: r.title,
+      color: r.color || parseColor(r.title),
+      type: r.type || null,
+      class: r.class || null,
+      style_name: null,
+      tier: "full",
+      preorder: true,
+      status: r.status || "PREORDER",
+      image: null,
+      retail_price: msrp,
+      compare_at: msrp,
+      wholesale_price: hasPrice ? ws : null,
+      list_wholesale: hasPrice ? ws : null,
+      total_available: null,
+      sizes: r.sizes.map((s) => ({ size: s, sku: null, available: null }))
+    });
+    existingTitles.add(nt);
+    preStats.added++;
+  }
+
   products.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
 
   const catalog = {
@@ -301,8 +365,9 @@ async function main() {
     locations: LOCATIONS,
     tier_rules: { full: summarizeRule(tiers.full), off: summarizeRule(tiers.off) },
     counts: {
-      full: products.filter((p) => p.tier === "full").length,
+      full: products.filter((p) => p.tier === "full" && !p.preorder).length,
       off: products.filter((p) => p.tier === "off").length,
+      preorder: products.filter((p) => p.preorder).length,
       total: products.length
     },
     products
@@ -313,7 +378,10 @@ async function main() {
 
   // 6. Report.
   console.log(`\nWrote ${path.relative(ROOT, OUT_PATH)}`);
-  console.log(`  Products: ${catalog.counts.total} (${catalog.counts.full} full / ${catalog.counts.off} off)`);
+  console.log(`  Products: ${catalog.counts.total} (${catalog.counts.full} full / ${catalog.counts.off} off / ${catalog.counts.preorder} pre-order)`);
+  if (preRows.length) {
+    console.log(`  Pre-order (Airtable): +${preStats.added} added (${preStats.no_price} without a price yet), ${preStats.dup_title} skipped as already-in-Shopify, ${preStats.hidden} hidden`);
+  }
   const droppedTotal = Object.values(dropped).reduce((s, a) => s + a.length, 0);
   if (droppedTotal) {
     console.log(`  Dropped ${droppedTotal}: draft=${dropped.draft.length}, no_handle=${dropped.no_handle.length}, no_variants=${dropped.no_variants.length}, no_price=${dropped.no_price.length}`);

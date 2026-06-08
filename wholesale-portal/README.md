@@ -16,6 +16,9 @@ wholesale-portal/
   build/
     build-catalog.mjs      # catalog pipeline (DB + Shopify + pricing -> catalog.json)
     build-accounts.mjs     # vendor links from the customers table -> accounts.json
+    airtable-preorder.mjs  # fetch "Wholesale Fall2026" rows -> airtable-preorder.json
+    airtable-preorder.json # pre-order snapshot the build merges in (committed)
+    hidden.json            # optional {ids,handles,titles} excluded from catalog
     tiers.config.json      # FULL-tier rule (50% of MSRP) — full price only
     off-pricing.json       # OFF-tier rule + per-style overrides (edited via /admin)
     off-pricing.mjs        # shared off-rule model (build + admin)
@@ -67,6 +70,28 @@ node build/build-catalog.mjs --allow-drafts  # include DRAFT products
 ```
 Needs `REPORTING_DATABASE_URL` (+ Shopify creds for any handle-cache misses).
 Reuses the importer's `.env` automatically when run inside this repo.
+
+### Pre-order styles (pre-season F26 from Airtable)
+
+Upcoming F26 buys that aren't in Shopify yet (no handle, no on-hand stock) can't
+flow through the availability-driven build above. They come from Airtable instead:
+any **Products** row with the **Wholesale Fall2026** checkbox ticked. The build
+merges them in as **pre-order** cards — priced at the same 50%-of-MSRP full rule,
+shown with a "Pre-order" badge and no live stock counts ("book now"). Styles still
+missing an MSRP show **Price TBD** and aren't orderable until priced.
+
+```bash
+# refresh the pre-order snapshot from Airtable (read-only PAT):
+AIRTABLE_API_KEY=pat... node build/airtable-preorder.mjs   # -> build/airtable-preorder.json
+node build/build-catalog.mjs                                # merges it into catalog.json
+```
+
+De-dupe: a pre-order row is dropped if its title matches a style already coming
+from Shopify, so nothing is doubled. **To hide** a pre-order style, uncheck
+*Wholesale Fall2026* in Airtable and re-fetch, or add its `airtable_id`/`handle`/
+`title` to `build/hidden.json`. Set `AIRTABLE_API_KEY` on Render so the nightly
+build picks up Airtable edits. (Pre-order order lines carry a slug handle, not a
+real Shopify handle — fine while Submit is download-only.)
 
 ## Deploy (Render, same repo)
 
