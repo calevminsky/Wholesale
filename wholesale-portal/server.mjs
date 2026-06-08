@@ -49,21 +49,41 @@ app.post("/api/off-pricing", adminAuth, (req, res) => {
 });
 
 // ---- rebuild catalog ----
+// Runs one node script, appending its output to `log`. Resolves with the exit code.
+function runStep(scriptArgs, log) {
+  return new Promise((resolve, reject) => {
+    const child = spawn("node", scriptArgs, { cwd: __dirname, env: process.env });
+    child.stdout.on("data", (d) => (log.text += d));
+    child.stderr.on("data", (d) => (log.text += d));
+    child.on("close", (code) => resolve(code));
+    child.on("error", reject);
+  });
+}
+
 let rebuilding = false;
-app.post("/api/rebuild", adminAuth, (req, res) => {
+app.post("/api/rebuild", adminAuth, async (req, res) => {
   if (rebuilding) return res.status(409).json({ ok: false, error: "A rebuild is already running." });
   rebuilding = true;
-  const args = ["build/build-catalog.mjs"];
-  if (req.body?.allowDrafts) args.push("--allow-drafts");
-  const child = spawn("node", args, { cwd: __dirname, env: process.env });
-  let log = "";
-  child.stdout.on("data", (d) => (log += d));
-  child.stderr.on("data", (d) => (log += d));
-  child.on("close", (code) => {
+  const log = { text: "" };
+  try {
+    // Refresh the Airtable pre-order snapshot first (delivery dates, prices,
+    // images) when creds are present; skip cleanly otherwise so the in-stock
+    // build still works. `skipAirtable:true` forces a build-only refresh.
+    if (process.env.AIRTABLE_API_KEY && !req.body?.skipAirtable) {
+      const code = await runStep(["build/airtable-preorder.mjs"], log);
+      if (code !== 0) log.text += `\n! Airtable fetch exited ${code} — building with the existing snapshot.\n`;
+    } else if (!process.env.AIRTABLE_API_KEY) {
+      log.text += "i AIRTABLE_API_KEY not set — skipping Airtable refresh (in-stock only).\n";
+    }
+    const args = ["build/build-catalog.mjs"];
+    if (req.body?.allowDrafts) args.push("--allow-drafts");
+    const code = await runStep(args, log);
     rebuilding = false;
-    res.json({ ok: code === 0, code, log });
-  });
-  child.on("error", (e) => { rebuilding = false; res.status(500).json({ ok: false, error: String(e.message || e) }); });
+    res.json({ ok: code === 0, code, log: log.text });
+  } catch (e) {
+    rebuilding = false;
+    res.status(500).json({ ok: false, error: String(e.message || e), log: log.text });
+  }
 });
 
 // ---- static buyer portal (index, app.js, styles, data/, build/*.json) ----
