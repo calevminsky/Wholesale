@@ -29,6 +29,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { execFileSync } from "node:child_process";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, ".."); // wholesale-portal/
@@ -46,6 +47,23 @@ const FIELDS = ["Product", "Color", "MSRP", "Status", "Type", "Class", "Size Sca
 // at fetch time into this dir and store the local path in the snapshot instead.
 const IMG_DIR = path.resolve(ROOT, "data", "preorder-img");
 const IMG_PUBLIC = "data/preorder-img"; // path the front-end <img src> uses
+
+// Airtable photos arrive as big PNGs (~1MB each). The cards show them ~240px, so
+// re-encode to JPEG (q82, longest side 900px) — cuts the committed set ~5x. Done
+// via macOS `sips` when present (this fetch is run locally); best-effort, so on a
+// box without it we just keep the raw download. Returns the on-disk filename.
+const HAS_SIPS = (() => { try { execFileSync("sips", ["--version"], { stdio: "ignore" }); return true; } catch { return false; } })();
+function compressToJpeg(srcPath, id) {
+  if (!HAS_SIPS) return path.basename(srcPath);
+  const out = path.join(IMG_DIR, `${id}.jpg`);
+  try {
+    execFileSync("sips", ["-s", "format", "jpeg", "-s", "formatOptions", "82", "-Z", "900", srcPath, "--out", out], { stdio: "ignore" });
+    if (path.resolve(out) !== path.resolve(srcPath)) fs.rmSync(srcPath, { force: true });
+    return `${id}.jpg`;
+  } catch {
+    return path.basename(srcPath); // compression failed → keep the raw file
+  }
+}
 
 const SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 const DEFAULT_SCALE = ["XS", "S", "M", "L", "XL"];
@@ -176,8 +194,9 @@ async function downloadImages(records) {
         const res = await fetch(r._img.url);
         if (!res.ok) throw new Error(String(res.status));
         const buf = Buffer.from(await res.arrayBuffer());
-        const file = `${r.airtable_id}.${r._img.ext}`;
-        fs.writeFileSync(path.join(IMG_DIR, file), buf);
+        const raw = path.join(IMG_DIR, `${r.airtable_id}.${r._img.ext}`);
+        fs.writeFileSync(raw, buf);
+        const file = compressToJpeg(raw, r.airtable_id); // -> "<id>.jpg" (or raw name if no sips)
         r.image = `${IMG_PUBLIC}/${file}`;
         ok++;
       } catch { /* leave r.image unset */ }
