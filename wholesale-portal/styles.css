@@ -206,18 +206,21 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
   .linesub{display:none}
 }
 
-/* Tabloid (11x17) and larger: same 5 columns, but taller cards so it lands at
-   ~5 across x ~5 tall instead of cramming 6+ rows on the longer page. */
+/* Tabloid (11x17) and larger: 4 across x ~4 tall — bigger cards on the longer
+   page, instead of cramming more rows in. */
 @media print and (min-width:1000px){
-  .grid,.grid.compact{gap:11px}
-  .card .imgwrap{height:185px}
-  .card .body{padding:8px 9px 9px;gap:5px}
-  .card .title{font-size:12px}
-  .card .meta{font-size:10px}
-  .price .ws{font-size:15px}
-  .price .pmsrp{font-size:12px}
-  .sizecell{width:34px}
-  .sizecell input{font-size:11px}
-  .sizecell .sz{font-size:9px}
-  .sizecell .av{font-size:8px}
+  .grid,.grid.compact{grid-template-columns:repeat(4,1fr) !important;gap:12px}
+  .card .imgwrap{height:235px}
+  .card .body{padding:9px 11px 11px;gap:6px}
+  .card .title{font-size:13px}
+  .card .meta{font-size:11px}
+  .badge{font-size:9px;padding:3px 7px}
+  .price .ws{font-size:17px}
+  .price .pmsrp{font-size:13px}
+  .plabel{width:54px;font-size:9px}
+  .deliv{font-size:10px}
+  .sizecell{width:38px}
+  .sizecell input{font-size:12px}
+  .sizecell .sz{font-size:10px}
+  .sizecell .av{font-size:9px}
 }
