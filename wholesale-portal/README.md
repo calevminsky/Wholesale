@@ -86,6 +86,10 @@ AIRTABLE_API_KEY=pat... node build/airtable-preorder.mjs   # -> build/airtable-p
 node build/build-catalog.mjs                                # merges it into catalog.json
 ```
 
+Images: Airtable hands out expiring attachment URLs, so the fetch downloads each
+style's photo (Product/Swatch, else Style Image) into `data/preorder-img/<id>.<ext>`
+(committed) and stores that local path. Re-fetching overwrites by record id.
+
 De-dupe: a pre-order row is dropped if its title matches a style already coming
 from Shopify, so nothing is doubled. **To hide** a pre-order style, uncheck
 *Wholesale Fall2026* in Airtable and re-fetch, or add its `airtable_id`/`handle`/

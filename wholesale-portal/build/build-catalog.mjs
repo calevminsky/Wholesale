@@ -343,7 +343,7 @@ async function main() {
       tier: "full",
       preorder: true,
       status: r.status || "PREORDER",
-      image: null,
+      image: r.image || null,
       retail_price: msrp,
       compare_at: msrp,
       wholesale_price: hasPrice ? ws : null,

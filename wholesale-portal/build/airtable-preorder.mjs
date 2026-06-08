@@ -39,8 +39,13 @@ export const PREORDER_SNAPSHOT_PATH = path.resolve(__dirname, "airtable-preorder
 const BASE_ID = process.env.AIRTABLE_BASE_ID || "apprgpWpvIhpTw15g";
 const TABLE_ID = "tblb5qTBvAdDuxdvB";
 const WHOLESALE_CHECKBOX = "Wholesale Fall2026";
-// Fields we read (by name). Lookups (Type/Class) come back as arrays.
-const FIELDS = ["Product", "Color", "MSRP", "Status", "Type", "Class", "Size Scale", "Shopify_Product_GID", "Shopify Handle"];
+// Fields we read (by name). Lookups (Type/Class/Style Image) come back as arrays.
+const FIELDS = ["Product", "Color", "MSRP", "Status", "Type", "Class", "Size Scale", "Shopify_Product_GID", "Shopify Handle", "Product or Swatch", "Style Image"];
+
+// Airtable hands out EXPIRING attachment URLs, so we download each style's image
+// at fetch time into this dir and store the local path in the snapshot instead.
+const IMG_DIR = path.resolve(ROOT, "data", "preorder-img");
+const IMG_PUBLIC = "data/preorder-img"; // path the front-end <img src> uses
 
 const SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
 const DEFAULT_SCALE = ["XS", "S", "M", "L", "XL"];
@@ -105,6 +110,7 @@ export function preorderRecordsToRows(records) {
       status: r.status || null,
       msrp,
       handle: r.handle || slugify(name),
+      image: r.image || null,
       sizes: sizesFromScale(r.size_scale)
     });
   }
@@ -134,6 +140,53 @@ function flatCell(v) {
   return v;
 }
 
+// First attachment from an attachment field (array) OR a lookup of attachments
+// ({ valuesByLinkedRecordId: { rec: [att,...] } }).
+function firstAttachment(cell) {
+  if (!cell) return null;
+  if (Array.isArray(cell)) return cell[0] || null;
+  if (cell.valuesByLinkedRecordId) {
+    for (const arr of Object.values(cell.valuesByLinkedRecordId)) {
+      if (Array.isArray(arr) && arr.length) return arr[0];
+    }
+  }
+  return null;
+}
+function pickImage(...cells) {
+  for (const c of cells) {
+    const att = firstAttachment(c);
+    const url = att && (att.thumbnails?.large?.url || att.thumbnails?.full?.url || att.url);
+    if (url) return { url, ext: att.type === "image/png" ? "png" : "jpg" };
+  }
+  return null;
+}
+
+// Download each style's image into IMG_DIR (small concurrency); set record.image
+// to the committed local path. Best-effort: a failed download just leaves no image.
+async function downloadImages(records) {
+  fs.mkdirSync(IMG_DIR, { recursive: true });
+  const jobs = records.filter((r) => r._img && String(r.name || "").trim() && !r.shopify_gid);
+  let ok = 0;
+  const QUEUE = [...jobs];
+  async function worker() {
+    while (QUEUE.length) {
+      const r = QUEUE.shift();
+      try {
+        const res = await fetch(r._img.url);
+        if (!res.ok) throw new Error(String(res.status));
+        const buf = Buffer.from(await res.arrayBuffer());
+        const file = `${r.airtable_id}.${r._img.ext}`;
+        fs.writeFileSync(path.join(IMG_DIR, file), buf);
+        r.image = `${IMG_PUBLIC}/${file}`;
+        ok++;
+      } catch { /* leave r.image unset */ }
+    }
+  }
+  await Promise.all(Array.from({ length: 6 }, worker));
+  for (const r of records) delete r._img; // don't persist the temp URL
+  return ok;
+}
+
 async function fetchAll() {
   const key = process.env.AIRTABLE_API_KEY;
   if (!key) throw new Error("AIRTABLE_API_KEY not set — get a read-only Airtable PAT (data.records:read on the S26 base).");
@@ -160,7 +213,9 @@ async function fetchAll() {
         class: flatCell(f.Class),
         size_scale: flatCell(f["Size Scale"]),
         shopify_gid: flatCell(f.Shopify_Product_GID) || null,
-        handle: flatCell(f["Shopify Handle"]) || null
+        handle: flatCell(f["Shopify Handle"]) || null,
+        image: null,
+        _img: pickImage(f["Product or Swatch"], f["Style Image"])
       });
     }
     offset = j.offset || null;
@@ -171,13 +226,14 @@ async function fetchAll() {
 async function main() {
   loadDotenvIfNeeded();
   const records = await fetchAll();
+  const imgOk = await downloadImages(records);
   const snapshot = { fetched_at: new Date().toISOString(), source: `${BASE_ID}/${TABLE_ID}`, checkbox: WHOLESALE_CHECKBOX, count: records.length, records };
   fs.writeFileSync(PREORDER_SNAPSHOT_PATH, JSON.stringify(snapshot, null, 2));
   const named = records.filter((r) => String(r.name || "").trim());
   const withGid = records.filter((r) => r.shopify_gid);
   const withMsrp = named.filter((r) => !r.shopify_gid && Number(r.msrp) > 0);
   console.log(`Wrote ${path.relative(ROOT, PREORDER_SNAPSHOT_PATH)}`);
-  console.log(`  ${records.length} checked rows | ${named.length} named | ${withGid.length} already in Shopify (skipped as pre-order) | ${withMsrp.length} pre-order with a price`);
+  console.log(`  ${records.length} checked rows | ${named.length} named | ${withGid.length} already in Shopify (skipped as pre-order) | ${withMsrp.length} pre-order with a price | ${imgOk} images downloaded`);
 }
 
 // Run as a script (not when imported).
