@@ -184,7 +184,8 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
   /* fixed 4-across grid so cards stay readable and ~4 fit down a Letter page */
   .grid,.grid.compact{display:grid !important;grid-template-columns:repeat(4,1fr) !important;gap:9px;padding:0}
   .card{break-inside:avoid;box-shadow:none !important;border-color:var(--line)}
-  .card .imgwrap{aspect-ratio:auto;height:150px}
+  /* keep the app's tall 3/4 photo so the picture is actually visible, not a sliver */
+  .card .imgwrap{aspect-ratio:3/4;height:auto}
   .card .body{padding:7px 9px 8px;gap:4px}
   .card .title{font-size:11.5px;line-height:1.2}
   .card .meta{font-size:9.5px}
@@ -210,7 +211,6 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
    page, instead of cramming more rows in. */
 @media print and (min-width:1000px){
   .grid,.grid.compact{grid-template-columns:repeat(4,1fr) !important;gap:12px}
-  .card .imgwrap{height:235px}
   .card .body{padding:9px 11px 11px;gap:6px}
   .card .title{font-size:13px}
   .card .meta{font-size:11px}
