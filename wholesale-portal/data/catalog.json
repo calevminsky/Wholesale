@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-08T15:43:16.208Z",
+  "generated_at": "2026-06-08T16:04:06.295Z",
   "offer": "F26",
   "currency": "USD",
   "size_order": [
@@ -36,8 +36,8 @@
   "counts": {
     "full": 155,
     "off": 113,
-    "preorder": 18,
-    "total": 286
+    "preorder": 117,
+    "total": 385
   },
   "products": [
     {
@@ -317,7 +317,7 @@
       "title": "Aimee Skirt (Black Pattern)",
       "color": "Black Pattern",
       "type": "Skirt",
-      "class": "Fashion",
+      "class": null,
       "style_name": null,
       "tier": "full",
       "preorder": true,
@@ -363,7 +363,7 @@
       "title": "Aimee Skirt (Dark Brown)",
       "color": "Dark Brown",
       "type": "Skirt",
-      "class": "Fashion",
+      "class": null,
       "style_name": null,
       "tier": "full",
       "preorder": true,
@@ -493,6 +493,52 @@
       ]
     },
     {
+      "product_id": "rec2utIDNxGcPFRRQ",
+      "gid": "airtable:rec2utIDNxGcPFRRQ",
+      "handle": "alia-dress-burgudy-multi",
+      "title": "Alia Dress (Burgudy Multi)",
+      "color": "Burgudy Multi",
+      "type": "Dress",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7518541119585",
       "gid": "gid://shopify/Product/7518541119585",
       "handle": "alia-dress-navy-ground",
@@ -534,6 +580,52 @@
           "size": "XL",
           "sku": "S6-DK-623-BL1128-53L-XL",
           "available": 8
+        }
+      ]
+    },
+    {
+      "product_id": "recrj2k5XbnKud1hh",
+      "gid": "airtable:recrj2k5XbnKud1hh",
+      "handle": "alia-dress-rose-pink",
+      "title": "Alia Dress (Rose Pink)",
+      "color": "Rose Pink",
+      "type": "Dress",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -808,6 +900,98 @@
       ]
     },
     {
+      "product_id": "recHRoD0bHw3STBRB",
+      "gid": "airtable:recHRoD0bHw3STBRB",
+      "handle": "amari-dress-dark-brown",
+      "title": "Amari Dress (Dark Brown)",
+      "color": "Dark Brown",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recTHzf7jw86rLSXL",
+      "gid": "airtable:recTHzf7jw86rLSXL",
+      "handle": "amari-dress-rose-pink",
+      "title": "Amari Dress (Rose Pink)",
+      "color": "Rose Pink",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7247113814113",
       "gid": "gid://shopify/Product/7247113814113",
       "handle": "angie-dress-black",
@@ -853,12 +1037,150 @@
       ]
     },
     {
+      "product_id": "recYUDhWrG7Eh77AF",
+      "gid": "airtable:recYUDhWrG7Eh77AF",
+      "handle": "ania-skirt-burgundy",
+      "title": "Ania Skirt (Burgundy)",
+      "color": "Burgundy",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "rec44GeuIIFdyRNIO",
       "gid": "airtable:rec44GeuIIFdyRNIO",
       "handle": "ania-skirt-green",
       "title": "Ania Skirt (Green)",
       "color": "Green",
-      "type": "Skirt",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recYUtP7niUgPYlYI",
+      "gid": "airtable:recYUtP7niUgPYlYI",
+      "handle": "ania-top-burgundy",
+      "title": "Ania Top (Burgundy)",
+      "color": "Burgundy",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recN0UrvwEMQehtmB",
+      "gid": "airtable:recN0UrvwEMQehtmB",
+      "handle": "ania-top-green",
+      "title": "Ania Top (Green)",
+      "color": "Green",
+      "type": null,
       "class": null,
       "style_name": null,
       "tier": "full",
@@ -1439,6 +1761,52 @@
       ]
     },
     {
+      "product_id": "recnJVvsM2Dj8UNuj",
+      "gid": "airtable:recnJVvsM2Dj8UNuj",
+      "handle": "audrey-dress-long-sleeve-black-flower",
+      "title": "Audrey Dress Long Sleeve (Black Flower)",
+      "color": "Black Flower",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7261008920673",
       "gid": "gid://shopify/Product/7261008920673",
       "handle": "audrey-dress-long-sleeve-black",
@@ -1579,6 +1947,98 @@
       ]
     },
     {
+      "product_id": "recZnXFPAE2QbxYLM",
+      "gid": "airtable:recZnXFPAE2QbxYLM",
+      "handle": "audrey-dress-long-sleeve-purple-ground",
+      "title": "Audrey Dress Long Sleeve (Purple Ground)",
+      "color": "Purple Ground",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recjAW8usiFIeam5s",
+      "gid": "airtable:recjAW8usiFIeam5s",
+      "handle": "audrey-dress-long-sleeve-purple-khaki",
+      "title": "Audrey Dress Long Sleeve (Purple Khaki)",
+      "color": "Purple Khaki",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7481444892769",
       "gid": "gid://shopify/Product/7481444892769",
       "handle": "audrey-dress-long-sleeve-dark-green-flower",
@@ -1594,7 +2054,7 @@
       "compare_at": 148,
       "wholesale_price": 74,
       "list_wholesale": 74,
-      "total_available": 30,
+      "total_available": 31,
       "sizes": [
         {
           "size": "XXS",
@@ -1609,7 +2069,7 @@
         {
           "size": "S",
           "sku": "S6-DW-093-GR951-50S-S",
-          "available": 3
+          "available": 4
         },
         {
           "size": "M",
@@ -2354,6 +2814,52 @@
       ]
     },
     {
+      "product_id": "rec43ae0eTJoRNCT6",
+      "gid": "airtable:rec43ae0eTJoRNCT6",
+      "handle": "bria-skirt-burgundy-pattern",
+      "title": "Bria Skirt (Burgundy Pattern)",
+      "color": "Burgundy Pattern",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7195689975905",
       "gid": "gid://shopify/Product/7195689975905",
       "handle": "callie-skirt-brown",
@@ -2399,6 +2905,236 @@
       ]
     },
     {
+      "product_id": "recWBIPPEzot0ZztF",
+      "gid": "airtable:recWBIPPEzot0ZztF",
+      "handle": "camellia-dress-burgundy-pattern",
+      "title": "Camellia Dress (Burgundy Pattern)",
+      "color": "Burgundy Pattern",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recKGF8qJX4F9ziYp",
+      "gid": "airtable:recKGF8qJX4F9ziYp",
+      "handle": "camero-top-beige",
+      "title": "Camero Top (Beige)",
+      "color": "Beige",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recOLV1JEThdjO0i0",
+      "gid": "airtable:recOLV1JEThdjO0i0",
+      "handle": "camero-top-black",
+      "title": "Camero Top (Black)",
+      "color": "Black",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recpHFrpnOcslUowM",
+      "gid": "airtable:recpHFrpnOcslUowM",
+      "handle": "camero-top-burgundy",
+      "title": "Camero Top (Burgundy)",
+      "color": "Burgundy",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "reczOZFzq5yKbmxzt",
+      "gid": "airtable:reczOZFzq5yKbmxzt",
+      "handle": "camero-top-sage-green",
+      "title": "Camero Top (Sage Green)",
+      "color": "Sage Green",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "recAC3K8rwixoZHCE",
       "gid": "airtable:recAC3K8rwixoZHCE",
       "handle": "carine-dress-grey",
@@ -2415,6 +3151,144 @@
       "compare_at": 128,
       "wholesale_price": 64,
       "list_wholesale": 64,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec95D9NfGjNRVe5G",
+      "gid": "airtable:rec95D9NfGjNRVe5G",
+      "handle": "cassie-top-black",
+      "title": "Cassie Top (Black)",
+      "color": "Black",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recvxcKzxswg3KZgc",
+      "gid": "airtable:recvxcKzxswg3KZgc",
+      "handle": "cassie-top-deep-brown",
+      "title": "Cassie Top (Deep Brown)",
+      "color": "Deep Brown",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recPOI763nJmti6oU",
+      "gid": "airtable:recPOI763nJmti6oU",
+      "handle": "cerina-cardigan-black",
+      "title": "Cerina Cardigan (Black)",
+      "color": "Black",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
       "total_available": null,
       "sizes": [
         {
@@ -2763,6 +3637,190 @@
       ]
     },
     {
+      "product_id": "recwoKvzZ390n2zIC",
+      "gid": "airtable:recwoKvzZ390n2zIC",
+      "handle": "claudia-dress-teal-multi",
+      "title": "Claudia Dress (Teal Multi)",
+      "color": "Teal Multi",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec1ZfybRRUJmttfn",
+      "gid": "airtable:rec1ZfybRRUJmttfn",
+      "handle": "corinna-skirt-beige",
+      "title": "Corinna Skirt (Beige)",
+      "color": "Beige",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recdE0aUjpsw4Fx1a",
+      "gid": "airtable:recdE0aUjpsw4Fx1a",
+      "handle": "corinna-top-beige",
+      "title": "Corinna Top (Beige)",
+      "color": "Beige",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec7fw8OatLrRYuwi",
+      "gid": "airtable:rec7fw8OatLrRYuwi",
+      "handle": "cornelia-top-mint",
+      "title": "Cornelia Top (Mint)",
+      "color": "Mint",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7492665573473",
       "gid": "gid://shopify/Product/7492665573473",
       "handle": "dahlia-cardigan-light-pink",
@@ -2913,7 +3971,7 @@
       "compare_at": 78,
       "wholesale_price": 39,
       "list_wholesale": 39,
-      "total_available": 50,
+      "total_available": 49,
       "sizes": [
         {
           "size": "XXS",
@@ -2928,7 +3986,7 @@
         {
           "size": "S",
           "sku": "S4-SW-107-BL000-33N-S",
-          "available": 2
+          "available": 1
         },
         {
           "size": "M",
@@ -2949,6 +4007,52 @@
           "size": "XXL",
           "sku": "S4-SW-107-BL000-33N-XXL",
           "available": 0
+        }
+      ]
+    },
+    {
+      "product_id": "recj354z4DFpBmCBF",
+      "gid": "airtable:recj354z4DFpBmCBF",
+      "handle": "dakota-skirt-green-flower",
+      "title": "Dakota Skirt (Green Flower)",
+      "color": "Green Flower",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -3203,6 +4307,52 @@
       ]
     },
     {
+      "product_id": "recLG87IGQWcsz4pW",
+      "gid": "airtable:recLG87IGQWcsz4pW",
+      "handle": "dakota-skirt-purple-ivory",
+      "title": "Dakota Skirt (Purple Ivory)",
+      "color": "Purple Ivory",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7357652959329",
       "gid": "gid://shopify/Product/7357652959329",
       "handle": "danika-cardigan-black",
@@ -3253,8 +4403,8 @@
       "handle": "delia-skirt-black",
       "title": "Delia Skirt (Black)",
       "color": "Black",
-      "type": "Skirt",
-      "class": "Fashion",
+      "type": null,
+      "class": null,
       "style_name": null,
       "tier": "full",
       "preorder": true,
@@ -3299,8 +4449,8 @@
       "handle": "delia-skirt-brown",
       "title": "Delia Skirt (Brown)",
       "color": "Brown",
-      "type": "Skirt",
-      "class": "Fashion",
+      "type": null,
+      "class": null,
       "style_name": null,
       "tier": "full",
       "preorder": true,
@@ -3786,6 +4936,190 @@
           "size": "XL",
           "sku": "F5-TS-579-WH000-00L-XL",
           "available": 0
+        }
+      ]
+    },
+    {
+      "product_id": "recbT3Vq1IA8sw3Ci",
+      "gid": "airtable:recbT3Vq1IA8sw3Ci",
+      "handle": "elenia-skirt-brown-plaid",
+      "title": "Elenia Skirt (Brown Plaid)",
+      "color": "Brown Plaid",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Under Dev",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recuduN849ZPq5HVL",
+      "gid": "airtable:recuduN849ZPq5HVL",
+      "handle": "elenia-skirt-burgundy-pattern",
+      "title": "Elenia Skirt (Burgundy Pattern)",
+      "color": "Burgundy Pattern",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "reclJTNkVLpmgYGTg",
+      "gid": "airtable:reclJTNkVLpmgYGTg",
+      "handle": "elenia-skirt-dark-brown-pattern",
+      "title": "Elenia Skirt (Dark Brown Pattern)",
+      "color": "Dark Brown Pattern",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec1YZM7N5YnLHE4s",
+      "gid": "airtable:rec1YZM7N5YnLHE4s",
+      "handle": "elenia-skirt-dark-green-pattern",
+      "title": "Elenia Skirt (Dark Green Pattern)",
+      "color": "Dark Green Pattern",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -4580,6 +5914,190 @@
       ]
     },
     {
+      "product_id": "recMNQYEaRTG5QdJZ",
+      "gid": "airtable:recMNQYEaRTG5QdJZ",
+      "handle": "glenda-skirt-black",
+      "title": "Glenda Skirt (Black)",
+      "color": "Black",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "reczc5m2p48SdxCt6",
+      "gid": "airtable:reczc5m2p48SdxCt6",
+      "handle": "glenda-top-black",
+      "title": "Glenda Top (Black)",
+      "color": "Black",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec9fo3fVC4RulUuZ",
+      "gid": "airtable:rec9fo3fVC4RulUuZ",
+      "handle": "grazia-dress-black",
+      "title": "Grazia Dress (Black)",
+      "color": "Black",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recsVHaZTZO3eXsnh",
+      "gid": "airtable:recsVHaZTZO3eXsnh",
+      "handle": "hallie-dress-long-sleeve-brown-flower",
+      "title": "Hallie Dress Long Sleeve (Brown Flower)",
+      "color": "Brown Flower",
+      "type": "Dress",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "4460621267041",
       "gid": "gid://shopify/Product/4460621267041",
       "handle": "heidi-skirt-black-1",
@@ -4670,6 +6188,236 @@
       ]
     },
     {
+      "product_id": "recN8BT5e2OQrJ4bX",
+      "gid": "airtable:recN8BT5e2OQrJ4bX",
+      "handle": "hera-skirt-grey",
+      "title": "Hera Skirt (Grey)",
+      "color": "Grey",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recrc9jIf8D2MwHSO",
+      "gid": "airtable:recrc9jIf8D2MwHSO",
+      "handle": "ingrid-top-black",
+      "title": "Ingrid Top (Black)",
+      "color": "Black",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "reccczXpj4cY0qhYh",
+      "gid": "airtable:reccczXpj4cY0qhYh",
+      "handle": "ingrid-top-dark-brown",
+      "title": "Ingrid Top (Dark Brown)",
+      "color": "Dark Brown",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recjNddBrtycG36dg",
+      "gid": "airtable:recjNddBrtycG36dg",
+      "handle": "ingrid-top-rust",
+      "title": "Ingrid Top (Rust)",
+      "color": "Rust",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recVzsqeQqMWck0xP",
+      "gid": "airtable:recVzsqeQqMWck0xP",
+      "handle": "ingrid-top-teal",
+      "title": "Ingrid Top (Teal )",
+      "color": "Teal ",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7492661805153",
       "gid": "gid://shopify/Product/7492661805153",
       "handle": "iris-skirt-black",
@@ -4756,6 +6504,144 @@
           "size": "XL",
           "sku": "S6-SK-685-BL000-35N-XL",
           "available": 9
+        }
+      ]
+    },
+    {
+      "product_id": "reck8pR9A9WAHdgIl",
+      "gid": "airtable:reck8pR9A9WAHdgIl",
+      "handle": "jackie-skirt-brown",
+      "title": "Jackie Skirt (Brown)",
+      "color": "Brown",
+      "type": "Skirt",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec4XwZeTr8gyhBJT",
+      "gid": "airtable:rec4XwZeTr8gyhBJT",
+      "handle": "jackie-skirt-camel",
+      "title": "Jackie Skirt (Camel)",
+      "color": "Camel",
+      "type": "Skirt",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec7MyyYgMMBpgrF0",
+      "gid": "airtable:rec7MyyYgMMBpgrF0",
+      "handle": "jackie-skirt-rust",
+      "title": "Jackie Skirt (Rust)",
+      "color": "Rust",
+      "type": "Skirt",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -5120,6 +7006,52 @@
       ]
     },
     {
+      "product_id": "recrT5cd2ftzvmJce",
+      "gid": "airtable:recrT5cd2ftzvmJce",
+      "handle": "juliana-dress-brown",
+      "title": "Juliana Dress (Brown)",
+      "color": "Brown",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7492659413089",
       "gid": "gid://shopify/Product/7492659413089",
       "handle": "kalina-skirt-beige",
@@ -5435,6 +7367,282 @@
       ]
     },
     {
+      "product_id": "recntilZXCDkuMmaX",
+      "gid": "airtable:recntilZXCDkuMmaX",
+      "handle": "katana-top-black",
+      "title": "Katana Top (Black)",
+      "color": "Black",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recl3TJfcDggtrE4z",
+      "gid": "airtable:recl3TJfcDggtrE4z",
+      "handle": "kate-top-black",
+      "title": "Kate Top (Black)",
+      "color": "Black",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "reclcLNP73nBcUGSs",
+      "gid": "airtable:reclcLNP73nBcUGSs",
+      "handle": "kate-top-brown",
+      "title": "Kate Top (Brown)",
+      "color": "Brown",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recOBtA6h4XtXUxIS",
+      "gid": "airtable:recOBtA6h4XtXUxIS",
+      "handle": "kate-top-light-mocha",
+      "title": "Kate Top (Light Mocha)",
+      "color": "Light Mocha",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recHkdTjIaXayA5tv",
+      "gid": "airtable:recHkdTjIaXayA5tv",
+      "handle": "kate-top-navy",
+      "title": "Kate Top (Navy)",
+      "color": "Navy",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "reckfITAFWDZzKEWF",
+      "gid": "airtable:reckfITAFWDZzKEWF",
+      "handle": "kate-top-rose-pink",
+      "title": "Kate Top (Rose Pink)",
+      "color": "Rose Pink",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7272481456225",
       "gid": "gid://shopify/Product/7272481456225",
       "handle": "kensley-jacket-blue",
@@ -5486,7 +7694,7 @@
       "title": "Kiera Dress (Black Plaid)",
       "color": "Black Plaid",
       "type": "Dress",
-      "class": "Fashion",
+      "class": null,
       "style_name": null,
       "tier": "full",
       "preorder": true,
@@ -5532,7 +7740,7 @@
       "title": "Kiera Dress (Brown Plaid)",
       "color": "Brown Plaid",
       "type": "Dress",
-      "class": "Fashion",
+      "class": null,
       "style_name": null,
       "tier": "full",
       "preorder": true,
@@ -5587,7 +7795,7 @@
       "compare_at": 78,
       "wholesale_price": 40,
       "list_wholesale": 39,
-      "total_available": 67,
+      "total_available": 66,
       "sizes": [
         {
           "size": "XS",
@@ -5597,7 +7805,7 @@
         {
           "size": "S",
           "sku": "S6-SK-636-BL000-36N-S",
-          "available": 15
+          "available": 14
         },
         {
           "size": "M",
@@ -5632,7 +7840,7 @@
       "compare_at": 78,
       "wholesale_price": 40,
       "list_wholesale": 39,
-      "total_available": 62,
+      "total_available": 61,
       "sizes": [
         {
           "size": "XS",
@@ -5647,7 +7855,7 @@
         {
           "size": "M",
           "sku": "S6-TK-635-BL000-00L-M",
-          "available": 16
+          "available": 15
         },
         {
           "size": "L",
@@ -5933,6 +8141,52 @@
       ]
     },
     {
+      "product_id": "reczte7oRiXeogFYx",
+      "gid": "airtable:reczte7oRiXeogFYx",
+      "handle": "lexi-dress-plum-khaki",
+      "title": "Lexi Dress (Plum Khaki)",
+      "color": "Plum Khaki",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7355894268001",
       "gid": "gid://shopify/Product/7355894268001",
       "handle": "lexi-dress-53-beige",
@@ -6128,6 +8382,52 @@
       ]
     },
     {
+      "product_id": "recI8tn7uXoOJSxiP",
+      "gid": "airtable:recI8tn7uXoOJSxiP",
+      "handle": "lisa-skirt-beige-pattern",
+      "title": "Lisa Skirt (Beige Pattern)",
+      "color": "Beige Pattern",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7492110975073",
       "gid": "gid://shopify/Product/7492110975073",
       "handle": "lisa-skirt-black-ground",
@@ -6173,6 +8473,52 @@
       ]
     },
     {
+      "product_id": "recZxHvQOov6YWmrC",
+      "gid": "airtable:recZxHvQOov6YWmrC",
+      "handle": "lisa-skirt-black-ivory",
+      "title": "Lisa Skirt (Black Ivory)",
+      "color": "Black Ivory",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7434984620129",
       "gid": "gid://shopify/Product/7434984620129",
       "handle": "lisa-skirt-black-pattern-1",
@@ -6214,6 +8560,144 @@
           "size": "XL",
           "sku": "S6-SW-539-BK914-36N-XL",
           "available": 8
+        }
+      ]
+    },
+    {
+      "product_id": "recrGN2SYJ3WIVjQK",
+      "gid": "airtable:recrGN2SYJ3WIVjQK",
+      "handle": "lisa-skirt-black-sage",
+      "title": "Lisa Skirt (Black Sage)",
+      "color": "Black Sage",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec4fJ8H5zJwzWglG",
+      "gid": "airtable:rec4fJ8H5zJwzWglG",
+      "handle": "lisa-skirt-burgundy-pattern",
+      "title": "Lisa Skirt (Burgundy Pattern)",
+      "color": "Burgundy Pattern",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recrXkkywKGGKYW2m",
+      "gid": "airtable:recrXkkywKGGKYW2m",
+      "handle": "lisa-skirt-burgundy-pink",
+      "title": "Lisa Skirt (Burgundy Pink)",
+      "color": "Burgundy Pink",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -7445,7 +9929,7 @@
       "title": "Marianne Skirt (Black Plaid)",
       "color": "Black Plaid",
       "type": "Skirt",
-      "class": "Fashion",
+      "class": null,
       "style_name": null,
       "tier": "full",
       "preorder": true,
@@ -7455,6 +9939,98 @@
       "compare_at": 98,
       "wholesale_price": 49,
       "list_wholesale": 49,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recuOwGE2XAc8XK3E",
+      "gid": "airtable:recuOwGE2XAc8XK3E",
+      "handle": "marianne-skirt-brown-plaid",
+      "title": "Marianne Skirt (Brown Plaid)",
+      "color": "Brown Plaid",
+      "type": "Skirt",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recqHFwNiDqUAHovZ",
+      "gid": "airtable:recqHFwNiDqUAHovZ",
+      "handle": "marianne-top-brown-plaid",
+      "title": "Marianne top (Brown Plaid)",
+      "color": "Brown Plaid",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
       "total_available": null,
       "sizes": [
         {
@@ -7575,6 +10151,52 @@
       ]
     },
     {
+      "product_id": "recVBT0KLNEkn4Odj",
+      "gid": "airtable:recVBT0KLNEkn4Odj",
+      "handle": "mariella-dress-black-green",
+      "title": "Mariella Dress (Black Green)",
+      "color": "Black Green",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7458044969057",
       "gid": "gid://shopify/Product/7458044969057",
       "handle": "mariella-dress-black-pattern-1",
@@ -7616,6 +10238,98 @@
           "size": "XL",
           "sku": "S6-DK-593-BK945-54L-XL",
           "available": 7
+        }
+      ]
+    },
+    {
+      "product_id": "recvyPpZTzcycKSX6",
+      "gid": "airtable:recvyPpZTzcycKSX6",
+      "handle": "marina-top-black",
+      "title": "Marina Top (Black)",
+      "color": "Black",
+      "type": "Top",
+      "class": "Core",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recq3Tmx1uRnNnNlB",
+      "gid": "airtable:recq3Tmx1uRnNnNlB",
+      "handle": "marina-top-brown",
+      "title": "Marina Top (Brown)",
+      "color": "Brown",
+      "type": "Top",
+      "class": "Core",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -7751,6 +10465,282 @@
           "size": "XL",
           "sku": "F5-DW-438-ML764-53L-XL",
           "available": 1
+        }
+      ]
+    },
+    {
+      "product_id": "recV5gPbOoWmLVq66",
+      "gid": "airtable:recV5gPbOoWmLVq66",
+      "handle": "medina-skirt-brown",
+      "title": "Medina Skirt (Brown)",
+      "color": "Brown",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "receWHUnLNEiUEJmO",
+      "gid": "airtable:receWHUnLNEiUEJmO",
+      "handle": "medina-skirt-burgundy",
+      "title": "Medina Skirt (Burgundy)",
+      "color": "Burgundy",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec1pm1Zrz2R1vdtr",
+      "gid": "airtable:rec1pm1Zrz2R1vdtr",
+      "handle": "medina-skirt-dark-brown",
+      "title": "Medina Skirt (Dark Brown)",
+      "color": "Dark Brown",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recBeYqiaMHRHGPC6",
+      "gid": "airtable:recBeYqiaMHRHGPC6",
+      "handle": "medina-top-brown",
+      "title": "Medina Top (Brown)",
+      "color": "Brown",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recWi4ndmJyrrie3D",
+      "gid": "airtable:recWi4ndmJyrrie3D",
+      "handle": "medina-top-burgundy",
+      "title": "Medina Top (Burgundy)",
+      "color": "Burgundy",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec53kBLdLEfYMLsl",
+      "gid": "airtable:rec53kBLdLEfYMLsl",
+      "handle": "medina-top-dark-brown",
+      "title": "Medina Top (Dark Brown)",
+      "color": "Dark Brown",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -9375,6 +12365,52 @@
       ]
     },
     {
+      "product_id": "recYXWIf7iouraIPv",
+      "gid": "airtable:recYXWIf7iouraIPv",
+      "handle": "miri-dress-black-brown",
+      "title": "Miri Dress (Black Brown)",
+      "color": "Black Brown",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7492656889953",
       "gid": "gid://shopify/Product/7492656889953",
       "handle": "miri-dress-rust",
@@ -9461,6 +12497,52 @@
           "size": "XL",
           "sku": "S6-SK-773-BK1116-39N-XL",
           "available": 10
+        }
+      ]
+    },
+    {
+      "product_id": "reczFHGpDQVss22I9",
+      "gid": "airtable:reczFHGpDQVss22I9",
+      "handle": "miri-skirt-purple-pattern",
+      "title": "Miri Skirt (Purple Pattern)",
+      "color": "Purple Pattern",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -10005,6 +13087,52 @@
       ]
     },
     {
+      "product_id": "reczZKSY8XDpqRqSs",
+      "gid": "airtable:reczZKSY8XDpqRqSs",
+      "handle": "natalia-skirt-burgudy-multi",
+      "title": "Natalia Skirt (Burgudy Multi)",
+      "color": "Burgudy Multi",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7403035033697",
       "gid": "gid://shopify/Product/7403035033697",
       "handle": "natalia-skirt-peach-grey",
@@ -10136,6 +13264,52 @@
           "size": "XL",
           "sku": "S6-SW-738-BL000-36N-XL",
           "available": 10
+        }
+      ]
+    },
+    {
+      "product_id": "recentiLT55hMoBsC",
+      "gid": "airtable:recentiLT55hMoBsC",
+      "handle": "nora-skirt-23-brown-flower",
+      "title": "Nora Skirt 23\" (Brown Flower)",
+      "color": "Brown Flower",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -10780,6 +13954,236 @@
       ]
     },
     {
+      "product_id": "rec9ufthXfeJ3dTw7",
+      "gid": "airtable:rec9ufthXfeJ3dTw7",
+      "handle": "paolina-dress-black",
+      "title": "Paolina Dress (Black)",
+      "color": "Black",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec0OBnfo03Jw2spR",
+      "gid": "airtable:rec0OBnfo03Jw2spR",
+      "handle": "paolina-dress-burgundy",
+      "title": "Paolina Dress (Burgundy)",
+      "color": "Burgundy",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "receedN98AakDYagP",
+      "gid": "airtable:receedN98AakDYagP",
+      "handle": "patricia-dress-black-ground",
+      "title": "Patricia Dress (Black Ground)",
+      "color": "Black Ground",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recHn0VAa0AbuygDx",
+      "gid": "airtable:recHn0VAa0AbuygDx",
+      "handle": "patricia-dress-blue-pattern",
+      "title": "Patricia Dress (Blue Pattern)",
+      "color": "Blue Pattern",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recQ7tUM2xgg98PRp",
+      "gid": "airtable:recQ7tUM2xgg98PRp",
+      "handle": "patricia-dress-green-ground",
+      "title": "Patricia Dress (Green Ground)",
+      "color": "Green Ground",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7108212686945",
       "gid": "gid://shopify/Product/7108212686945",
       "handle": "perform-top-black",
@@ -10915,11 +14319,195 @@
       ]
     },
     {
+      "product_id": "recl58leRQfoNZp8s",
+      "gid": "airtable:recl58leRQfoNZp8s",
+      "handle": "printed-sweater-brown",
+      "title": "Printed Sweater (Brown)",
+      "color": "Brown",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recqkmpwmxfEbjFqE",
+      "gid": "airtable:recqkmpwmxfEbjFqE",
+      "handle": "priya-top-beige",
+      "title": "Priya Top (Beige)",
+      "color": "Beige",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "recdKTFItXuQz8gL2",
       "gid": "airtable:recdKTFItXuQz8gL2",
       "handle": "priya-top-black",
       "title": "Priya Top (Black)",
       "color": "Black",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recYBIMICwR8AMklg",
+      "gid": "airtable:recYBIMICwR8AMklg",
+      "handle": "priya-top-rust",
+      "title": "Priya Top (Rust)",
+      "color": "Rust",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recgbEvvtZxQ1j4Nl",
+      "gid": "airtable:recgbEvvtZxQ1j4Nl",
+      "handle": "priya-top-teal-navy",
+      "title": "Priya Top (Teal Navy)",
+      "color": "Teal Navy",
       "type": "Top",
       "class": null,
       "style_name": null,
@@ -11051,6 +14639,98 @@
       ]
     },
     {
+      "product_id": "recLkG7JowkvG20bF",
+      "gid": "airtable:recLkG7JowkvG20bF",
+      "handle": "pv-1265-brown",
+      "title": "PV-1265 (Brown)",
+      "color": "Brown",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recuo9y4RFxJipcn5",
+      "gid": "airtable:recuo9y4RFxJipcn5",
+      "handle": "pv-1298-brown",
+      "title": "PV-1298 (Brown)",
+      "color": "Brown",
+      "type": "Dress",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7359034589281",
       "gid": "gid://shopify/Product/7359034589281",
       "handle": "ray-top-mocha",
@@ -11092,6 +14772,98 @@
           "size": "XL",
           "sku": "F5-TK-572-BR000-00L-XL",
           "available": 0
+        }
+      ]
+    },
+    {
+      "product_id": "rec0WxWBbRnrU8Sls",
+      "gid": "airtable:rec0WxWBbRnrU8Sls",
+      "handle": "regina-dress-burgundy",
+      "title": "Regina Dress (Burgundy)",
+      "color": "Burgundy",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec8hiFRwiDwG60pn",
+      "gid": "airtable:rec8hiFRwiDwG60pn",
+      "handle": "regina-dress-navy",
+      "title": "Regina Dress (Navy)",
+      "color": "Navy",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -11182,6 +14954,52 @@
           "size": "XL",
           "sku": "S6-TK-664-BL000-00L-XL",
           "available": 1
+        }
+      ]
+    },
+    {
+      "product_id": "rechJayP3WDDMKDbO",
+      "gid": "airtable:rechJayP3WDDMKDbO",
+      "handle": "renata-skirt-dark-blue",
+      "title": "Renata Skirt (Dark Blue)",
+      "color": "Dark Blue",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -11641,6 +15459,52 @@
       ]
     },
     {
+      "product_id": "recrRITlVZ53REgbw",
+      "gid": "airtable:recrRITlVZ53REgbw",
+      "handle": "rossi-cardigan-black",
+      "title": "Rossi Cardigan (Black)",
+      "color": "Black",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "recQgl5Yzh4Y2ndXY",
       "gid": "airtable:recQgl5Yzh4Y2ndXY",
       "handle": "sandra-dress-ivory-ground",
@@ -11657,6 +15521,282 @@
       "compare_at": 128,
       "wholesale_price": 64,
       "list_wholesale": 64,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recirj1KorBUCE888",
+      "gid": "airtable:recirj1KorBUCE888",
+      "handle": "sari-skirt-blue",
+      "title": "Sari Skirt (Blue)",
+      "color": "Blue",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recPNG2qKrOClcdWV",
+      "gid": "airtable:recPNG2qKrOClcdWV",
+      "handle": "sari-skirt-burgundy",
+      "title": "Sari Skirt (Burgundy)",
+      "color": "Burgundy",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recXg70ryeOW7hH5L",
+      "gid": "airtable:recXg70ryeOW7hH5L",
+      "handle": "sari-skirt-light-pink",
+      "title": "Sari Skirt (Light Pink)",
+      "color": "Light Pink",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recrkfUWluWMcItK2",
+      "gid": "airtable:recrkfUWluWMcItK2",
+      "handle": "sari-top-blue",
+      "title": "Sari Top (Blue)",
+      "color": "Blue",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recvQx2JNURkjakfT",
+      "gid": "airtable:recvQx2JNURkjakfT",
+      "handle": "sari-top-burgundy",
+      "title": "Sari Top (Burgundy)",
+      "color": "Burgundy",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recPwjIOJZu3wy8S3",
+      "gid": "airtable:recPwjIOJZu3wy8S3",
+      "handle": "sari-top-light-pink",
+      "title": "Sari Top (Light Pink)",
+      "color": "Light Pink",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
       "total_available": null,
       "sizes": [
         {
@@ -12102,6 +16242,52 @@
       ]
     },
     {
+      "product_id": "recfurOm5nJl9olDV",
+      "gid": "airtable:recfurOm5nJl9olDV",
+      "handle": "suri-skirt-black-blue",
+      "title": "Suri Skirt (Black/Blue)",
+      "color": "Black/Blue",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7457086308449",
       "gid": "gid://shopify/Product/7457086308449",
       "handle": "suri-skirt-ivory",
@@ -12368,6 +16554,52 @@
           "size": "XL",
           "sku": "F5-SS-562-GR000-36N-XL",
           "available": 0
+        }
+      ]
+    },
+    {
+      "product_id": "recYbw1JxKip4mycf",
+      "gid": "airtable:recYbw1JxKip4mycf",
+      "handle": "tessa-skirt-ivory-ground",
+      "title": "Tessa Skirt (Ivory Ground)",
+      "color": "Ivory Ground",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -12734,6 +16966,52 @@
       ]
     },
     {
+      "product_id": "recommdBboUXlMcne",
+      "gid": "airtable:recommdBboUXlMcne",
+      "handle": "vega-skirt-grey-green",
+      "title": "Vega Skirt (Grey Green)",
+      "color": "Grey Green",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7492678713441",
       "gid": "gid://shopify/Product/7492678713441",
       "handle": "vera-skirt-blue-1",
@@ -12820,6 +17098,52 @@
           "size": "XL",
           "sku": "S6-SW-382-DB000-36N-XL",
           "available": 8
+        }
+      ]
+    },
+    {
+      "product_id": "recN8NnS4GaFLt5yB",
+      "gid": "airtable:recN8NnS4GaFLt5yB",
+      "handle": "vienna-dress-brown",
+      "title": "Vienna Dress (Brown)",
+      "color": "Brown",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Placed",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -12914,6 +17238,190 @@
       ]
     },
     {
+      "product_id": "rec7JyaZwGwWSYVVF",
+      "gid": "airtable:rec7JyaZwGwWSYVVF",
+      "handle": "yb-1017-olive-green",
+      "title": "YB-1017 (Olive Green)",
+      "color": "Olive Green",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Under Dev",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recT6MwqrD1nVJRrs",
+      "gid": "airtable:recT6MwqrD1nVJRrs",
+      "handle": "yb-1023-khaki",
+      "title": "YB-1023 (Khaki)",
+      "color": "Khaki",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "Under Dev",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recgIEz48KXcOZD1M",
+      "gid": "airtable:recgIEz48KXcOZD1M",
+      "handle": "zella-skirt-sage-green",
+      "title": "Zella Skirt (Sage Green)",
+      "color": "Sage Green",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recpBqAonpfpjsuP3",
+      "gid": "airtable:recpBqAonpfpjsuP3",
+      "handle": "zena-skirt-20-brown-patch",
+      "title": "Zena Skirt 20\" (Brown Patch )",
+      "color": "Brown Patch ",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7492659314785",
       "gid": "gid://shopify/Product/7492659314785",
       "handle": "zena-skirt-23-black-purple",
@@ -12955,6 +17463,52 @@
           "size": "XL",
           "sku": "S6-SW-053-BK984-23N-XL",
           "available": 7
+        }
+      ]
+    },
+    {
+      "product_id": "reckdmLuqGSklOJDF",
+      "gid": "airtable:reckdmLuqGSklOJDF",
+      "handle": "zena-skirt-23-brown-patch",
+      "title": "Zena Skirt 23\" (Brown Patch )",
+      "color": "Brown Patch ",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },

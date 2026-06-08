@@ -94,6 +94,7 @@ export function preorderRecordsToRows(records) {
     const name = String(r.name || "").trim();
     if (!name) continue;
     if (r.shopify_gid) continue; // real Shopify product → not a pre-order
+    if (String(r.status || "").trim().toLowerCase() === "cancelled") continue; // killed buy
     const msrp = Number(r.msrp) || 0;
     rows.push({
       airtable_id: r.airtable_id,
