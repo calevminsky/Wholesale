@@ -80,6 +80,19 @@ const LOCATIONS = [
 
 const SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "OS"];
 
+// In-stock styles quote a flat lead time; pre-order styles quote ETA + this.
+const DEFAULT_LEAD_DAYS = 14;
+const PREORDER_BUFFER_DAYS = 7;
+
+// "2026-07-06" + n days -> "2026-07-13" (date-only, UTC-safe).
+function addDays(iso, n) {
+  if (!iso) return null;
+  const d = new Date(`${String(iso).slice(0, 10)}T00:00:00Z`);
+  if (isNaN(d)) return null;
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
 // ----------------- minimal .env loader (no override of real env) -----------------
 function loadDotenvIfNeeded() {
   if (process.env.REPORTING_DATABASE_URL) return;
@@ -343,6 +356,7 @@ async function main() {
       tier: "full",
       preorder: true,
       status: r.status || "PREORDER",
+      est_delivery: addDays(r.eta, PREORDER_BUFFER_DAYS), // ETA + buffer (null if no ETA)
       image: r.image || null,
       retail_price: msrp,
       compare_at: msrp,
@@ -362,6 +376,7 @@ async function main() {
     offer: OFFER,
     currency: "USD",
     size_order: SIZE_ORDER,
+    delivery_default_days: DEFAULT_LEAD_DAYS, // in-stock lead time, applied live in the UI
     locations: LOCATIONS,
     tier_rules: { full: summarizeRule(tiers.full), off: summarizeRule(tiers.off) },
     counts: {

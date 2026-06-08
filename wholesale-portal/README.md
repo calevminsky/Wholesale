@@ -76,9 +76,15 @@ Reuses the importer's `.env` automatically when run inside this repo.
 Upcoming F26 buys that aren't in Shopify yet (no handle, no on-hand stock) can't
 flow through the availability-driven build above. They come from Airtable instead:
 any **Products** row with the **Wholesale Fall2026** checkbox ticked. The build
-merges them in as **pre-order** cards — priced at the same 50%-of-MSRP full rule,
-shown with a "Pre-order" badge and no live stock counts ("book now"). Styles still
-missing an MSRP show **Price TBD** and aren't orderable until priced.
+merges them in **as Full-price styles** (same 50%-of-MSRP rule) — they're not
+called out separately in the UI, just shown without live stock counts. Styles
+still missing an MSRP show **Price TBD** and aren't orderable until priced.
+
+**Estimated delivery.** Every card shows an est. delivery date, filterable
+("By &lt;date&gt;") and sortable, and matched by search. In-stock styles =
+**today + `delivery_default_days`** (14), computed live in the browser so it stays
+fresh. Pre-stock styles = **Airtable `TrueETA` + 7 days** baked in at build
+(`est_delivery`); no ETA → "Delivery TBD".
 
 ```bash
 # refresh the pre-order snapshot from Airtable (read-only PAT):

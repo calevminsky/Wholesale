@@ -21,6 +21,21 @@
   // base title = title with the parenthetical color removed ("Achieve Skirt (Black) 23\"" -> "Achieve Skirt 23\"")
   const baseTitle = (t) => String(t || "").replace(/\s*\([^)]*\)\s*/, " ").replace(/\s+/g, " ").trim();
 
+  // ---------- estimated delivery ----------
+  // In-stock styles: today + catalog.delivery_default_days (computed live, so it
+  // stays fresh). Pre-stock styles carry an absolute est_delivery (ETA + buffer)
+  // baked in at build; null means no ETA known yet.
+  const fmtShort = (d) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const isoLocal = (d) => d ? `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}` : null;
+  function deliveryDate(p) {
+    if (p.est_delivery) { const d = new Date(p.est_delivery + "T00:00:00"); return isNaN(d) ? null : d; }
+    if (!p.preorder) { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + (Number(CATALOG?.delivery_default_days) || 14)); return d; }
+    return null; // pre-stock with no ETA
+  }
+  const deliveryTime = (p) => { const d = deliveryDate(p); return d ? d.getTime() : Infinity; };
+  const deliveryLabel = (p) => { const d = deliveryDate(p); return d ? "Est. delivery " + fmtShort(d) : "Delivery TBD"; };
+  const deliveryHTML = (p) => `<div class="deliv ${deliveryDate(p) ? "" : "tbd"}">${deliveryLabel(p)}</div>`;
+
   // ---------- account (display-only this pass) ----------
   const token = new URLSearchParams(location.search).get("t") || "";
   let account = { name: "Guest", slug: "guest", customer_id: null };
@@ -29,7 +44,7 @@
   let CATALOG = null;
   let PRODUCTS = [];
   const byGid = new Map();
-  const filters = { q: "", type: "", color: "", tier: "full", sort: "title_asc", view: "color", density: "comfortable" };
+  const filters = { q: "", type: "", color: "", deliv: "", tier: "full", sort: "title_asc", view: "color", density: "comfortable" };
   let cart = {};                 // gid -> { [size]: qty }
   const selectedVariant = {};    // groupKey -> gid currently shown in a grouped card
 
@@ -83,6 +98,14 @@
     const uniq = (key) => [...new Set(PRODUCTS.map((p) => p[key]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
     fillSelect("#fType", uniq("type"));
     fillSelect("#fColor", uniq("color"));
+    // Delivery cutoffs ("By <date>") from the distinct delivery dates in the catalog.
+    const dates = [...new Set(PRODUCTS.map((p) => isoLocal(deliveryDate(p))).filter(Boolean))].sort();
+    const el = $("#fDeliv");
+    for (const iso of dates) {
+      const o = document.createElement("option");
+      o.value = iso; o.textContent = "By " + fmtShort(new Date(iso + "T00:00:00"));
+      el.appendChild(o);
+    }
   }
   function fillSelect(sel, vals) {
     const el = $(sel);
@@ -93,25 +116,26 @@
   function matchesBase(p) { // everything except tier (used for tier counts)
     if (filters.type && p.type !== filters.type) return false;
     if (filters.color && p.color !== filters.color) return false;
+    if (filters.deliv) { // "on or before" the chosen cutoff
+      const cutoff = new Date(filters.deliv + "T00:00:00").getTime();
+      const t = deliveryTime(p);
+      if (!isFinite(t) || t > cutoff) return false;
+    }
     if (filters.q) {
       const q = filters.q.toLowerCase();
-      if (!((p.title || "").toLowerCase().includes(q) || (p.color || "").toLowerCase().includes(q) || (p.style_name || "").toLowerCase().includes(q))) return false;
+      const hay = [p.title, p.color, p.style_name, deliveryLabel(p), p.est_delivery].filter(Boolean).join(" ").toLowerCase();
+      if (!hay.includes(q)) return false;
     }
     return true;
   }
-  function matches(p) {
-    if (filters.tier === "preorder") return p.preorder && matchesBase(p);
-    if (filters.tier) return !p.preorder && p.tier === filters.tier && matchesBase(p);
-    return matchesBase(p); // "All" includes pre-order
-  }
+  function matches(p) { return (!filters.tier || p.tier === filters.tier) && matchesBase(p); }
 
-  // group variants of the same style into one card (pre-order kept separate from
-  // the in-stock tiers so a "book now" style never merges into a Full-price card)
+  // group variants of the same style+tier into one card
   function groupsOf(list) {
     const map = new Map();
     for (const p of list) {
-      const key = baseTitle(p.title) + "|" + (p.preorder ? "pre" : p.tier);
-      if (!map.has(key)) map.set(key, { key, base: baseTitle(p.title), tier: p.tier, preorder: !!p.preorder, type: p.type, variants: [] });
+      const key = baseTitle(p.title) + "|" + p.tier;
+      if (!map.has(key)) map.set(key, { key, base: baseTitle(p.title), tier: p.tier, type: p.type, variants: [] });
       map.get(key).variants.push(p);
     }
     const groups = [...map.values()];
@@ -120,6 +144,7 @@
       g.minPrice = Math.min(...g.variants.map((v) => v.wholesale_price));
       g.maxPrice = Math.max(...g.variants.map((v) => v.wholesale_price));
       g.totalAvail = g.variants.reduce((s, v) => s + (v.total_available || 0), 0);
+      g.minDeliv = Math.min(...g.variants.map(deliveryTime));
     }
     return groups;
   }
@@ -129,7 +154,9 @@
       title_asc: (a, b) => keyer.title(a).localeCompare(keyer.title(b)),
       price_desc: (a, b) => keyer.price(b) - keyer.price(a),
       price_asc: (a, b) => keyer.price(a) - keyer.price(b),
-      avail_desc: (a, b) => keyer.avail(b) - keyer.avail(a)
+      avail_desc: (a, b) => keyer.avail(b) - keyer.avail(a),
+      deliv_asc: (a, b) => keyer.deliv(a) - keyer.deliv(b),
+      deliv_desc: (a, b) => keyer.deliv(b) - keyer.deliv(a)
     }[filters.sort];
     return arr.slice().sort(dir);
   }
@@ -139,32 +166,24 @@
     const base = PRODUCTS.filter(matchesBase);
     const count = (arr) => filters.view === "style" ? groupsOf(arr).length : arr.length;
     $("#cAll").textContent = count(base);
-    $("#cFull").textContent = count(base.filter((p) => p.tier === "full" && !p.preorder));
+    $("#cFull").textContent = count(base.filter((p) => p.tier === "full"));
     $("#cOff").textContent = count(base.filter((p) => p.tier === "off"));
-    const pre = $("#cPre"); if (pre) pre.textContent = count(base.filter((p) => p.preorder));
   }
 
   // ---------- render ----------
   function render() {
     setTierCounts();
-    const banner = $("#noticeBanner");
-    if (banner) {
-      if (filters.tier === "preorder") {
-        banner.style.display = "block";
-        banner.innerHTML = `<b>Pre-order · F26</b> — book now; these arrive when the season lands. No live stock counts, and a few are still being priced.`;
-      } else banner.style.display = "none";
-    }
     const grid = $("#grid"), empty = $("#empty");
     grid.className = "grid" + (filters.density === "compact" ? " compact" : "");
     const matched = PRODUCTS.filter(matches);
 
     let html, n;
     if (filters.view === "style") {
-      const groups = sortItems(groupsOf(matched), { title: (g) => g.base, price: (g) => g.minPrice, avail: (g) => g.totalAvail });
+      const groups = sortItems(groupsOf(matched), { title: (g) => g.base, price: (g) => g.minPrice, avail: (g) => g.totalAvail, deliv: (g) => g.minDeliv });
       n = groups.length;
       html = groups.map(groupCardHTML).join("");
     } else {
-      const items = sortItems(matched, { title: (p) => p.title || "", price: (p) => p.wholesale_price, avail: (p) => p.total_available || 0 });
+      const items = sortItems(matched, { title: (p) => p.title || "", price: (p) => p.wholesale_price, avail: (p) => p.total_available || 0, deliv: deliveryTime });
       n = items.length;
       html = items.map(flatCardHTML).join("");
     }
@@ -208,7 +227,7 @@
         return `<div class="sizecell pre">
           <span class="sz">${s.size}</span>
           <input type="number" min="0" inputmode="numeric" data-gid="${p.gid}" data-size="${s.size}" data-avail="" value="${q || ""}" placeholder="0" class="${q > 0 ? "has" : ""}">
-          <span class="av pre">pre-order</span>
+          <span class="av pre">incoming</span>
         </div>`;
       }).join("");
     }
@@ -225,7 +244,6 @@
   }
 
   function badgeHTML(o) {
-    if (o && o.preorder) return `<div class="badges"><span class="badge preorder">Pre-order</span></div>`;
     const tier = o && o.tier;
     return `<div class="badges"><span class="badge ${tier}">${tier === "full" ? "Full price" : "Off price"}</span></div>`;
   }
@@ -240,6 +258,7 @@
         <div class="title">${esc(p.title)}</div>
         <div class="meta">${p.type ? esc(p.type) : ""}${p.type && p.color ? '<span class="dot"></span>' : ""}${p.color ? esc(p.color) : ""}</div>
         <div class="price">${priceHTML(p)}</div>
+        ${deliveryHTML(p)}
         <div class="sizerun">${sizeRunHTML(p)}</div>
         <div class="linesub" data-sub="${p.gid}">${has ? lineSubLabel(p.gid) : ""}</div>
       </div>
@@ -264,6 +283,7 @@
       const has = lineUnits(v.gid) > 0;
       return `<div class="variant" data-vgid="${v.gid}" ${v.gid === sel ? "" : "hidden"}>
         <div class="price">${priceHTML(v)}</div>
+        ${deliveryHTML(v)}
         <div class="sizerun">${sizeRunHTML(v)}</div>
         <div class="linesub" data-sub="${v.gid}">${has ? lineSubLabel(v.gid) : ""}</div>
       </div>`;
@@ -473,6 +493,7 @@
     $("#q").addEventListener("input", (e) => { clearTimeout(qt); qt = setTimeout(() => { filters.q = e.target.value.trim(); render(); }, 140); });
     $("#fType").addEventListener("change", (e) => { filters.type = e.target.value; render(); });
     $("#fColor").addEventListener("change", (e) => { filters.color = e.target.value; render(); });
+    $("#fDeliv").addEventListener("change", (e) => { filters.deliv = e.target.value; render(); });
     $("#sort").addEventListener("change", (e) => { filters.sort = e.target.value; render(); });
     $("#tierSeg").addEventListener("click", (e) => {
       const b = e.target.closest(".tiertab"); if (!b) return;

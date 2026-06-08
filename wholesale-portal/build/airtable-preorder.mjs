@@ -40,7 +40,7 @@ const BASE_ID = process.env.AIRTABLE_BASE_ID || "apprgpWpvIhpTw15g";
 const TABLE_ID = "tblb5qTBvAdDuxdvB";
 const WHOLESALE_CHECKBOX = "Wholesale Fall2026";
 // Fields we read (by name). Lookups (Type/Class/Style Image) come back as arrays.
-const FIELDS = ["Product", "Color", "MSRP", "Status", "Type", "Class", "Size Scale", "Shopify_Product_GID", "Shopify Handle", "Product or Swatch", "Style Image"];
+const FIELDS = ["Product", "Color", "MSRP", "Status", "Type", "Class", "Size Scale", "Shopify_Product_GID", "Shopify Handle", "Product or Swatch", "Style Image", "TrueETA"];
 
 // Airtable hands out EXPIRING attachment URLs, so we download each style's image
 // at fetch time into this dir and store the local path in the snapshot instead.
@@ -111,6 +111,7 @@ export function preorderRecordsToRows(records) {
       msrp,
       handle: r.handle || slugify(name),
       image: r.image || null,
+      eta: r.eta || null,
       sizes: sizesFromScale(r.size_scale)
     });
   }
@@ -214,6 +215,7 @@ async function fetchAll() {
         size_scale: flatCell(f["Size Scale"]),
         shopify_gid: flatCell(f.Shopify_Product_GID) || null,
         handle: flatCell(f["Shopify Handle"]) || null,
+        eta: (flatCell(f.TrueETA) || "").slice(0, 10) || null, // best-known arrival (YYYY-MM-DD)
         image: null,
         _img: pickImage(f["Product or Swatch"], f["Style Image"])
       });

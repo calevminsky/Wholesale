@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-08T16:09:28.253Z",
+  "generated_at": "2026-06-08T16:53:22.743Z",
   "offer": "F26",
   "currency": "USD",
   "size_order": [
@@ -12,6 +12,7 @@
     "XXL",
     "OS"
   ],
+  "delivery_default_days": 14,
   "locations": [
     "gid://shopify/Location/68496293985",
     "gid://shopify/Location/31679414369",
@@ -36,8 +37,8 @@
   "counts": {
     "full": 155,
     "off": 113,
-    "preorder": 117,
-    "total": 385
+    "preorder": 126,
+    "total": 394
   },
   "products": [
     {
@@ -322,6 +323,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recvyxVjtDJqfDLnb.png",
       "retail_price": 88,
       "compare_at": 88,
@@ -368,6 +370,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/rec4foCynrGTEOfgc.jpg",
       "retail_price": 88,
       "compare_at": 88,
@@ -504,6 +507,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/rec2utIDNxGcPFRRQ.png",
       "retail_price": null,
       "compare_at": null,
@@ -584,6 +588,53 @@
       ]
     },
     {
+      "product_id": "recuCfDchgMTz5r52",
+      "gid": "airtable:recuCfDchgMTz5r52",
+      "handle": "alia-dress-olive-green-ground",
+      "title": "Alia Dress (Olive Green Ground)",
+      "color": "Olive Green Ground",
+      "type": "Dress",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/recuCfDchgMTz5r52.png",
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "recrj2k5XbnKud1hh",
       "gid": "airtable:recrj2k5XbnKud1hh",
       "handle": "alia-dress-rose-pink",
@@ -595,6 +646,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recrj2k5XbnKud1hh.png",
       "retail_price": null,
       "compare_at": null,
@@ -645,7 +697,7 @@
       "compare_at": 138,
       "wholesale_price": 60,
       "list_wholesale": 69,
-      "total_available": 80,
+      "total_available": 79,
       "sizes": [
         {
           "size": "XS",
@@ -665,7 +717,7 @@
         {
           "size": "L",
           "sku": "S6-DW-003-OW959-53S-L",
-          "available": 9
+          "available": 8
         },
         {
           "size": "XL",
@@ -911,6 +963,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recHRoD0bHw3STBRB.png",
       "retail_price": null,
       "compare_at": null,
@@ -957,6 +1010,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recTHzf7jw86rLSXL.png",
       "retail_price": null,
       "compare_at": null,
@@ -1048,6 +1102,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -1094,6 +1149,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -1140,6 +1196,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -1186,6 +1243,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -1596,7 +1654,7 @@
       "compare_at": 68,
       "wholesale_price": 68,
       "list_wholesale": 34,
-      "total_available": 56,
+      "total_available": 55,
       "sizes": [
         {
           "size": "XS",
@@ -1611,7 +1669,7 @@
         {
           "size": "M",
           "sku": "S4-SW-094-BK000-24N-M",
-          "available": 7
+          "available": 6
         },
         {
           "size": "L",
@@ -1772,6 +1830,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recnJVvsM2Dj8UNuj.png",
       "retail_price": null,
       "compare_at": null,
@@ -1958,6 +2017,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recZnXFPAE2QbxYLM.png",
       "retail_price": null,
       "compare_at": null,
@@ -2004,6 +2064,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recjAW8usiFIeam5s.png",
       "retail_price": null,
       "compare_at": null,
@@ -2825,6 +2886,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-24",
       "image": "data/preorder-img/rec43ae0eTJoRNCT6.png",
       "retail_price": null,
       "compare_at": null,
@@ -2916,6 +2978,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recWBIPPEzot0ZztF.png",
       "retail_price": null,
       "compare_at": null,
@@ -2962,6 +3025,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -3008,6 +3072,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -3054,6 +3119,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -3100,6 +3166,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -3146,6 +3213,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-09",
       "image": "data/preorder-img/recAC3K8rwixoZHCE.jpg",
       "retail_price": 128,
       "compare_at": 128,
@@ -3192,6 +3260,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-03",
       "image": "data/preorder-img/rec95D9NfGjNRVe5G.png",
       "retail_price": null,
       "compare_at": null,
@@ -3238,6 +3307,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-03",
       "image": "data/preorder-img/recvxcKzxswg3KZgc.png",
       "retail_price": null,
       "compare_at": null,
@@ -3284,6 +3354,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": "data/preorder-img/recPOI763nJmti6oU.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -3330,6 +3401,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recSrjDto8wo899iF.png",
       "retail_price": 78,
       "compare_at": 78,
@@ -3376,6 +3448,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recWelRxOfIZQ5r5s.png",
       "retail_price": 78,
       "compare_at": 78,
@@ -3422,6 +3495,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recDzzNKUlHXEzWRI.png",
       "retail_price": 78,
       "compare_at": 78,
@@ -3637,6 +3711,53 @@
       ]
     },
     {
+      "product_id": "rec2HTw7J8XTe6Qd2",
+      "gid": "airtable:rec2HTw7J8XTe6Qd2",
+      "handle": "claudia-dress-brown-pink",
+      "title": "Claudia Dress (Brown Pink)",
+      "color": "Brown Pink",
+      "type": null,
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": null,
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "recwoKvzZ390n2zIC",
       "gid": "airtable:recwoKvzZ390n2zIC",
       "handle": "claudia-dress-teal-multi",
@@ -3648,6 +3769,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-13",
       "image": "data/preorder-img/recwoKvzZ390n2zIC.png",
       "retail_price": null,
       "compare_at": null,
@@ -3694,6 +3816,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": "data/preorder-img/rec1ZfybRRUJmttfn.png",
       "retail_price": null,
       "compare_at": null,
@@ -3740,6 +3863,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": "data/preorder-img/recdE0aUjpsw4Fx1a.png",
       "retail_price": null,
       "compare_at": null,
@@ -3786,6 +3910,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": "data/preorder-img/rec7fw8OatLrRYuwi.png",
       "retail_price": null,
       "compare_at": null,
@@ -4022,6 +4147,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recj354z4DFpBmCBF.png",
       "retail_price": null,
       "compare_at": null,
@@ -4318,6 +4444,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recLG87IGQWcsz4pW.png",
       "retail_price": null,
       "compare_at": null,
@@ -4409,6 +4536,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-15",
       "image": "data/preorder-img/recelIrM1vpj66eTl.png",
       "retail_price": 88,
       "compare_at": 88,
@@ -4455,6 +4583,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-15",
       "image": "data/preorder-img/recPhUEigXTKYUBYO.png",
       "retail_price": 88,
       "compare_at": 88,
@@ -4951,6 +5080,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Under Dev",
+      "est_delivery": null,
       "image": "data/preorder-img/recbT3Vq1IA8sw3Ci.png",
       "retail_price": null,
       "compare_at": null,
@@ -4997,6 +5127,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recuduN849ZPq5HVL.png",
       "retail_price": null,
       "compare_at": null,
@@ -5043,6 +5174,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/reclJTNkVLpmgYGTg.png",
       "retail_price": null,
       "compare_at": null,
@@ -5089,6 +5221,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/rec1YZM7N5YnLHE4s.png",
       "retail_price": null,
       "compare_at": null,
@@ -5184,7 +5317,7 @@
       "compare_at": 58,
       "wholesale_price": 58,
       "list_wholesale": 29,
-      "total_available": 24,
+      "total_available": 23,
       "sizes": [
         {
           "size": "XS",
@@ -5199,7 +5332,7 @@
         {
           "size": "M",
           "sku": "S6-TW-469-BL000-00S-M",
-          "available": 5
+          "available": 4
         },
         {
           "size": "L",
@@ -5749,7 +5882,7 @@
       "compare_at": 88,
       "wholesale_price": 40,
       "list_wholesale": 44,
-      "total_available": 104,
+      "total_available": 103,
       "sizes": [
         {
           "size": "XS",
@@ -5774,7 +5907,7 @@
         {
           "size": "XL",
           "sku": "S6-TK-759-LB1127-00L-XL",
-          "available": 6
+          "available": 5
         }
       ]
     },
@@ -5794,7 +5927,7 @@
       "compare_at": 88,
       "wholesale_price": 88,
       "list_wholesale": 44,
-      "total_available": 30,
+      "total_available": 29,
       "sizes": [
         {
           "size": "XS",
@@ -5819,7 +5952,7 @@
         {
           "size": "XL",
           "sku": "S6-TK-759-LP1125-00L-XL",
-          "available": 6
+          "available": 5
         }
       ]
     },
@@ -5925,6 +6058,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": "data/preorder-img/recMNQYEaRTG5QdJZ.png",
       "retail_price": null,
       "compare_at": null,
@@ -5971,6 +6105,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": "data/preorder-img/reczc5m2p48SdxCt6.png",
       "retail_price": null,
       "compare_at": null,
@@ -6017,6 +6152,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/rec9fo3fVC4RulUuZ.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -6063,6 +6199,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": null,
       "retail_price": null,
       "compare_at": null,
@@ -6199,6 +6336,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recN8BT5e2OQrJ4bX.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -6245,6 +6383,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recrc9jIf8D2MwHSO.png",
       "retail_price": null,
       "compare_at": null,
@@ -6291,6 +6430,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/reccczXpj4cY0qhYh.png",
       "retail_price": null,
       "compare_at": null,
@@ -6337,6 +6477,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recjNddBrtycG36dg.png",
       "retail_price": null,
       "compare_at": null,
@@ -6383,6 +6524,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recVzsqeQqMWck0xP.png",
       "retail_price": null,
       "compare_at": null,
@@ -6519,6 +6661,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-09",
       "image": "data/preorder-img/reck8pR9A9WAHdgIl.png",
       "retail_price": null,
       "compare_at": null,
@@ -6565,6 +6708,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-09",
       "image": "data/preorder-img/rec4XwZeTr8gyhBJT.png",
       "retail_price": null,
       "compare_at": null,
@@ -6611,6 +6755,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-09",
       "image": "data/preorder-img/rec7MyyYgMMBpgrF0.png",
       "retail_price": null,
       "compare_at": null,
@@ -6796,7 +6941,7 @@
       "compare_at": 88,
       "wholesale_price": 44,
       "list_wholesale": 44,
-      "total_available": 115,
+      "total_available": 113,
       "sizes": [
         {
           "size": "XS",
@@ -6821,7 +6966,7 @@
         {
           "size": "XL",
           "sku": "S5-SW-276-LB000-37N-XL",
-          "available": 11
+          "available": 9
         }
       ]
     },
@@ -6961,6 +7106,53 @@
       ]
     },
     {
+      "product_id": "recYLH47OVHCGlXb4",
+      "gid": "airtable:recYLH47OVHCGlXb4",
+      "handle": "juliana-dress-black-pink",
+      "title": "Juliana Dress (Black Pink)",
+      "color": "Black Pink",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/recYLH47OVHCGlXb4.jpg",
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "7417912623201",
       "gid": "gid://shopify/Product/7417912623201",
       "handle": "juliana-dress-blue",
@@ -7017,6 +7209,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-14",
       "image": "data/preorder-img/recrT5cd2ftzvmJce.png",
       "retail_price": null,
       "compare_at": null,
@@ -7202,7 +7395,7 @@
       "compare_at": 98,
       "wholesale_price": 40,
       "list_wholesale": 49,
-      "total_available": 49,
+      "total_available": 48,
       "sizes": [
         {
           "size": "XS",
@@ -7212,7 +7405,7 @@
         {
           "size": "S",
           "sku": "S6-SW-977-BL977-36N-S",
-          "available": 18
+          "available": 17
         },
         {
           "size": "M",
@@ -7378,6 +7571,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": "data/preorder-img/recntilZXCDkuMmaX.png",
       "retail_price": null,
       "compare_at": null,
@@ -7424,6 +7618,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-07",
       "image": "data/preorder-img/recl3TJfcDggtrE4z.png",
       "retail_price": null,
       "compare_at": null,
@@ -7470,6 +7665,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-07",
       "image": "data/preorder-img/reclcLNP73nBcUGSs.png",
       "retail_price": null,
       "compare_at": null,
@@ -7516,6 +7712,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-07",
       "image": "data/preorder-img/recOBtA6h4XtXUxIS.png",
       "retail_price": null,
       "compare_at": null,
@@ -7562,6 +7759,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-07",
       "image": "data/preorder-img/recHkdTjIaXayA5tv.png",
       "retail_price": null,
       "compare_at": null,
@@ -7608,6 +7806,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-07",
       "image": "data/preorder-img/reckfITAFWDZzKEWF.png",
       "retail_price": null,
       "compare_at": null,
@@ -7688,6 +7887,53 @@
       ]
     },
     {
+      "product_id": "recZBgdVph2Md1uWJ",
+      "gid": "airtable:recZBgdVph2Md1uWJ",
+      "handle": "kerry-dress-dark-brown",
+      "title": "Kerry Dress (Dark Brown)",
+      "color": "Dark Brown",
+      "type": "Dress",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/recZBgdVph2Md1uWJ.png",
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "recLfEgmxyezgnGPY",
       "gid": "airtable:recLfEgmxyezgnGPY",
       "handle": "kiera-dress-black-plaid",
@@ -7699,6 +7945,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recLfEgmxyezgnGPY.jpg",
       "retail_price": 128,
       "compare_at": 128,
@@ -7745,6 +7992,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recI7D56MzJyMW65Q.jpg",
       "retail_price": 128,
       "compare_at": 128,
@@ -7971,6 +8219,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-07",
       "image": "data/preorder-img/recRh84gpLEhLlijq.jpg",
       "retail_price": 118,
       "compare_at": 118,
@@ -8152,6 +8401,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/reczte7oRiXeogFYx.png",
       "retail_price": null,
       "compare_at": null,
@@ -8202,17 +8452,17 @@
       "compare_at": 148,
       "wholesale_price": 50,
       "list_wholesale": 74,
-      "total_available": 31,
+      "total_available": 29,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-DW-080-BK779-53L-XS",
-          "available": 14
+          "available": 13
         },
         {
           "size": "S",
           "sku": "F5-DW-080-BK779-53L-S",
-          "available": 10
+          "available": 9
         },
         {
           "size": "M",
@@ -8393,6 +8643,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recI8tn7uXoOJSxiP.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -8484,6 +8735,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recZxHvQOov6YWmrC.png",
       "retail_price": null,
       "compare_at": null,
@@ -8575,6 +8827,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recrGN2SYJ3WIVjQK.png",
       "retail_price": null,
       "compare_at": null,
@@ -8621,6 +8874,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/rec4fJ8H5zJwzWglG.png",
       "retail_price": null,
       "compare_at": null,
@@ -8667,6 +8921,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recrXkkywKGGKYW2m.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -9122,7 +9377,7 @@
       "compare_at": 88,
       "wholesale_price": 35,
       "list_wholesale": 44,
-      "total_available": 48,
+      "total_available": 47,
       "sizes": [
         {
           "size": "XXS",
@@ -9147,7 +9402,7 @@
         {
           "size": "L",
           "sku": "S5-SW-539-OW672-36N-L",
-          "available": 9
+          "available": 8
         },
         {
           "size": "XL",
@@ -9483,6 +9738,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": null,
       "retail_price": 98,
       "compare_at": 98,
@@ -9668,12 +9924,12 @@
       "compare_at": 68,
       "wholesale_price": 30,
       "list_wholesale": 34,
-      "total_available": 58,
+      "total_available": 59,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SK-610-BL000-36N-XS",
-          "available": 24
+          "available": 25
         },
         {
           "size": "S",
@@ -9848,7 +10104,7 @@
       "compare_at": 98,
       "wholesale_price": 35,
       "list_wholesale": 49,
-      "total_available": 21,
+      "total_available": 20,
       "sizes": [
         {
           "size": "XS",
@@ -9863,7 +10119,7 @@
         {
           "size": "M",
           "sku": "S6-DK-590-BG000-52L-M",
-          "available": 3
+          "available": 2
         },
         {
           "size": "L",
@@ -9934,6 +10190,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/rec7jomlAciHoPodk.png",
       "retail_price": 98,
       "compare_at": 98,
@@ -9980,6 +10237,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-06",
       "image": "data/preorder-img/recuOwGE2XAc8XK3E.png",
       "retail_price": null,
       "compare_at": null,
@@ -10026,6 +10284,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recqHFwNiDqUAHovZ.png",
       "retail_price": null,
       "compare_at": null,
@@ -10162,6 +10421,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recVBT0KLNEkn4Odj.png",
       "retail_price": null,
       "compare_at": null,
@@ -10253,6 +10513,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recvyPpZTzcycKSX6.png",
       "retail_price": null,
       "compare_at": null,
@@ -10299,6 +10560,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recq3Tmx1uRnNnNlB.png",
       "retail_price": null,
       "compare_at": null,
@@ -10480,6 +10742,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recV5gPbOoWmLVq66.png",
       "retail_price": null,
       "compare_at": null,
@@ -10526,6 +10789,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/receWHUnLNEiUEJmO.png",
       "retail_price": null,
       "compare_at": null,
@@ -10572,6 +10836,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/rec1pm1Zrz2R1vdtr.png",
       "retail_price": null,
       "compare_at": null,
@@ -10618,6 +10883,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recBeYqiaMHRHGPC6.png",
       "retail_price": null,
       "compare_at": null,
@@ -10664,6 +10930,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recWi4ndmJyrrie3D.png",
       "retail_price": null,
       "compare_at": null,
@@ -10710,6 +10977,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/rec53kBLdLEfYMLsl.png",
       "retail_price": null,
       "compare_at": null,
@@ -11435,7 +11703,7 @@
       "compare_at": 78,
       "wholesale_price": 39,
       "list_wholesale": 39,
-      "total_available": 248,
+      "total_available": 247,
       "sizes": [
         {
           "size": "XS",
@@ -11450,7 +11718,7 @@
         {
           "size": "M",
           "sku": "F5-TK-552-BL000-00L-M",
-          "available": 48
+          "available": 47
         },
         {
           "size": "L",
@@ -11525,7 +11793,7 @@
       "compare_at": 58,
       "wholesale_price": 29,
       "list_wholesale": 29,
-      "total_available": 50,
+      "total_available": 49,
       "sizes": [
         {
           "size": "XS",
@@ -11545,7 +11813,7 @@
         {
           "size": "L",
           "sku": "S6-SK-656-BL000-23N-L",
-          "available": 9
+          "available": 8
         },
         {
           "size": "XL",
@@ -12376,7 +12644,102 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recYXWIf7iouraIPv.png",
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "rec0VPphw7f4sbIPK",
+      "gid": "airtable:rec0VPphw7f4sbIPK",
+      "handle": "miri-dress-brown-flower",
+      "title": "Miri Dress (Brown Flower)",
+      "color": "Brown Flower",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/rec0VPphw7f4sbIPK.jpg",
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recqrfce59SUlmIm5",
+      "gid": "airtable:recqrfce59SUlmIm5",
+      "handle": "miri-dress-burgundy-paisley",
+      "title": "Miri Dress (Burgundy Paisley)",
+      "color": "Burgundy Paisley",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/recqrfce59SUlmIm5.png",
       "retail_price": null,
       "compare_at": null,
       "wholesale_price": null,
@@ -12512,6 +12875,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/reczFHGpDQVss22I9.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -13087,6 +13451,53 @@
       ]
     },
     {
+      "product_id": "recgQr0RIm3C8umff",
+      "gid": "airtable:recgQr0RIm3C8umff",
+      "handle": "natalia-skirt-brown-multi",
+      "title": "Natalia Skirt (Brown Multi)",
+      "color": "Brown Multi",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/recgQr0RIm3C8umff.png",
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "reczZKSY8XDpqRqSs",
       "gid": "airtable:reczZKSY8XDpqRqSs",
       "handle": "natalia-skirt-burgudy-multi",
@@ -13098,6 +13509,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/reczZKSY8XDpqRqSs.png",
       "retail_price": null,
       "compare_at": null,
@@ -13174,6 +13586,53 @@
           "size": "XL",
           "sku": "F5-SK-569-GY833-36N-XL",
           "available": 4
+        }
+      ]
+    },
+    {
+      "product_id": "recSGfNjDhbsvZoFg",
+      "gid": "airtable:recSGfNjDhbsvZoFg",
+      "handle": "natalia-skirt-teal-burgundy",
+      "title": "Natalia Skirt (Teal Burgundy)",
+      "color": "Teal Burgundy",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/recSGfNjDhbsvZoFg.png",
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -13279,6 +13738,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recentiLT55hMoBsC.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -13965,6 +14425,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-08",
       "image": "data/preorder-img/rec9ufthXfeJ3dTw7.png",
       "retail_price": null,
       "compare_at": null,
@@ -14011,6 +14472,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-08",
       "image": "data/preorder-img/rec0OBnfo03Jw2spR.png",
       "retail_price": null,
       "compare_at": null,
@@ -14057,6 +14519,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/receedN98AakDYagP.png",
       "retail_price": null,
       "compare_at": null,
@@ -14103,6 +14566,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recHn0VAa0AbuygDx.png",
       "retail_price": null,
       "compare_at": null,
@@ -14149,6 +14613,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recQ7tUM2xgg98PRp.png",
       "retail_price": null,
       "compare_at": null,
@@ -14330,6 +14795,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recl58leRQfoNZp8s.png",
       "retail_price": null,
       "compare_at": null,
@@ -14376,6 +14842,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recqkmpwmxfEbjFqE.png",
       "retail_price": null,
       "compare_at": null,
@@ -14422,6 +14889,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recdKTFItXuQz8gL2.png",
       "retail_price": null,
       "compare_at": null,
@@ -14468,6 +14936,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recYBIMICwR8AMklg.png",
       "retail_price": null,
       "compare_at": null,
@@ -14514,6 +14983,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recgbEvvtZxQ1j4Nl.png",
       "retail_price": null,
       "compare_at": null,
@@ -14650,6 +15120,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recLkG7JowkvG20bF.png",
       "retail_price": null,
       "compare_at": null,
@@ -14696,7 +15167,55 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recuo9y4RFxJipcn5.png",
+      "retail_price": null,
+      "compare_at": null,
+      "wholesale_price": null,
+      "list_wholesale": null,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "recGmHQEygkPYhKfu",
+      "gid": "airtable:recGmHQEygkPYhKfu",
+      "handle": "pv-1302-dark-grey",
+      "title": "PV-1302 (Dark Grey)",
+      "color": "Dark Grey",
+      "type": "Dress",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/recGmHQEygkPYhKfu.png",
       "retail_price": null,
       "compare_at": null,
       "wholesale_price": null,
@@ -14787,6 +15306,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-08",
       "image": "data/preorder-img/rec0WxWBbRnrU8Sls.png",
       "retail_price": null,
       "compare_at": null,
@@ -14833,6 +15353,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-08",
       "image": "data/preorder-img/rec8hiFRwiDwG60pn.png",
       "retail_price": null,
       "compare_at": null,
@@ -14969,6 +15490,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/rechJayP3WDDMKDbO.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -15470,6 +15992,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-13",
       "image": "data/preorder-img/recrRITlVZ53REgbw.png",
       "retail_price": null,
       "compare_at": null,
@@ -15516,6 +16039,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Confirmed",
+      "est_delivery": "2026-07-22",
       "image": "data/preorder-img/recQgl5Yzh4Y2ndXY.png",
       "retail_price": 128,
       "compare_at": 128,
@@ -15562,6 +16086,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recirj1KorBUCE888.png",
       "retail_price": null,
       "compare_at": null,
@@ -15608,6 +16133,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recPNG2qKrOClcdWV.png",
       "retail_price": null,
       "compare_at": null,
@@ -15654,6 +16180,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recXg70ryeOW7hH5L.png",
       "retail_price": null,
       "compare_at": null,
@@ -15700,6 +16227,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recrkfUWluWMcItK2.png",
       "retail_price": null,
       "compare_at": null,
@@ -15746,6 +16274,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recvQx2JNURkjakfT.png",
       "retail_price": null,
       "compare_at": null,
@@ -15792,6 +16321,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-07-29",
       "image": "data/preorder-img/recPwjIOJZu3wy8S3.png",
       "retail_price": null,
       "compare_at": null,
@@ -16253,6 +16783,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recfurOm5nJl9olDV.png",
       "retail_price": null,
       "compare_at": null,
@@ -16303,7 +16834,7 @@
       "compare_at": 84,
       "wholesale_price": 40,
       "list_wholesale": 42,
-      "total_available": 52,
+      "total_available": 51,
       "sizes": [
         {
           "size": "XS",
@@ -16318,7 +16849,7 @@
         {
           "size": "M",
           "sku": "S6-SW-540-OW1007-36N-M",
-          "available": 9
+          "available": 8
         },
         {
           "size": "L",
@@ -16569,6 +17100,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recYbw1JxKip4mycf.png",
       "retail_price": null,
       "compare_at": null,
@@ -16705,6 +17237,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recrOjldI6PTljdzr.png",
       "retail_price": 98,
       "compare_at": 98,
@@ -16751,6 +17284,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-06-29",
       "image": "data/preorder-img/recjvKiZppOTrVo2Q.png",
       "retail_price": 98,
       "compare_at": 98,
@@ -16801,7 +17335,7 @@
       "compare_at": 118,
       "wholesale_price": 50,
       "list_wholesale": 59,
-      "total_available": 52,
+      "total_available": 51,
       "sizes": [
         {
           "size": "XS",
@@ -16811,7 +17345,7 @@
         {
           "size": "S",
           "sku": "F5-DW-533-BG698-53L-S",
-          "available": 12
+          "available": 11
         },
         {
           "size": "M",
@@ -16891,7 +17425,7 @@
       "compare_at": 118,
       "wholesale_price": 50,
       "list_wholesale": 59,
-      "total_available": 61,
+      "total_available": 60,
       "sizes": [
         {
           "size": "XS",
@@ -16901,7 +17435,7 @@
         {
           "size": "S",
           "sku": "F5-DW-533-BR745-53L-S",
-          "available": 18
+          "available": 17
         },
         {
           "size": "M",
@@ -16977,6 +17511,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recommdBboUXlMcne.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -17113,6 +17648,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Placed",
+      "est_delivery": "2026-08-15",
       "image": "data/preorder-img/recN8NnS4GaFLt5yB.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -17249,6 +17785,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Under Dev",
+      "est_delivery": null,
       "image": "data/preorder-img/rec7JyaZwGwWSYVVF.png",
       "retail_price": null,
       "compare_at": null,
@@ -17295,6 +17832,7 @@
       "tier": "full",
       "preorder": true,
       "status": "Under Dev",
+      "est_delivery": null,
       "image": "data/preorder-img/recT6MwqrD1nVJRrs.png",
       "retail_price": null,
       "compare_at": null,
@@ -17341,6 +17879,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recgIEz48KXcOZD1M.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -17387,6 +17926,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/recpBqAonpfpjsuP3.jpg",
       "retail_price": null,
       "compare_at": null,
@@ -17478,6 +18018,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
+      "est_delivery": null,
       "image": "data/preorder-img/reckdmLuqGSklOJDF.jpg",
       "retail_price": null,
       "compare_at": null,
