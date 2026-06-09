@@ -40,6 +40,22 @@ Run it with `server.mjs` (not a bare static server): account resolution
 (`/api/account`) and the admin's save/rebuild both need it. The `build/` folder
 (tokens, emails, pricing config) is deliberately **not** served to browsers.
 
+## Browsing
+
+Buyers land on **Non-Core** styles (the default), with **Core** and **All**
+toggles. Off-price is hidden from the line sheet for now (the off-price admin
+still exists for when it's re-enabled). Quantities are open — buyers type any
+number per size; no on-hand counts are shown.
+
+## Removing products (Emily's link)
+
+A secret-link page lets a non-admin curate the line sheet:
+`https://wholesale.yakirabella.com/curate?key=<CURATE_KEY>`. Tick styles → **Remove
+selected** → they're written to `build/hidden.json` and the catalog rebuilds, so
+buyers stop seeing them immediately. "Currently removed" lists them with a
+**restore**. The page is disabled (404) until `CURATE_KEY` is set, so the
+unguessable link is the only way in — no password.
+
 ## Pricing
 
 Prices use the SAME engine as the internal line-sheet builder
@@ -107,8 +123,9 @@ real Shopify handle — fine while Submit is download-only.)
 ## Deploy (Render, same repo)
 
 Deploy `wholesale-portal/` as a **Web Service**: build `npm install`, start
-`node server.mjs`. Set `REPORTING_DATABASE_URL`, Shopify creds, and
-`ADMIN_PASSWORD`. Custom domain `wholesale.yakirabella.com`. The admin's
+`node server.mjs`. Set `REPORTING_DATABASE_URL`, Shopify creds, `ADMIN_PASSWORD`
+(gates `/admin`), `AIRTABLE_API_KEY` (pre-order pull on rebuild), and `CURATE_KEY`
+(enables the `/curate` removal link). Custom domain `wholesale.yakirabella.com`. The admin's
 **Save & rebuild** regenerates the catalog on demand; a nightly Cron Job can also
 run `build-catalog.mjs` to refresh availability.
 

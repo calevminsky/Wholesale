@@ -44,7 +44,8 @@
   let CATALOG = null;
   let PRODUCTS = [];
   const byGid = new Map();
-  const filters = { q: "", type: "", color: "", deliv: "", tier: "full", sort: "title_asc", view: "color", density: "comfortable" };
+  const filters = { q: "", type: "", color: "", deliv: "", klass: "noncore", sort: "title_asc", view: "color", density: "comfortable" };
+  const isCore = (p) => (p.class || "").toLowerCase() === "core";
   let cart = {};                 // gid -> { [size]: qty }
   const selectedVariant = {};    // groupKey -> gid currently shown in a grouped card
 
@@ -74,7 +75,8 @@
       $("#grid").innerHTML = `<div class="empty"><div class="big">Catalog unavailable</div><div>Could not load the catalog. Please refresh.</div></div>`;
       return;
     }
-    PRODUCTS = CATALOG.products || [];
+    // Off-price is removed from the line sheet for now — only full-price styles show.
+    PRODUCTS = (CATALOG.products || []).filter((p) => p.tier !== "off");
     PRODUCTS.forEach((p) => byGid.set(p.gid, p));
     if (CATALOG.offer) $("#offerName").textContent = `${CATALOG.offer} Collection`;
 
@@ -129,7 +131,12 @@
     }
     return true;
   }
-  function matches(p) { return (!filters.tier || p.tier === filters.tier) && matchesBase(p); }
+  function matchesClass(p) {
+    if (filters.klass === "core") return isCore(p);
+    if (filters.klass === "noncore") return !isCore(p);
+    return true; // "" = all
+  }
+  function matches(p) { return matchesClass(p) && matchesBase(p); }
 
   // group variants of the same style+tier into one card
   function groupsOf(list) {
@@ -162,18 +169,18 @@
     return arr.slice().sort(dir);
   }
 
-  // ---------- tier counts ----------
-  function setTierCounts() {
+  // ---------- Core / Non-Core counts ----------
+  function setClassCounts() {
     const base = PRODUCTS.filter(matchesBase);
     const count = (arr) => filters.view === "style" ? groupsOf(arr).length : arr.length;
+    $("#cNonCore").textContent = count(base.filter((p) => !isCore(p)));
+    $("#cCore").textContent = count(base.filter((p) => isCore(p)));
     $("#cAll").textContent = count(base);
-    $("#cFull").textContent = count(base.filter((p) => p.tier === "full"));
-    $("#cOff").textContent = count(base.filter((p) => p.tier === "off"));
   }
 
   // ---------- render ----------
   function render() {
-    setTierCounts();
+    setClassCounts();
     const grid = $("#grid"), empty = $("#empty");
     grid.className = "grid" + (filters.density === "compact" ? " compact" : "");
     const matched = PRODUCTS.filter(matches);
@@ -218,36 +225,22 @@
   }
 
   function sizeRunHTML(p) {
-    // Pre-order: no live availability. Unpriced ones can't be ordered yet.
-    if (p.preorder) {
-      if (p.wholesale_price == null || !Number.isFinite(p.wholesale_price)) {
-        return `<div class="prenote">Not yet priced — check back to order.</div>`;
-      }
-      return p.sizes.map((s) => {
-        const q = Number((cart[p.gid] || {})[s.size] || 0);
-        return `<div class="sizecell pre">
-          <span class="sz">${s.size}</span>
-          <input type="number" min="0" inputmode="numeric" data-gid="${p.gid}" data-size="${s.size}" data-avail="" value="${q || ""}" placeholder="0" class="${q > 0 ? "has" : ""}">
-          <span class="av pre">incoming</span>
-        </div>`;
-      }).join("");
+    // Unpriced pre-orders can't be ordered yet.
+    if (p.preorder && (p.wholesale_price == null || !Number.isFinite(p.wholesale_price))) {
+      return `<div class="prenote">Not yet priced — check back to order.</div>`;
     }
+    // No stock display or ceilings — buyers can enter any quantity per size.
     return p.sizes.map((s) => {
       const q = Number((cart[p.gid] || {})[s.size] || 0);
-      const sold = s.available <= 0;
-      const over = q > s.available;
-      return `<div class="sizecell ${sold ? "soldout" : ""}">
+      return `<div class="sizecell">
         <span class="sz">${s.size}</span>
-        <input type="number" min="0" inputmode="numeric" data-gid="${p.gid}" data-size="${s.size}" data-avail="${s.available}" value="${q || ""}" placeholder="0" class="${q > 0 ? "has" : ""} ${over ? "over" : ""}">
-        <span class="av ${sold ? "zero" : ""}">${sold ? "0 left" : s.available + " left"}</span>
+        <input type="number" min="0" inputmode="numeric" data-gid="${p.gid}" data-size="${s.size}" value="${q || ""}" placeholder="0" class="${q > 0 ? "has" : ""}">
       </div>`;
     }).join("");
   }
 
-  function badgeHTML(o) {
-    const tier = o && o.tier;
-    return `<div class="badges"><span class="badge ${tier}">${tier === "full" ? "Full price" : "Off price"}</span></div>`;
-  }
+  // Tier badges removed (line sheet is full-price only for now).
+  function badgeHTML() { return ""; }
 
   // flat (by color) card
   function flatCardHTML(p) {
@@ -332,16 +325,12 @@
   function onQtyInput(e) {
     const inp = e.target;
     const gid = inp.dataset.gid, size = inp.dataset.size;
-    // Pre-order inputs carry an empty data-avail → no stock ceiling.
-    const avail = inp.dataset.avail === "" ? Infinity : Number(inp.dataset.avail);
     let v = parseInt(inp.value, 10);
     if (!Number.isFinite(v) || v < 0) v = 0;
     if (!cart[gid]) cart[gid] = {};
     if (v > 0) cart[gid][size] = v; else delete cart[gid][size];
     if (Object.keys(cart[gid]).length === 0) delete cart[gid];
     inp.classList.toggle("has", v > 0);
-    inp.classList.toggle("over", v > avail);
-    inp.title = v > avail ? `Only ${avail} in stock — backorder allowed` : "";
     const card = inp.closest(".card");
     const sub = card.querySelector(`[data-sub="${CSS.escape(gid)}"]`);
     if (sub) sub.innerHTML = lineSubLabel(gid);
@@ -375,28 +364,22 @@
     const lines = cartLines();
     if (!lines.length) return;
     const t = totals();
-    const groups = { full: lines.filter((p) => p.tier === "full"), off: lines.filter((p) => p.tier === "off") };
-    const groupHTML = (label, arr, cls) => {
-      if (!arr.length) return "";
-      const rows = arr.map((p) => {
-        const sizes = p.sizes.filter((s) => (cart[p.gid] || {})[s.size]).map((s) => `${s.size}·${cart[p.gid][s.size]}`).join("  ");
-        const u = lineUnits(p.gid);
-        return `<div class="rline">
-          ${p.image ? `<img class="thumb" src="${esc(p.image)}" alt="">` : `<div class="thumb"></div>`}
-          <div class="info">
-            <div class="t">${esc(p.title)}</div>
-            <div class="b">${sizes} &nbsp;·&nbsp; ${u} unit${u === 1 ? "" : "s"} @ ${money(p.wholesale_price)}</div>
-            <button class="rm" data-rm="${p.gid}">Remove</button>
-          </div>
-          <div class="ext"><div class="x">${money(lineSubtotal(p.gid))}</div><div class="u">${u}×${money(p.wholesale_price)}</div></div>
-        </div>`;
-      }).join("");
-      return `<div class="tiergroup"><h3><span class="badge ${cls}">${label}</span> ${arr.length} style${arr.length === 1 ? "" : "s"}</h3>${rows}</div>`;
-    };
+    const rows = lines.map((p) => {
+      const sizes = p.sizes.filter((s) => (cart[p.gid] || {})[s.size]).map((s) => `${s.size}·${cart[p.gid][s.size]}`).join("  ");
+      const u = lineUnits(p.gid);
+      return `<div class="rline">
+        ${p.image ? `<img class="thumb" src="${esc(p.image)}" alt="">` : `<div class="thumb"></div>`}
+        <div class="info">
+          <div class="t">${esc(p.title)}</div>
+          <div class="b">${sizes} &nbsp;·&nbsp; ${u} unit${u === 1 ? "" : "s"} @ ${money(p.wholesale_price)}</div>
+          <button class="rm" data-rm="${p.gid}">Remove</button>
+        </div>
+        <div class="ext"><div class="x">${money(lineSubtotal(p.gid))}</div><div class="u">${u}×${money(p.wholesale_price)}</div></div>
+      </div>`;
+    }).join("");
     const ship = loadShipping();
     $("#reviewContent").innerHTML =
-      groupHTML("Full Price", groups.full, "full") +
-      groupHTML("Off Price", groups.off, "off") +
+      `<div class="tiergroup">${rows}</div>` +
       `<div class="field"><label>Shipping</label>
          <div class="seg ship" id="shipSeg">
            <button data-v="all" class="${ship === "all" ? "on" : ""}">Ship all together</button>
@@ -518,9 +501,9 @@
     $("#fColor").addEventListener("change", (e) => { filters.color = e.target.value; render(); });
     $("#fDeliv").addEventListener("change", (e) => { filters.deliv = e.target.value; render(); });
     $("#sort").addEventListener("change", (e) => { filters.sort = e.target.value; render(); });
-    $("#tierSeg").addEventListener("click", (e) => {
+    $("#classSeg").addEventListener("click", (e) => {
       const b = e.target.closest(".tiertab"); if (!b) return;
-      filters.tier = b.dataset.v; $$("#tierSeg .tiertab").forEach((x) => x.classList.toggle("on", x === b)); render();
+      filters.klass = b.dataset.v; $$("#classSeg .tiertab").forEach((x) => x.classList.toggle("on", x === b)); render();
     });
     $("#viewSeg").addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;
@@ -544,8 +527,8 @@
       cart = {}; saveCart(); render(); refreshCart();
     });
     $("#reviewOverlay").addEventListener("click", (e) => { if (e.target.id === "reviewOverlay") closeReview(); });
-    // reflect the default filters in the controls (default: Full price, By color)
-    $$("#tierSeg .tiertab").forEach((x) => x.classList.toggle("on", x.dataset.v === filters.tier));
+    // reflect the default filters in the controls (default: Non-Core, By color)
+    $$("#classSeg .tiertab").forEach((x) => x.classList.toggle("on", x.dataset.v === filters.klass));
     $$("#viewSeg button").forEach((x) => x.classList.toggle("on", x.dataset.v === filters.view));
     $("#fColor").style.display = filters.view === "style" ? "none" : "";
   }

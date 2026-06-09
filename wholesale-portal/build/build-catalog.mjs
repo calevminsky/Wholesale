@@ -281,8 +281,11 @@ async function main() {
   for (const p of applyPricing(allRows, tiers.full)) listPriced.set(p.product_id, p.effective_price);
 
   // 5. Assemble catalog products.
+  // Manual removals (build/hidden.json) apply to in-stock styles too, not just
+  // pre-orders — this is what the curate/remove page writes to.
+  const hidden = loadHidden();
   const products = [];
-  const dropped = { draft: [], no_handle: [], no_variants: [], no_price: [] };
+  const dropped = { draft: [], no_handle: [], no_variants: [], no_price: [], hidden: [] };
   for (const r of headerRes.rows) {
     const gid = r.product_id;
     const tier = tierByGid.get(gid);
@@ -290,6 +293,8 @@ async function main() {
     if (status === "DRAFT" && !ALLOW_DRAFTS) { dropped.draft.push(gid); continue; }
     const handleEntry = handleMap[gid];
     if (!handleEntry?.handle) { dropped.no_handle.push(gid); continue; }
+    const numId = gid.split("/").pop();
+    if (hidden.handles.has(handleEntry.handle) || hidden.ids.has(numId) || hidden.ids.has(gid) || hidden.titles.has(normTitle(r.product_title))) { dropped.hidden.push(handleEntry.handle); continue; }
 
     const rawVariants = variantsByGid.get(gid) || [];
     const sizes = rawVariants
@@ -327,7 +332,6 @@ async function main() {
   // Merge AFTER the Shopify-sourced products and de-dupe by normalized title so
   // anything already coming from Shopify is never doubled. Priced with the SAME
   // full-tier engine (50% of MSRP); no live availability ("book now").
-  const hidden = loadHidden();
   const existingTitles = new Set(products.map((p) => normTitle(p.title)));
   const preRows = preorderRecordsToRows(loadPreorderSnapshot().records);
   const pricedPre = applyPricing(
@@ -399,7 +403,7 @@ async function main() {
   }
   const droppedTotal = Object.values(dropped).reduce((s, a) => s + a.length, 0);
   if (droppedTotal) {
-    console.log(`  Dropped ${droppedTotal}: draft=${dropped.draft.length}, no_handle=${dropped.no_handle.length}, no_variants=${dropped.no_variants.length}, no_price=${dropped.no_price.length}`);
+    console.log(`  Dropped ${droppedTotal}: draft=${dropped.draft.length}, no_handle=${dropped.no_handle.length}, no_variants=${dropped.no_variants.length}, no_price=${dropped.no_price.length}, hidden=${dropped.hidden.length}`);
     for (const [k, arr] of Object.entries(dropped)) {
       if (arr.length) console.log(`    ${k}: ${arr.slice(0, 8).join(", ")}${arr.length > 8 ? ` …(+${arr.length - 8})` : ""}`);
     }

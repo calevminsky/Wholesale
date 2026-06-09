@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yakira Bella — Remove Products</title>
+<link rel="icon" href="data:,">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--paper:#FAF7F2;--card:#FFF;--ink:#211C17;--muted:#8A8178;--line:#E7E0D6;--accent:#7C3A2E;--accent-soft:#F1E3DE;--full:#2E5A3F;--shadow:0 1px 2px rgba(33,28,23,.06),0 6px 18px rgba(33,28,23,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+header.top{background:var(--card);border-bottom:1px solid var(--line);padding:20px 0}
+h1{font-family:Fraunces,serif;font-weight:500;font-size:24px;margin:0}
+h1 .sub{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-family:Inter;font-weight:600;margin-bottom:7px}
+.hint{font-size:13px;color:var(--muted);margin:6px 0 0}
+.toolbar{position:sticky;top:0;z-index:5;background:rgba(250,247,242,.95);backdrop-filter:blur(8px);border-bottom:1px solid var(--line);padding:12px 0;margin-bottom:6px}
+.toolbar .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+input[type=search],select{border:1px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;font-size:14px;background:var(--card)}
+input[type=search]{flex:1;min-width:220px}
+.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;font-size:13px;padding:9px 16px;border-radius:999px;cursor:pointer}
+.btn:hover{border-color:var(--ink)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:disabled{opacity:.5;cursor:not-allowed}
+.count{font-size:12.5px;color:var(--muted)}
+.selinfo{font-weight:600;color:var(--accent)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;padding:14px 0 120px}
+.tile{display:flex;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;cursor:pointer;user-select:none}
+.tile.sel{border-color:var(--accent);background:var(--accent-soft)}
+.tile img,.tile .noimg{width:42px;height:54px;object-fit:cover;border-radius:6px;background:var(--paper);flex:none}
+.tile .t{font-size:13px;font-weight:600;line-height:1.2}
+.tile .c{font-size:11.5px;color:var(--muted)}
+.tile input{width:18px;height:18px;flex:none;accent-color:var(--accent)}
+.section{margin-top:18px}
+.section h2{font-family:Fraunces,serif;font-size:17px;margin:0 0 4px}
+.removed{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.rchip{display:flex;align-items:center;gap:8px;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:13px}
+.rchip button{border:0;background:transparent;color:var(--accent);font:inherit;font-weight:600;cursor:pointer;text-decoration:underline}
+.bar{position:fixed;left:0;right:0;bottom:0;background:var(--card);border-top:1px solid var(--line);box-shadow:0 -6px 18px rgba(33,28,23,.07);padding:13px 0}
+.bar .inner{display:flex;align-items:center;gap:14px}
+.spacer{flex:1}
+.status{font-size:13px;color:var(--muted)}.status.ok{color:var(--full)}.status.err{color:var(--accent)}
+.log{font-family:ui-monospace,Menlo,monospace;font-size:11.5px;white-space:pre-wrap;background:#211C17;color:#f3ebe2;border-radius:9px;padding:12px 14px;margin-top:12px;max-height:200px;overflow:auto;display:none}
+.gate{padding:80px 22px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap">
+  <h1><span class="sub">Yakira Bella · Wholesale</span>Remove products from the line sheet</h1>
+  <p class="hint">Tick every style you want taken off the line sheet, then press <b>Remove selected</b>. Buyers stop seeing them right away. You can put anything back from “Currently removed” below.</p>
+</div></header>
+
+<div class="toolbar"><div class="wrap row">
+  <input id="search" type="search" placeholder="Search style or color…" autocomplete="off">
+  <select id="fType"><option value="">Any type</option></select>
+  <span class="count" id="count"></span>
+  <span class="spacer" style="flex:1"></span>
+  <span class="selinfo" id="selinfo"></span>
+</div></div>
+
+<div class="wrap">
+  <div id="grid" class="grid"></div>
+  <div class="section" id="removedSection" style="display:none">
+    <h2>Currently removed</h2>
+    <div class="removed" id="removed"></div>
+  </div>
+  <div class="log" id="log"></div>
+</div>
+
+<div class="bar"><div class="wrap inner">
+  <span class="status" id="status">Loading…</span>
+  <span class="spacer"></span>
+  <button class="btn" id="clearSel">Clear selection</button>
+  <button class="btn primary" id="removeBtn" disabled>Remove selected</button>
+</div></div>
+
+<script src="/curate/curate.js"></script>
+</body>
+</html>

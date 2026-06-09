@@ -19,6 +19,27 @@ const PORT = process.env.PORT || 10000;
 const app = express();
 app.use(express.json({ limit: "1mb" }));
 
+// ---- removal (curate) auth: secret key in the URL (?key=) ----
+// Emily's product-removal link. Disabled (404) until CURATE_KEY is set, so an
+// unguessable link is required — no password prompt.
+const CURATE_KEY = process.env.CURATE_KEY || "";
+function curateAuth(req, res, next) {
+  if (CURATE_KEY && String(req.query.key || "") === CURATE_KEY) return next();
+  res.status(404).send("Not found.");
+}
+
+// ---- manual hide list (build/hidden.json) ----
+const HIDDEN_PATH = path.join(__dirname, "build", "hidden.json");
+function loadHidden() {
+  try {
+    const j = JSON.parse(fs.readFileSync(HIDDEN_PATH, "utf8"));
+    return { ids: j.ids || [], handles: j.handles || [], titles: j.titles || [], _removed: j._removed || [] };
+  } catch {
+    return { ids: [], handles: [], titles: [], _removed: [] };
+  }
+}
+function saveHidden(h) { fs.writeFileSync(HIDDEN_PATH, JSON.stringify(h, null, 2)); }
+
 // ---- admin auth (Basic; open when ADMIN_PASSWORD unset) ----
 function adminAuth(req, res, next) {
   const pw = process.env.ADMIN_PASSWORD || "";
@@ -78,25 +99,70 @@ function runStep(scriptArgs, log) {
 }
 
 let rebuilding = false;
+// Refresh Airtable (when creds present) then rebuild the catalog. Shared by the
+// admin "Save & rebuild" and the curate/remove page.
+async function doRebuild(log, { skipAirtable = false, allowDrafts = false } = {}) {
+  if (process.env.AIRTABLE_API_KEY && !skipAirtable) {
+    const code = await runStep(["build/airtable-preorder.mjs"], log);
+    if (code !== 0) log.text += `\n! Airtable fetch exited ${code} — building with the existing snapshot.\n`;
+  } else if (!process.env.AIRTABLE_API_KEY) {
+    log.text += "i AIRTABLE_API_KEY not set — skipping Airtable refresh (in-stock only).\n";
+  }
+  const args = ["build/build-catalog.mjs"];
+  if (allowDrafts) args.push("--allow-drafts");
+  return runStep(args, log);
+}
+
 app.post("/api/rebuild", adminAuth, async (req, res) => {
   if (rebuilding) return res.status(409).json({ ok: false, error: "A rebuild is already running." });
   rebuilding = true;
   const log = { text: "" };
   try {
-    // Refresh the Airtable pre-order snapshot first (delivery dates, prices,
-    // images) when creds are present; skip cleanly otherwise so the in-stock
-    // build still works. `skipAirtable:true` forces a build-only refresh.
-    if (process.env.AIRTABLE_API_KEY && !req.body?.skipAirtable) {
-      const code = await runStep(["build/airtable-preorder.mjs"], log);
-      if (code !== 0) log.text += `\n! Airtable fetch exited ${code} — building with the existing snapshot.\n`;
-    } else if (!process.env.AIRTABLE_API_KEY) {
-      log.text += "i AIRTABLE_API_KEY not set — skipping Airtable refresh (in-stock only).\n";
-    }
-    const args = ["build/build-catalog.mjs"];
-    if (req.body?.allowDrafts) args.push("--allow-drafts");
-    const code = await runStep(args, log);
+    const code = await doRebuild(log, { skipAirtable: req.body?.skipAirtable, allowDrafts: req.body?.allowDrafts });
     rebuilding = false;
     res.json({ ok: code === 0, code, log: log.text });
+  } catch (e) {
+    rebuilding = false;
+    res.status(500).json({ ok: false, error: String(e.message || e), log: log.text });
+  }
+});
+
+// ---- curate / remove products (Emily's secret link) ----
+// The page is key-gated; curate.js itself carries no secrets and loads via the
+// static handler. All data lives behind the key-gated /api/* routes below.
+app.get("/curate", curateAuth, (_req, res) => res.sendFile(path.join(__dirname, "curate", "index.html")));
+
+// Current removals, for the "restore" section.
+app.get("/api/hidden", curateAuth, (_req, res) => res.json({ removed: loadHidden()._removed }));
+
+// Add/restore removals, then rebuild so buyers see the change.
+app.post("/api/remove", curateAuth, async (req, res) => {
+  if (rebuilding) return res.status(409).json({ ok: false, error: "A rebuild is already running." });
+  const add = Array.isArray(req.body?.add) ? req.body.add : [];        // [{handle, title, gid}]
+  const restore = Array.isArray(req.body?.restore) ? req.body.restore : []; // [handle]
+  // Key removals by handle only — it's unique for both in-stock (real Shopify
+  // handle) and pre-order (slug) styles, so add/restore stay symmetric.
+  const h = loadHidden();
+  const handleSet = new Set(h.handles);
+  const removedByHandle = new Map(h._removed.map((r) => [r.handle, r]));
+  for (const it of add) {
+    if (!it?.handle) continue;
+    handleSet.add(it.handle);
+    removedByHandle.set(it.handle, { handle: it.handle, title: it.title || it.handle });
+  }
+  for (const handle of restore) {
+    handleSet.delete(handle);
+    removedByHandle.delete(handle);
+  }
+  const next = { ids: h.ids, handles: [...handleSet], titles: h.titles, _removed: [...removedByHandle.values()] };
+  saveHidden(next);
+
+  rebuilding = true;
+  const log = { text: "" };
+  try {
+    const code = await doRebuild(log, {});
+    rebuilding = false;
+    res.json({ ok: code === 0, code, removed: next._removed, log: log.text });
   } catch (e) {
     rebuilding = false;
     res.status(500).json({ ok: false, error: String(e.message || e), log: log.text });
