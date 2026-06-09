@@ -80,9 +80,10 @@
 
     if (token) {
       try {
-        const acc = await (await fetch("build/accounts.json", { cache: "no-store" })).json();
-        const hit = acc.accounts?.[token];
-        if (hit) account = { name: hit.name, slug: hit.slug, customer_id: hit.customer_id ?? null };
+        // Resolve just this token's account (name/slug/customer_id) — the full
+        // accounts list with emails is never exposed to the browser.
+        const j = await (await fetch(`api/account?token=${encodeURIComponent(token)}`, { cache: "no-store" })).json();
+        if (j.account) account = { name: j.account.name, slug: j.account.slug, customer_id: j.account.customer_id ?? null };
       } catch {}
     }
     $("#acctLine").innerHTML = `Browsing as <b>${esc(account.name)}</b>`;

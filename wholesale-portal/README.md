@@ -36,8 +36,9 @@ node server.mjs                 # http://localhost:10000  (PORT to override)
 #   buyer portal:  /?t=<token>
 #   admin:         /admin   (set ADMIN_PASSWORD to gate it)
 ```
-The buyer portal is also pure static files, so `python3 -m http.server` works for
-browsing — but the admin's save/rebuild needs `server.mjs`.
+Run it with `server.mjs` (not a bare static server): account resolution
+(`/api/account`) and the admin's save/rebuild both need it. The `build/` folder
+(tokens, emails, pricing config) is deliberately **not** served to browsers.
 
 ## Pricing
 

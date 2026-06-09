@@ -35,6 +35,23 @@ function adminAuth(req, res, next) {
 app.get("/admin", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "index.html")));
 app.get("/admin/admin.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "admin.js")));
 
+// ---- account resolution (buyer portal) ----
+// Returns ONLY the public-facing fields for a known token (name, slug,
+// customer_id). Never the email, and an unknown token reveals nothing — so the
+// full accounts list (tokens + emails) is never exposed to buyers.
+app.get("/api/account", (req, res) => {
+  const token = String(req.query.token || "");
+  if (!token) return res.json({ account: null });
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "build", "accounts.json"), "utf8"));
+    const hit = data.accounts?.[token];
+    if (!hit) return res.json({ account: null });
+    res.json({ account: { name: hit.name, slug: hit.slug, customer_id: hit.customer_id ?? null } });
+  } catch {
+    res.json({ account: null });
+  }
+});
+
 // ---- off-pricing API ----
 app.get("/api/off-pricing", (_req, res) => res.json({ ...loadOffPricing(), modes: OFF_MODES }));
 
@@ -86,7 +103,14 @@ app.post("/api/rebuild", adminAuth, async (req, res) => {
   }
 });
 
-// ---- static buyer portal (index, app.js, styles, data/, build/*.json) ----
+// ---- static buyer portal (index, app.js, styles, data/) ----
+// Block the build/ folder: it holds accounts.json (tokens + emails),
+// off-pricing.json, the assignment seed, and the handle cache — none of which
+// should be publicly fetchable. Buyers get account info via /api/account.
+app.use((req, res, next) => {
+  if (req.path === "/build" || req.path.startsWith("/build/")) return res.status(404).send("Not found");
+  next();
+});
 app.use(express.static(__dirname, { extensions: ["html"] }));
 
 app.listen(PORT, () => console.log(`Wholesale portal on :${PORT}  (admin at /admin${process.env.ADMIN_PASSWORD ? "" : " — OPEN, set ADMIN_PASSWORD"})`));
