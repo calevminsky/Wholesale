@@ -13,6 +13,7 @@ import fs from "node:fs";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { loadOffPricing, saveOffPricing, OFF_MODES } from "./build/off-pricing.mjs";
+import { getHiddenHandles, listHidden, addHidden, removeHidden } from "./build/hidden-store.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 10000;
@@ -28,17 +29,24 @@ function curateAuth(req, res, next) {
   res.status(404).send("Not found.");
 }
 
-// ---- manual hide list (build/hidden.json) ----
-const HIDDEN_PATH = path.join(__dirname, "build", "hidden.json");
-function loadHidden() {
-  try {
-    const j = JSON.parse(fs.readFileSync(HIDDEN_PATH, "utf8"));
-    return { ids: j.ids || [], handles: j.handles || [], titles: j.titles || [], _removed: j._removed || [] };
-  } catch {
-    return { ids: [], handles: [], titles: [], _removed: [] };
-  }
+// ---- removals: served catalog is filtered by the durable DB hide list ----
+// catalog.json is cached (re-read when the file changes); the hide list is
+// cached briefly and force-refreshed on every removal so changes are instant.
+let _catalog = null, _catalogMtime = 0;
+function readCatalog() {
+  const f = path.join(__dirname, "data", "catalog.json");
+  const st = fs.statSync(f);
+  if (!_catalog || st.mtimeMs !== _catalogMtime) { _catalog = JSON.parse(fs.readFileSync(f, "utf8")); _catalogMtime = st.mtimeMs; }
+  return _catalog;
 }
-function saveHidden(h) { fs.writeFileSync(HIDDEN_PATH, JSON.stringify(h, null, 2)); }
+let _hidden = new Set(), _hiddenAt = 0;
+async function hiddenSet(force = false) {
+  if (force || Date.now() - _hiddenAt > 15_000) {
+    try { _hidden = new Set(await getHiddenHandles()); _hiddenAt = Date.now(); }
+    catch (e) { console.error("hidden refresh failed:", e.message); } // keep last good set
+  }
+  return _hidden;
+}
 
 // ---- admin auth (Basic; open when ADMIN_PASSWORD unset) ----
 function adminAuth(req, res, next) {
@@ -132,40 +140,36 @@ app.post("/api/rebuild", adminAuth, async (req, res) => {
 // static handler. All data lives behind the key-gated /api/* routes below.
 app.get("/curate", curateAuth, (_req, res) => res.sendFile(path.join(__dirname, "curate", "index.html")));
 
-// Current removals, for the "restore" section.
-app.get("/api/hidden", curateAuth, (_req, res) => res.json({ removed: loadHidden()._removed }));
+// Current removals (for the "Currently removed" / restore list).
+app.get("/api/hidden", curateAuth, async (_req, res) => {
+  try { res.json({ removed: await listHidden() }); }
+  catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
 
-// Add/restore removals, then rebuild so buyers see the change.
+// Add/restore removals. Stored in Postgres (durable across redeploys) and
+// applied to the served catalog immediately — no rebuild needed. Keyed by
+// handle, which is unique for both in-stock and pre-order styles.
 app.post("/api/remove", curateAuth, async (req, res) => {
-  if (rebuilding) return res.status(409).json({ ok: false, error: "A rebuild is already running." });
-  const add = Array.isArray(req.body?.add) ? req.body.add : [];        // [{handle, title, gid}]
+  const add = Array.isArray(req.body?.add) ? req.body.add : [];          // [{handle, title}]
   const restore = Array.isArray(req.body?.restore) ? req.body.restore : []; // [handle]
-  // Key removals by handle only — it's unique for both in-stock (real Shopify
-  // handle) and pre-order (slug) styles, so add/restore stay symmetric.
-  const h = loadHidden();
-  const handleSet = new Set(h.handles);
-  const removedByHandle = new Map(h._removed.map((r) => [r.handle, r]));
-  for (const it of add) {
-    if (!it?.handle) continue;
-    handleSet.add(it.handle);
-    removedByHandle.set(it.handle, { handle: it.handle, title: it.title || it.handle });
-  }
-  for (const handle of restore) {
-    handleSet.delete(handle);
-    removedByHandle.delete(handle);
-  }
-  const next = { ids: h.ids, handles: [...handleSet], titles: h.titles, _removed: [...removedByHandle.values()] };
-  saveHidden(next);
-
-  rebuilding = true;
-  const log = { text: "" };
   try {
-    const code = await doRebuild(log, {});
-    rebuilding = false;
-    res.json({ ok: code === 0, code, removed: next._removed, log: log.text });
+    if (add.length) await addHidden(add);
+    if (restore.length) await removeHidden(restore);
+    await hiddenSet(true); // refresh the serve-time filter right away
+    res.json({ ok: true, removed: await listHidden() });
   } catch (e) {
-    rebuilding = false;
-    res.status(500).json({ ok: false, error: String(e.message || e), log: log.text });
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
+// ---- catalog (filtered by the durable removal list, applied at serve time) ----
+app.get("/data/catalog.json", async (_req, res) => {
+  try {
+    const cat = readCatalog();
+    const hide = await hiddenSet();
+    res.json(hide.size ? { ...cat, products: (cat.products || []).filter((p) => !hide.has(p.handle)) } : cat);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message || e) });
   }
 });
 

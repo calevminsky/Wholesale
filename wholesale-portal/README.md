@@ -51,10 +51,16 @@ number per size; no on-hand counts are shown.
 
 A secret-link page lets a non-admin curate the line sheet:
 `https://wholesale.yakirabella.com/curate?key=<CURATE_KEY>`. Tick styles → **Remove
-selected** → they're written to `build/hidden.json` and the catalog rebuilds, so
-buyers stop seeing them immediately. "Currently removed" lists them with a
-**restore**. The page is disabled (404) until `CURATE_KEY` is set, so the
+selected** → buyers stop seeing them immediately. "Currently removed" lists them
+with a **restore**. The page is disabled (404) until `CURATE_KEY` is set, so the
 unguessable link is the only way in — no password.
+
+Removals are **durable**: they're stored in Postgres (`wholesale_portal_hidden`
+table in `yb_reports`, auto-created), and the server filters the served catalog
+by that list at request time. So a removal takes effect instantly (no rebuild)
+**and survives every redeploy/restart** — unlike the off-price/rebuild path,
+which is recomputed on rebuild. The committed `data/catalog.json` is never
+mutated by removals; it's filtered on the way out.
 
 ## Pricing
 

@@ -80,24 +80,25 @@
   async function submit({ add = [], restore = [] }) {
     if (!add.length && !restore.length) return;
     $("#removeBtn").disabled = true;
-    setStatus(restore.length ? "Restoring…" : "Removing & rebuilding the line sheet…", "");
-    const log = $("#log"); log.style.display = "block"; log.textContent = "Working…";
+    setStatus(restore.length ? "Restoring…" : "Removing…", "");
     try {
       const res = await fetch(withKey("/api/remove"), {
         method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ add, restore })
       });
       const j = await res.json();
-      log.textContent = j.log || j.error || "(no output)";
-      log.scrollTop = log.scrollHeight;
-      if (!res.ok || !j.ok) { setStatus("Failed (see log).", "err"); return; }
+      if (!res.ok || !j.ok) {
+        const log = $("#log"); log.style.display = "block"; log.textContent = j.error || ("HTTP " + res.status);
+        setStatus("Failed — nothing changed.", "err");
+        return;
+      }
       // Drop removed items from the local list; clear selection.
-      const goneHandles = new Set(add.map((a) => a.handle));
-      if (add.length) PRODUCTS = PRODUCTS.filter((p) => !goneHandles.has(p.handle));
+      const gone = new Set(add.map((a) => a.handle));
+      if (add.length) PRODUCTS = PRODUCTS.filter((p) => !gone.has(p.handle));
       selected.clear();
       renderRemoved(j.removed || []);
       render();
-      setStatus(restore.length ? "Restored — buyers see it again." : "Removed — buyers no longer see those styles.", "ok");
+      setStatus(restore.length ? "Restored — buyers see it again." : `Removed ${gone.size} style${gone.size === 1 ? "" : "s"} — gone for good.`, "ok");
     } catch (e) {
       setStatus("Error: " + e.message, "err");
     } finally {
