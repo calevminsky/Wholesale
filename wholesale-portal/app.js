@@ -94,17 +94,34 @@
     render();
     refreshCart();
 
-    // Who's browsing? saved identity > per-account token > show the entry gate.
+    // Who's browsing? saved identity > per-account token > secret bypass link > entry gate.
+    let resolved = false;
     const id = loadIdentity();
     if (id && id.company && id.email) {
       account = { name: id.company, slug: slugify(id.company), customer_id: null, email: id.email };
-    } else if (token) {
+      resolved = true;
+    }
+    if (!resolved && token) {
       try {
         const j = await (await fetch(`api/account?token=${encodeURIComponent(token)}`, { cache: "no-store" })).json();
-        if (j.account) account = { name: j.account.name, slug: j.account.slug, customer_id: j.account.customer_id ?? null, email: "" };
+        if (j.account) { account = { name: j.account.name, slug: j.account.slug, customer_id: j.account.customer_id ?? null, email: "" }; resolved = true; }
       } catch {}
     }
-    if (account.name !== "Guest") showAccount(); else showGate();
+    if (!resolved) {
+      const params = new URLSearchParams(location.search);
+      const bypass = params.get("bypass") || "";
+      if (bypass) {
+        try {
+          const g = await (await fetch(`api/gate?key=${encodeURIComponent(bypass)}`, { cache: "no-store" })).json();
+          if (g.ok) {
+            const asName = (params.get("as") || "").trim();
+            account = { name: asName || "Guest", slug: slugify(asName || "guest"), customer_id: null, email: "" };
+            resolved = true;
+          }
+        } catch {}
+      }
+    }
+    if (resolved) showAccount(); else showGate();
   }
 
   // ---------- entry gate ----------

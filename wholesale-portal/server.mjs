@@ -85,6 +85,13 @@ app.get("/api/account", (req, res) => {
   }
 });
 
+// ---- gate bypass: a secret link (?bypass=KEY) skips the entry popup ----
+// Validated server-side so the key is never embedded in the page.
+const GATE_BYPASS_KEY = process.env.GATE_BYPASS_KEY || "";
+app.get("/api/gate", (req, res) => {
+  res.json({ ok: !!GATE_BYPASS_KEY && String(req.query.key || "") === GATE_BYPASS_KEY });
+});
+
 // ---- off-pricing API ----
 app.get("/api/off-pricing", (_req, res) => res.json({ ...loadOffPricing(), modes: OFF_MODES }));
 
