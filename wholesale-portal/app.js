@@ -112,7 +112,15 @@
     hideGate();
     $("#acctLine").innerHTML = `Browsing as <b>${esc(account.name)}</b> · <a id="changeId">not you?</a>`;
     $("#changeId")?.addEventListener("click", () => { clearIdentity(); showGate(); });
-    if (account.email) saveEmail(account.email);
+    if (account.email) { saveEmail(account.email); logVisit(); }
+  }
+  // Record gate visitors (company + email) for the admin lead list. Fire-and-forget.
+  function logVisit() {
+    if (!account.email) return;
+    try {
+      fetch("api/visit", { method: "POST", headers: { "Content-Type": "application/json" }, keepalive: true,
+        body: JSON.stringify({ company: account.name, email: account.email }) }).catch(() => {});
+    } catch {}
   }
   function showGate() {
     const id = loadIdentity();

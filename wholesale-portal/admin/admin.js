@@ -38,6 +38,24 @@
     renderRows();
     setStatus(`${OFF.length} off-price styles · prices are whole dollars`, "");
     wire();
+    loadLeads();
+  }
+
+  // ---- leads (who entered via the public gate) ----
+  let LEADS = [];
+  const fmtDate = (s) => { if (!s) return ""; const d = new Date(s); return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }); };
+  async function loadLeads() {
+    try { LEADS = (await fetch("/api/visits").then((r) => r.ok ? r.json() : { visits: [] })).visits || []; }
+    catch { LEADS = []; }
+    renderLeads();
+  }
+  function renderLeads() {
+    const q = ($("#leadSearch").value || "").toLowerCase();
+    const list = LEADS.filter((v) => !q || (v.company || "").toLowerCase().includes(q) || (v.email || "").toLowerCase().includes(q));
+    $("#leadRows").innerHTML = list.map((v) =>
+      `<tr><td class="tname">${esc(v.company || "—")}</td><td>${esc(v.email)}</td><td class="num">${v.visits}</td><td>${fmtDate(v.first_seen)}</td><td>${fmtDate(v.last_seen)}</td></tr>`
+    ).join("");
+    $("#leadCount").textContent = LEADS.length ? `${LEADS.length} contact${LEADS.length === 1 ? "" : "s"}` : "none yet";
   }
 
   function syncValVisibility() {
@@ -129,6 +147,8 @@
     $("#saveRule").addEventListener("click", save);
     $("#rebuild").addEventListener("click", rebuild);
     $("#clearOvr").addEventListener("click", () => { if (Object.keys(overrides).length && confirm("Remove all per-style overrides?")) { overrides = {}; renderRows(); } });
+    $("#refreshLeads").addEventListener("click", loadLeads);
+    let lt; $("#leadSearch").addEventListener("input", () => { clearTimeout(lt); lt = setTimeout(renderLeads, 120); });
   }
 
   boot().catch((e) => setStatus("Failed to load: " + e.message, "err"));

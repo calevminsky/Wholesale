@@ -16,6 +16,7 @@ import { loadOffPricing, saveOffPricing, OFF_MODES } from "./build/off-pricing.m
 import { getHiddenHandles, listHidden, addHidden, removeHidden } from "./build/hidden-store.mjs";
 import { lineSheetBuffer } from "./build/linesheet-xlsx.mjs";
 import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
+import { logVisit, listVisits } from "./build/visits-store.mjs";
 import sgMail from "@sendgrid/mail";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -200,6 +201,18 @@ app.get("/data/catalog.json", async (_req, res) => {
   } catch (e) {
     res.status(500).json({ error: String(e.message || e) });
   }
+});
+
+// ---- lead capture: record gate entries (public write, admin read) ----
+app.post("/api/visit", async (req, res) => {
+  const { company, email } = req.body || {};
+  if (!email || !/.+@.+\..+/.test(String(email))) return res.json({ ok: false });
+  try { await logVisit(company, email); res.json({ ok: true }); }
+  catch (e) { console.warn("logVisit failed:", e.message); res.json({ ok: false }); }
+});
+app.get("/api/visits", adminAuth, async (_req, res) => {
+  try { res.json({ visits: await listVisits() }); }
+  catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
 // ---- submit an order: email it to the wholesale team (+ optional buyer copy) ----

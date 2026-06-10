@@ -74,6 +74,22 @@ tr:hover td{background:var(--paper)}
   </div>
 
   <div class="panel">
+    <h2>Who viewed the line sheet</h2>
+    <p class="hint">Everyone who entered through the public link (store name + email). Deduped by email, newest first.</p>
+    <div class="toolbar2">
+      <input id="leadSearch" type="search" placeholder="Search company or email…" autocomplete="off">
+      <span class="muted" id="leadCount"></span>
+      <button class="btn" id="refreshLeads">Refresh</button>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Company</th><th>Email</th><th class="num">Visits</th><th>First seen</th><th>Last seen</th></tr></thead>
+        <tbody id="leadRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Per-style overrides</h2>
     <p class="hint">Set an exact wholesale price for any off-price style. Leave blank to use the rule above. Prices shown are whole dollars.</p>
     <div class="toolbar2">
