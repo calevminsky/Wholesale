@@ -1,8 +1,8 @@
 {
-  "fetched_at": "2026-06-09T23:04:15.618Z",
+  "fetched_at": "2026-06-10T19:09:08.524Z",
   "source": "apprgpWpvIhpTw15g/tblb5qTBvAdDuxdvB",
   "checkbox": "Wholesale Fall2026",
-  "count": 138,
+  "count": 175,
   "records": [
     {
       "airtable_id": "rec0OBnfo03Jw2spR",
@@ -16,7 +16,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-01",
-      "image": "data/preorder-img/rec0OBnfo03Jw2spR.jpg"
+      "image": "data/preorder-img/rec0OBnfo03Jw2spR.png"
     },
     {
       "airtable_id": "rec0VPphw7f4sbIPK",
@@ -29,8 +29,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/rec0VPphw7f4sbIPK.jpg"
+      "eta": "2026-07-25",
+      "image": "data/preorder-img/rec0VPphw7f4sbIPK.png"
     },
     {
       "airtable_id": "rec0WxWBbRnrU8Sls",
@@ -44,7 +44,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-01",
-      "image": "data/preorder-img/rec0WxWBbRnrU8Sls.jpg"
+      "image": "data/preorder-img/rec0WxWBbRnrU8Sls.png"
+    },
+    {
+      "airtable_id": "rec0t5LufizR8qo5j",
+      "name": "Aviana Skirt (Brown Pattern)",
+      "color": "Brown Pattern",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-22",
+      "image": "data/preorder-img/rec0t5LufizR8qo5j.jpg"
     },
     {
       "airtable_id": "rec1KJxGDzcaVFQez",
@@ -58,7 +72,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/rec1KJxGDzcaVFQez.jpg"
+      "image": "data/preorder-img/rec1KJxGDzcaVFQez.png"
     },
     {
       "airtable_id": "rec1YZM7N5YnLHE4s",
@@ -72,7 +86,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/rec1YZM7N5YnLHE4s.jpg"
+      "image": "data/preorder-img/rec1YZM7N5YnLHE4s.png"
     },
     {
       "airtable_id": "rec1ZfybRRUJmttfn",
@@ -86,7 +100,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/rec1ZfybRRUJmttfn.jpg"
+      "image": "data/preorder-img/rec1ZfybRRUJmttfn.png"
+    },
+    {
+      "airtable_id": "rec2EHlX23y4cHVxM",
+      "name": "Mika Skirt (Navy)",
+      "color": "Navy",
+      "msrp": 78,
+      "status": "Delivered",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7567049130081",
+      "handle": "mika-skirt-navy",
+      "eta": "2026-06-04",
+      "image": null
     },
     {
       "airtable_id": "rec2HTw7J8XTe6Qd2",
@@ -99,8 +127,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/rec2HTw7J8XTe6Qd2.jpg"
+      "eta": "2026-08-05",
+      "image": "data/preorder-img/rec2HTw7J8XTe6Qd2.png"
     },
     {
       "airtable_id": "rec2NZrUMkDZDtJaM",
@@ -114,7 +142,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/rec2NZrUMkDZDtJaM.jpg"
+      "image": "data/preorder-img/rec2NZrUMkDZDtJaM.png"
+    },
+    {
+      "airtable_id": "rec2dJbPguKgaOmlj",
+      "name": "Camellia Dress (Black)",
+      "color": "Black",
+      "msrp": 118,
+      "status": "Placed",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-07-22",
+      "image": "data/preorder-img/rec2dJbPguKgaOmlj.png"
     },
     {
       "airtable_id": "rec2utIDNxGcPFRRQ",
@@ -128,7 +170,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/rec2utIDNxGcPFRRQ.jpg"
+      "image": "data/preorder-img/rec2utIDNxGcPFRRQ.png"
     },
     {
       "airtable_id": "rec43ae0eTJoRNCT6",
@@ -142,7 +184,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-17",
-      "image": "data/preorder-img/rec43ae0eTJoRNCT6.jpg"
+      "image": "data/preorder-img/rec43ae0eTJoRNCT6.png"
     },
     {
       "airtable_id": "rec44GeuIIFdyRNIO",
@@ -156,7 +198,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/rec44GeuIIFdyRNIO.jpg"
+      "image": "data/preorder-img/rec44GeuIIFdyRNIO.png"
     },
     {
       "airtable_id": "rec4XwZeTr8gyhBJT",
@@ -170,7 +212,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-02",
-      "image": "data/preorder-img/rec4XwZeTr8gyhBJT.jpg"
+      "image": "data/preorder-img/rec4XwZeTr8gyhBJT.png"
     },
     {
       "airtable_id": "rec4fJ8H5zJwzWglG",
@@ -183,8 +225,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/rec4fJ8H5zJwzWglG.jpg"
+      "eta": "2026-08-20",
+      "image": "data/preorder-img/rec4fJ8H5zJwzWglG.png"
     },
     {
       "airtable_id": "rec4foCynrGTEOfgc",
@@ -201,6 +243,34 @@
       "image": "data/preorder-img/rec4foCynrGTEOfgc.jpg"
     },
     {
+      "airtable_id": "rec4t0PrbKjKItWrN",
+      "name": "Margaret Dress (Black)",
+      "color": "Black",
+      "msrp": 128,
+      "status": "Delivered",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7323991146593",
+      "handle": null,
+      "eta": "2025-12-15",
+      "image": null
+    },
+    {
+      "airtable_id": "rec6DeQfKqRDQUyAF",
+      "name": "PV-1087 (Navy)",
+      "color": "Navy",
+      "msrp": 0,
+      "status": null,
+      "type": "Dress",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": null,
+      "image": "data/preorder-img/rec6DeQfKqRDQUyAF.jpg"
+    },
+    {
       "airtable_id": "rec7JyaZwGwWSYVVF",
       "name": "YB-1017 (Olive Green)",
       "color": "Olive Green",
@@ -212,7 +282,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/rec7JyaZwGwWSYVVF.jpg"
+      "image": "data/preorder-img/rec7JyaZwGwWSYVVF.png"
     },
     {
       "airtable_id": "rec7MyyYgMMBpgrF0",
@@ -226,7 +296,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-02",
-      "image": "data/preorder-img/rec7MyyYgMMBpgrF0.jpg"
+      "image": "data/preorder-img/rec7MyyYgMMBpgrF0.png"
     },
     {
       "airtable_id": "rec7fw8OatLrRYuwi",
@@ -254,7 +324,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/rec7jomlAciHoPodk.jpg"
+      "image": "data/preorder-img/rec7jomlAciHoPodk.png"
+    },
+    {
+      "airtable_id": "rec8LctnOxg2zp6TS",
+      "name": "Irina Top (Brown)",
+      "color": "Brown",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Top",
+      "class": null,
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/rec8LctnOxg2zp6TS.png"
     },
     {
       "airtable_id": "rec8hiFRwiDwG60pn",
@@ -268,7 +352,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-01",
-      "image": "data/preorder-img/rec8hiFRwiDwG60pn.jpg"
+      "image": "data/preorder-img/rec8hiFRwiDwG60pn.png"
     },
     {
       "airtable_id": "rec95D9NfGjNRVe5G",
@@ -282,7 +366,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-27",
-      "image": "data/preorder-img/rec95D9NfGjNRVe5G.jpg"
+      "image": "data/preorder-img/rec95D9NfGjNRVe5G.png"
     },
     {
       "airtable_id": "rec9fo3fVC4RulUuZ",
@@ -310,7 +394,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-01",
-      "image": "data/preorder-img/rec9ufthXfeJ3dTw7.jpg"
+      "image": "data/preorder-img/rec9ufthXfeJ3dTw7.png"
     },
     {
       "airtable_id": "recA7hJRWpgMSCtO3",
@@ -323,7 +407,7 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
+      "eta": "2026-08-31",
       "image": "data/preorder-img/recA7hJRWpgMSCtO3.jpg"
     },
     {
@@ -341,18 +425,18 @@
       "image": "data/preorder-img/recAC3K8rwixoZHCE.jpg"
     },
     {
-      "airtable_id": "recCCVxWIisDHU6qG",
-      "name": "Ania Skirt (Brown)",
-      "color": "Brown",
-      "msrp": 68,
-      "status": "Cancelled",
-      "type": "Skirt",
-      "class": "Fashion",
-      "size_scale": "XS-XL",
-      "shopify_gid": null,
+      "airtable_id": "recBGjD0pUFU1vSOA",
+      "name": "Audrey Dress Short Sleeve (Black Ground)",
+      "color": "Black Ground",
+      "msrp": 148,
+      "status": "Delivered",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7481439846497",
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recCCVxWIisDHU6qG.jpg"
+      "eta": "2026-02-21",
+      "image": null
     },
     {
       "airtable_id": "recCd3BO5JsTiyMPE",
@@ -369,6 +453,34 @@
       "image": null
     },
     {
+      "airtable_id": "recCpPVzCr7CVtr40",
+      "name": "Supreme Dress 37\" (Green)",
+      "color": "Green",
+      "msrp": 78,
+      "status": "Delivered",
+      "type": "Dress",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7450451116129",
+      "handle": null,
+      "eta": "2026-01-02",
+      "image": null
+    },
+    {
+      "airtable_id": "recDHbNbiV0HTcWkT",
+      "name": "Miri Skirt (Black Pattern)",
+      "color": "Black Pattern",
+      "msrp": 88,
+      "status": "Delivered",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7540884373601",
+      "handle": "miri-skirt-black-pattern",
+      "eta": "2026-04-29",
+      "image": null
+    },
+    {
       "airtable_id": "recDzzNKUlHXEzWRI",
       "name": "Christa Skirt (Burgundy Ground)",
       "color": "Burgundy Ground",
@@ -380,7 +492,35 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recDzzNKUlHXEzWRI.jpg"
+      "image": "data/preorder-img/recDzzNKUlHXEzWRI.png"
+    },
+    {
+      "airtable_id": "recF3wQ7yfyCKE9Ph",
+      "name": "Bria Skirt (Navy Brown)",
+      "color": "Navy Brown",
+      "msrp": 78,
+      "status": "Delivered",
+      "type": "Skirt",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7581348397153",
+      "handle": "bria-skirt-navy-brown",
+      "eta": "2026-06-04",
+      "image": null
+    },
+    {
+      "airtable_id": "recGf0SZFq9B0kNsm",
+      "name": "Irina Skirt (Dark Green)",
+      "color": "Dark Green",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": null,
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/recGf0SZFq9B0kNsm.png"
     },
     {
       "airtable_id": "recGmHQEygkPYhKfu",
@@ -394,7 +534,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recGmHQEygkPYhKfu.jpg"
+      "image": "data/preorder-img/recGmHQEygkPYhKfu.png"
     },
     {
       "airtable_id": "recHRoD0bHw3STBRB",
@@ -408,7 +548,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recHRoD0bHw3STBRB.jpg"
+      "image": "data/preorder-img/recHRoD0bHw3STBRB.png"
     },
     {
       "airtable_id": "recHkdTjIaXayA5tv",
@@ -422,21 +562,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-27",
-      "image": "data/preorder-img/recHkdTjIaXayA5tv.jpg"
+      "image": "data/preorder-img/recHkdTjIaXayA5tv.png"
     },
     {
       "airtable_id": "recHn0VAa0AbuygDx",
       "name": "Patricia Dress (Blue Pattern)",
       "color": "Blue Pattern",
       "msrp": 128,
-      "status": null,
+      "status": "Placed",
       "type": "Dress",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recHn0VAa0AbuygDx.jpg"
+      "eta": "2026-08-22",
+      "image": "data/preorder-img/recHn0VAa0AbuygDx.png"
     },
     {
       "airtable_id": "recHyAUbPIq4j42EL",
@@ -450,7 +590,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recHyAUbPIq4j42EL.jpg"
+      "image": "data/preorder-img/recHyAUbPIq4j42EL.png"
     },
     {
       "airtable_id": "recHyLSTvEKXcVgfG",
@@ -464,7 +604,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recHyLSTvEKXcVgfG.jpg"
+      "image": "data/preorder-img/recHyLSTvEKXcVgfG.png"
     },
     {
       "airtable_id": "recI7D56MzJyMW65Q",
@@ -491,8 +631,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recI8tn7uXoOJSxiP.jpg"
+      "eta": "2026-08-20",
+      "image": "data/preorder-img/recI8tn7uXoOJSxiP.png"
     },
     {
       "airtable_id": "recKGF8qJX4F9ziYp",
@@ -506,7 +646,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recKGF8qJX4F9ziYp.jpg"
+      "image": "data/preorder-img/recKGF8qJX4F9ziYp.png"
+    },
+    {
+      "airtable_id": "recL0umVi9oUJgkIC",
+      "name": "Matilda Skirt (Dark Brown)",
+      "color": "Dark Brown",
+      "msrp": 88,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-06-22",
+      "image": "data/preorder-img/recL0umVi9oUJgkIC.png"
     },
     {
       "airtable_id": "recLG87IGQWcsz4pW",
@@ -519,8 +673,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recLG87IGQWcsz4pW.jpg"
+      "eta": "2026-08-10",
+      "image": "data/preorder-img/recLG87IGQWcsz4pW.png"
     },
     {
       "airtable_id": "recLfEgmxyezgnGPY",
@@ -548,7 +702,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-08",
-      "image": "data/preorder-img/recLkG7JowkvG20bF.jpg"
+      "image": "data/preorder-img/recLkG7JowkvG20bF.png"
     },
     {
       "airtable_id": "recMNQYEaRTG5QdJZ",
@@ -565,6 +719,34 @@
       "image": "data/preorder-img/recMNQYEaRTG5QdJZ.jpg"
     },
     {
+      "airtable_id": "recMgDI0Snuf6azyx",
+      "name": "Irina Skirt (Grey)",
+      "color": "Grey",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": null,
+      "size_scale": "XS-XL",
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/recMgDI0Snuf6azyx.png"
+    },
+    {
+      "airtable_id": "recMkZsKcY9nW3tFK",
+      "name": "Coralie Skirt (Teal Green)",
+      "color": "Teal Green",
+      "msrp": 78,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-07-08",
+      "image": "data/preorder-img/recMkZsKcY9nW3tFK.jpg"
+    },
+    {
       "airtable_id": "recN0UrvwEMQehtmB",
       "name": "Ania Top (Green)",
       "color": "Green",
@@ -576,7 +758,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recN0UrvwEMQehtmB.jpg"
+      "image": "data/preorder-img/recN0UrvwEMQehtmB.png"
     },
     {
       "airtable_id": "recN8BT5e2OQrJ4bX",
@@ -604,7 +786,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-08",
-      "image": "data/preorder-img/recN8NnS4GaFLt5yB.jpg"
+      "image": "data/preorder-img/recN8NnS4GaFLt5yB.png"
     },
     {
       "airtable_id": "recOBtA6h4XtXUxIS",
@@ -618,7 +800,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-27",
-      "image": "data/preorder-img/recOBtA6h4XtXUxIS.jpg"
+      "image": "data/preorder-img/recOBtA6h4XtXUxIS.png"
     },
     {
       "airtable_id": "recOLV1JEThdjO0i0",
@@ -632,7 +814,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recOLV1JEThdjO0i0.jpg"
+      "image": "data/preorder-img/recOLV1JEThdjO0i0.png"
+    },
+    {
+      "airtable_id": "recOkhbMAbxSzZ4Ak",
+      "name": "Camellia Dress (Wine)",
+      "color": "Wine",
+      "msrp": 118,
+      "status": "Placed",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-07-22",
+      "image": "data/preorder-img/recOkhbMAbxSzZ4Ak.png"
     },
     {
       "airtable_id": "recPOI763nJmti6oU",
@@ -649,6 +845,20 @@
       "image": "data/preorder-img/recPOI763nJmti6oU.jpg"
     },
     {
+      "airtable_id": "recPcg2WdhWqhi6Qn",
+      "name": "Nico Skirt (Brown Multi)",
+      "color": "Brown Multi",
+      "msrp": 88,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-07-10",
+      "image": "data/preorder-img/recPcg2WdhWqhi6Qn.png"
+    },
+    {
       "airtable_id": "recPhUEigXTKYUBYO",
       "name": "Delia Skirt (Brown)",
       "color": "Brown",
@@ -660,21 +870,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-08",
-      "image": "data/preorder-img/recPhUEigXTKYUBYO.jpg"
+      "image": "data/preorder-img/recPhUEigXTKYUBYO.png"
     },
     {
       "airtable_id": "recQ7tUM2xgg98PRp",
       "name": "Patricia Dress (Green Ground)",
       "color": "Green Ground",
       "msrp": 128,
-      "status": null,
+      "status": "Placed",
       "type": "Dress",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recQ7tUM2xgg98PRp.jpg"
+      "eta": "2026-08-22",
+      "image": "data/preorder-img/recQ7tUM2xgg98PRp.png"
     },
     {
       "airtable_id": "recQgl5Yzh4Y2ndXY",
@@ -730,7 +940,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recSGfNjDhbsvZoFg.jpg"
+      "image": "data/preorder-img/recSGfNjDhbsvZoFg.png"
+    },
+    {
+      "airtable_id": "recSMVMJseoEBa73p",
+      "name": "Valentina Dress (Black Brown)",
+      "color": "Black Brown",
+      "msrp": 0,
+      "status": "Confirmed",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-06-01",
+      "image": "data/preorder-img/recSMVMJseoEBa73p.jpg"
     },
     {
       "airtable_id": "recSrjDto8wo899iF",
@@ -744,7 +968,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recSrjDto8wo899iF.jpg"
+      "image": "data/preorder-img/recSrjDto8wo899iF.png"
     },
     {
       "airtable_id": "recT6MwqrD1nVJRrs",
@@ -757,7 +981,7 @@
       "size_scale": "XS-XL",
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
+      "eta": "2026-09-01",
       "image": "data/preorder-img/recT6MwqrD1nVJRrs.jpg"
     },
     {
@@ -772,7 +996,35 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recTHzf7jw86rLSXL.jpg"
+      "image": "data/preorder-img/recTHzf7jw86rLSXL.png"
+    },
+    {
+      "airtable_id": "recTdhVRu1OJhUqYd",
+      "name": "PV-1261 (Blue)",
+      "color": "Blue",
+      "msrp": 0,
+      "status": null,
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": null,
+      "image": "data/preorder-img/recTdhVRu1OJhUqYd.jpg"
+    },
+    {
+      "airtable_id": "recUVF5KHDmp3NyxO",
+      "name": "Lisa Skirt (Ivory Blue)",
+      "color": "Ivory Blue",
+      "msrp": 88,
+      "status": "Delivered",
+      "type": "Skirt",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7434191503457",
+      "handle": null,
+      "eta": "2025-12-09",
+      "image": null
     },
     {
       "airtable_id": "recUgIZ1NWEuvT8Hm",
@@ -786,7 +1038,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recUgIZ1NWEuvT8Hm.jpg"
+      "image": "data/preorder-img/recUgIZ1NWEuvT8Hm.png"
     },
     {
       "airtable_id": "recVBT0KLNEkn4Odj",
@@ -800,21 +1052,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recVBT0KLNEkn4Odj.jpg"
+      "image": "data/preorder-img/recVBT0KLNEkn4Odj.png"
     },
     {
       "airtable_id": "recVzsqeQqMWck0xP",
       "name": "Ingrid Top (Teal )",
       "color": "Teal ",
       "msrp": 58,
-      "status": null,
+      "status": "Placed",
       "type": "Top",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recVzsqeQqMWck0xP.jpg"
+      "eta": "2026-07-20",
+      "image": "data/preorder-img/recVzsqeQqMWck0xP.png"
     },
     {
       "airtable_id": "recWBIPPEzot0ZztF",
@@ -828,7 +1080,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recWBIPPEzot0ZztF.jpg"
+      "image": "data/preorder-img/recWBIPPEzot0ZztF.png"
+    },
+    {
+      "airtable_id": "recWVRMqfPESCHkwN",
+      "name": "Tilly Top (Blue)",
+      "color": "Blue",
+      "msrp": 78,
+      "status": "Delivered",
+      "type": "Top",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7417864519777",
+      "handle": null,
+      "eta": "2025-12-09",
+      "image": null
     },
     {
       "airtable_id": "recWelRxOfIZQ5r5s",
@@ -842,7 +1108,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recWelRxOfIZQ5r5s.jpg"
+      "image": "data/preorder-img/recWelRxOfIZQ5r5s.png"
+    },
+    {
+      "airtable_id": "recWmV5rfX3QH8R7Z",
+      "name": "Connie Dress (Black Flower)",
+      "color": "Black Flower",
+      "msrp": 148,
+      "status": "Delivered",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7441438703713",
+      "handle": null,
+      "eta": "2026-01-07",
+      "image": null
     },
     {
       "airtable_id": "recYBIMICwR8AMklg",
@@ -856,7 +1136,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-22",
-      "image": "data/preorder-img/recYBIMICwR8AMklg.jpg"
+      "image": "data/preorder-img/recYBIMICwR8AMklg.png"
     },
     {
       "airtable_id": "recYLH47OVHCGlXb4",
@@ -870,7 +1150,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recYLH47OVHCGlXb4.jpg"
+      "image": "data/preorder-img/recYLH47OVHCGlXb4.png"
     },
     {
       "airtable_id": "recYUDhWrG7Eh77AF",
@@ -884,7 +1164,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recYUDhWrG7Eh77AF.jpg"
+      "image": "data/preorder-img/recYUDhWrG7Eh77AF.png"
     },
     {
       "airtable_id": "recYUtP7niUgPYlYI",
@@ -898,16 +1178,16 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recYUtP7niUgPYlYI.jpg"
+      "image": "data/preorder-img/recYUtP7niUgPYlYI.png"
     },
     {
       "airtable_id": "recYXWIf7iouraIPv",
-      "name": "Miri Dress (Black Brown)",
+      "name": "Miri Skirt (Black Brown)",
       "color": "Black Brown",
       "msrp": 128,
       "status": null,
-      "type": "Dress",
-      "class": "Banger",
+      "type": "Skirt",
+      "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
@@ -919,14 +1199,28 @@
       "name": "Tessa Skirt (Ivory Ground)",
       "color": "Ivory Ground",
       "msrp": 68,
-      "status": null,
+      "status": "Placed",
       "type": "Skirt",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recYbw1JxKip4mycf.jpg"
+      "eta": "2026-08-22",
+      "image": "data/preorder-img/recYbw1JxKip4mycf.png"
+    },
+    {
+      "airtable_id": "recZ4fnBUea9vTnPi",
+      "name": "Natalia Skirt (Black Ground)",
+      "color": "Black Ground",
+      "msrp": 88,
+      "status": "Delivered",
+      "type": "Skirt",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7516570746977",
+      "handle": null,
+      "eta": "2026-03-27",
+      "image": null
     },
     {
       "airtable_id": "recZBgdVph2Md1uWJ",
@@ -939,8 +1233,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recZBgdVph2Md1uWJ.jpg"
+      "eta": "2026-07-25",
+      "image": "data/preorder-img/recZBgdVph2Md1uWJ.png"
     },
     {
       "airtable_id": "recZnXFPAE2QbxYLM",
@@ -953,8 +1247,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recZnXFPAE2QbxYLM.jpg"
+      "eta": "2026-08-20",
+      "image": "data/preorder-img/recZnXFPAE2QbxYLM.png"
     },
     {
       "airtable_id": "recZvCRTT93F04MGC",
@@ -968,7 +1262,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recZvCRTT93F04MGC.jpg"
+      "image": "data/preorder-img/recZvCRTT93F04MGC.png"
     },
     {
       "airtable_id": "recZxHvQOov6YWmrC",
@@ -981,8 +1275,22 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recZxHvQOov6YWmrC.jpg"
+      "eta": "2026-08-20",
+      "image": "data/preorder-img/recZxHvQOov6YWmrC.png"
+    },
+    {
+      "airtable_id": "reca8IOdGtY7cmHel",
+      "name": "Irina Top (Dark Green)",
+      "color": "Dark Green",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Top",
+      "class": null,
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/reca8IOdGtY7cmHel.png"
     },
     {
       "airtable_id": "recaAovAISKaQejID",
@@ -995,7 +1303,7 @@
       "size_scale": null,
       "shopify_gid": "gid://shopify/Product/7572646166625",
       "handle": "lennon-dress-pink",
-      "eta": "2026-06-05",
+      "eta": "2026-06-09",
       "image": null
     },
     {
@@ -1009,8 +1317,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recap8lrSGQLZ9n3Z.jpg"
+      "eta": "2026-07-25",
+      "image": "data/preorder-img/recap8lrSGQLZ9n3Z.png"
     },
     {
       "airtable_id": "recbT3Vq1IA8sw3Ci",
@@ -1024,7 +1332,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-22",
-      "image": "data/preorder-img/recbT3Vq1IA8sw3Ci.jpg"
+      "image": "data/preorder-img/recbT3Vq1IA8sw3Ci.png"
+    },
+    {
+      "airtable_id": "recbxKQlSv3DU3pvR",
+      "name": "Mina Dress 50\" (Dark Brown)",
+      "color": "Dark Brown",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Dress",
+      "class": "Core",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-06",
+      "image": "data/preorder-img/recbxKQlSv3DU3pvR.png"
     },
     {
       "airtable_id": "reccL7esOk6YK6i4A",
@@ -1045,14 +1367,14 @@
       "name": "Ingrid Top (Dark Brown)",
       "color": "Dark Brown",
       "msrp": 58,
-      "status": null,
+      "status": "Placed",
       "type": "Top",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/reccczXpj4cY0qhYh.jpg"
+      "eta": "2026-07-20",
+      "image": "data/preorder-img/reccczXpj4cY0qhYh.png"
     },
     {
       "airtable_id": "reccwuWn9nWczjPUL",
@@ -1080,7 +1402,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recdE0aUjpsw4Fx1a.jpg"
+      "image": "data/preorder-img/recdE0aUjpsw4Fx1a.png"
     },
     {
       "airtable_id": "recdKTFItXuQz8gL2",
@@ -1094,7 +1416,35 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-22",
-      "image": "data/preorder-img/recdKTFItXuQz8gL2.jpg"
+      "image": "data/preorder-img/recdKTFItXuQz8gL2.png"
+    },
+    {
+      "airtable_id": "recdRDHrPtAiuUiVf",
+      "name": "Dakota Skirt (Black Pink)",
+      "color": "Black Pink",
+      "msrp": 0,
+      "status": null,
+      "type": "Skirt",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-10",
+      "image": "data/preorder-img/recdRDHrPtAiuUiVf.jpg"
+    },
+    {
+      "airtable_id": "receDouYpORzskzIF",
+      "name": "Lisa Skirt (Black Flower)",
+      "color": "Black Flower",
+      "msrp": 88,
+      "status": "Delivered",
+      "type": "Skirt",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7428962812001",
+      "handle": null,
+      "eta": "2025-12-03",
+      "image": null
     },
     {
       "airtable_id": "receGW3p3lDv1nASY",
@@ -1108,21 +1458,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/receGW3p3lDv1nASY.jpg"
+      "image": "data/preorder-img/receGW3p3lDv1nASY.png"
     },
     {
       "airtable_id": "receedN98AakDYagP",
       "name": "Patricia Dress (Black Ground)",
       "color": "Black Ground",
       "msrp": 128,
-      "status": null,
+      "status": "Placed",
       "type": "Dress",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/receedN98AakDYagP.jpg"
+      "eta": "2026-08-22",
+      "image": "data/preorder-img/receedN98AakDYagP.png"
     },
     {
       "airtable_id": "recelIrM1vpj66eTl",
@@ -1136,21 +1486,35 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-08",
-      "image": "data/preorder-img/recelIrM1vpj66eTl.jpg"
+      "image": "data/preorder-img/recelIrM1vpj66eTl.png"
     },
     {
       "airtable_id": "recentiLT55hMoBsC",
       "name": "Nora Skirt 23\" (Brown Flower)",
       "color": "Brown Flower",
       "msrp": 88,
-      "status": null,
+      "status": "Placed",
       "type": "Skirt",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
+      "eta": "2026-08-08",
       "image": "data/preorder-img/recentiLT55hMoBsC.jpg"
+    },
+    {
+      "airtable_id": "receqm0wGQLgBQ0fO",
+      "name": "Foley Skirt (Black Plaid)",
+      "color": "Black Plaid",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-01",
+      "image": "data/preorder-img/receqm0wGQLgBQ0fO.jpg"
     },
     {
       "airtable_id": "recf0aF4Y2gCTpHgh",
@@ -1164,7 +1528,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recf0aF4Y2gCTpHgh.jpg"
+      "image": "data/preorder-img/recf0aF4Y2gCTpHgh.png"
     },
     {
       "airtable_id": "recfZewPdmFO6wTWP",
@@ -1220,7 +1584,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recgQr0RIm3C8umff.jpg"
+      "image": "data/preorder-img/recgQr0RIm3C8umff.png"
+    },
+    {
+      "airtable_id": "recgVbwRkd1HJRId2",
+      "name": "Liora Dress (Pink)",
+      "color": "Pink",
+      "msrp": 0,
+      "status": "Confirmed",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-06-01",
+      "image": "data/preorder-img/recgVbwRkd1HJRId2.jpg"
     },
     {
       "airtable_id": "recgbEvvtZxQ1j4Nl",
@@ -1234,7 +1612,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-22",
-      "image": "data/preorder-img/recgbEvvtZxQ1j4Nl.jpg"
+      "image": "data/preorder-img/recgbEvvtZxQ1j4Nl.png"
+    },
+    {
+      "airtable_id": "recgeVBkd2Dso8nys",
+      "name": "Irina Top (Black)",
+      "color": "Black",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Top",
+      "class": null,
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/recgeVBkd2Dso8nys.png"
     },
     {
       "airtable_id": "rechJayP3WDDMKDbO",
@@ -1251,6 +1643,20 @@
       "image": "data/preorder-img/rechJayP3WDDMKDbO.jpg"
     },
     {
+      "airtable_id": "rechoip2ZotbkoID1",
+      "name": "Camellia Dress (Sage)",
+      "color": "Sage",
+      "msrp": 118,
+      "status": "Placed",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-07-22",
+      "image": "data/preorder-img/rechoip2ZotbkoID1.png"
+    },
+    {
       "airtable_id": "recj354z4DFpBmCBF",
       "name": "Dakota Skirt (Green Flower)",
       "color": "Green Flower",
@@ -1262,7 +1668,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recj354z4DFpBmCBF.jpg"
+      "image": "data/preorder-img/recj354z4DFpBmCBF.png"
     },
     {
       "airtable_id": "recjAW8usiFIeam5s",
@@ -1275,22 +1681,22 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recjAW8usiFIeam5s.jpg"
+      "eta": "2026-08-20",
+      "image": "data/preorder-img/recjAW8usiFIeam5s.png"
     },
     {
       "airtable_id": "recjNddBrtycG36dg",
       "name": "Ingrid Top (Rust)",
       "color": "Rust",
       "msrp": 58,
-      "status": null,
+      "status": "Placed",
       "type": "Top",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recjNddBrtycG36dg.jpg"
+      "eta": "2026-07-20",
+      "image": "data/preorder-img/recjNddBrtycG36dg.png"
     },
     {
       "airtable_id": "recjvKiZppOTrVo2Q",
@@ -1304,7 +1710,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recjvKiZppOTrVo2Q.jpg"
+      "image": "data/preorder-img/recjvKiZppOTrVo2Q.png"
     },
     {
       "airtable_id": "reck8pR9A9WAHdgIl",
@@ -1318,7 +1724,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-02",
-      "image": "data/preorder-img/reck8pR9A9WAHdgIl.jpg"
+      "image": "data/preorder-img/reck8pR9A9WAHdgIl.png"
     },
     {
       "airtable_id": "reckdmLuqGSklOJDF",
@@ -1331,22 +1737,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/reckdmLuqGSklOJDF.jpg"
-    },
-    {
-      "airtable_id": "reckfITAFWDZzKEWF",
-      "name": "Kate Top (Rose Pink)",
-      "color": "Rose Pink",
-      "msrp": 44,
-      "status": "Cancelled",
-      "type": "Top",
-      "class": "Fashion",
-      "size_scale": null,
-      "shopify_gid": null,
-      "handle": null,
-      "eta": "2026-06-22",
-      "image": "data/preorder-img/reckfITAFWDZzKEWF.jpg"
+      "eta": "2026-09-01",
+      "image": "data/preorder-img/reckdmLuqGSklOJDF.png"
     },
     {
       "airtable_id": "recl3TJfcDggtrE4z",
@@ -1360,7 +1752,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-27",
-      "image": "data/preorder-img/recl3TJfcDggtrE4z.jpg"
+      "image": "data/preorder-img/recl3TJfcDggtrE4z.png"
     },
     {
       "airtable_id": "recl58leRQfoNZp8s",
@@ -1388,7 +1780,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/reclJTNkVLpmgYGTg.jpg"
+      "image": "data/preorder-img/reclJTNkVLpmgYGTg.png"
     },
     {
       "airtable_id": "reclcLNP73nBcUGSs",
@@ -1402,7 +1794,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-27",
-      "image": "data/preorder-img/reclcLNP73nBcUGSs.jpg"
+      "image": "data/preorder-img/reclcLNP73nBcUGSs.png"
     },
     {
       "airtable_id": "reclilboRF8tDQ1KY",
@@ -1416,7 +1808,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/reclilboRF8tDQ1KY.jpg"
+      "image": "data/preorder-img/reclilboRF8tDQ1KY.png"
     },
     {
       "airtable_id": "recmylyvUNnnXXsy5",
@@ -1430,7 +1822,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recmylyvUNnnXXsy5.jpg"
+      "image": "data/preorder-img/recmylyvUNnnXXsy5.png"
     },
     {
       "airtable_id": "recnJVvsM2Dj8UNuj",
@@ -1444,7 +1836,35 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recnJVvsM2Dj8UNuj.jpg"
+      "image": "data/preorder-img/recnJVvsM2Dj8UNuj.png"
+    },
+    {
+      "airtable_id": "recnZ4mvUibmxaKoz",
+      "name": "Dakota Skirt (Brown Ground)",
+      "color": "Brown Ground",
+      "msrp": 0,
+      "status": null,
+      "type": "Skirt",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-10",
+      "image": "data/preorder-img/recnZ4mvUibmxaKoz.jpg"
+    },
+    {
+      "airtable_id": "recnsmIzrhIz8fzp1",
+      "name": "Anais Skirt (Brown Pattern)",
+      "color": "Brown Pattern",
+      "msrp": 0,
+      "status": "Under Dev",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": "XS-XL",
+      "shopify_gid": null,
+      "handle": null,
+      "eta": null,
+      "image": "data/preorder-img/recnsmIzrhIz8fzp1.jpg"
     },
     {
       "airtable_id": "recntilZXCDkuMmaX",
@@ -1458,21 +1878,49 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recntilZXCDkuMmaX.jpg"
+      "image": "data/preorder-img/recntilZXCDkuMmaX.png"
     },
     {
       "airtable_id": "recommdBboUXlMcne",
       "name": "Vega Skirt (Grey Green)",
       "color": "Grey Green",
       "msrp": 88,
-      "status": null,
+      "status": "Placed",
       "type": "Skirt",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
+      "eta": "2026-08-22",
       "image": "data/preorder-img/recommdBboUXlMcne.jpg"
+    },
+    {
+      "airtable_id": "recorqpeITkZNXRcq",
+      "name": "Natalia Skirt (Navy Solid)",
+      "color": "Navy Solid",
+      "msrp": 88,
+      "status": "Delivered",
+      "type": "Skirt",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7486914789473",
+      "handle": null,
+      "eta": "2026-01-07",
+      "image": null
+    },
+    {
+      "airtable_id": "recoz9nfy5PnKNj1s",
+      "name": "Irina Skirt (Brown)",
+      "color": "Brown",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": null,
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/recoz9nfy5PnKNj1s.png"
     },
     {
       "airtable_id": "recpBqAonpfpjsuP3",
@@ -1485,8 +1933,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recpBqAonpfpjsuP3.jpg"
+      "eta": "2026-09-01",
+      "image": "data/preorder-img/recpBqAonpfpjsuP3.png"
     },
     {
       "airtable_id": "recpHFrpnOcslUowM",
@@ -1500,7 +1948,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/recpHFrpnOcslUowM.jpg"
+      "image": "data/preorder-img/recpHFrpnOcslUowM.png"
     },
     {
       "airtable_id": "recq3Tmx1uRnNnNlB",
@@ -1513,8 +1961,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recq3Tmx1uRnNnNlB.jpg"
+      "eta": "2026-07-25",
+      "image": "data/preorder-img/recq3Tmx1uRnNnNlB.png"
     },
     {
       "airtable_id": "recqHFwNiDqUAHovZ",
@@ -1528,7 +1976,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recqHFwNiDqUAHovZ.jpg"
+      "image": "data/preorder-img/recqHFwNiDqUAHovZ.png"
     },
     {
       "airtable_id": "recqkmpwmxfEbjFqE",
@@ -1542,7 +1990,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-22",
-      "image": "data/preorder-img/recqkmpwmxfEbjFqE.jpg"
+      "image": "data/preorder-img/recqkmpwmxfEbjFqE.png"
     },
     {
       "airtable_id": "recqrfce59SUlmIm5",
@@ -1556,7 +2004,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recqrfce59SUlmIm5.jpg"
+      "image": "data/preorder-img/recqrfce59SUlmIm5.png"
+    },
+    {
+      "airtable_id": "recr63YgATvTo1ubT",
+      "name": "Irina Skirt (Black)",
+      "color": "Black",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": null,
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/recr63YgATvTo1ubT.png"
     },
     {
       "airtable_id": "recrGN2SYJ3WIVjQK",
@@ -1569,8 +2031,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recrGN2SYJ3WIVjQK.jpg"
+      "eta": "2026-08-20",
+      "image": "data/preorder-img/recrGN2SYJ3WIVjQK.png"
     },
     {
       "airtable_id": "recrOjldI6PTljdzr",
@@ -1584,7 +2046,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recrOjldI6PTljdzr.jpg"
+      "image": "data/preorder-img/recrOjldI6PTljdzr.png"
     },
     {
       "airtable_id": "recrRITlVZ53REgbw",
@@ -1612,7 +2074,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-07",
-      "image": "data/preorder-img/recrT5cd2ftzvmJce.jpg"
+      "image": "data/preorder-img/recrT5cd2ftzvmJce.png"
     },
     {
       "airtable_id": "recrXkkywKGGKYW2m",
@@ -1625,22 +2087,22 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recrXkkywKGGKYW2m.jpg"
+      "eta": "2026-08-20",
+      "image": "data/preorder-img/recrXkkywKGGKYW2m.png"
     },
     {
       "airtable_id": "recrc9jIf8D2MwHSO",
       "name": "Ingrid Top (Black)",
       "color": "Black",
       "msrp": 58,
-      "status": null,
+      "status": "Placed",
       "type": "Top",
       "class": "Fashion",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recrc9jIf8D2MwHSO.jpg"
+      "eta": "2026-06-20",
+      "image": "data/preorder-img/recrc9jIf8D2MwHSO.png"
     },
     {
       "airtable_id": "recrj2k5XbnKud1hh",
@@ -1654,7 +2116,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-22",
-      "image": "data/preorder-img/recrj2k5XbnKud1hh.jpg"
+      "image": "data/preorder-img/recrj2k5XbnKud1hh.png"
     },
     {
       "airtable_id": "recrovhIRvn3rFQBh",
@@ -1667,8 +2129,36 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
+      "eta": "2026-08-31",
       "image": "data/preorder-img/recrovhIRvn3rFQBh.jpg"
+    },
+    {
+      "airtable_id": "recrq42lBgPZY0uIA",
+      "name": "Tina Top (Teal Green)",
+      "color": "Teal Green",
+      "msrp": 44,
+      "status": "Delivered",
+      "type": "Top",
+      "class": "Core",
+      "size_scale": null,
+      "shopify_gid": "gid://shopify/Product/7492659445857",
+      "handle": null,
+      "eta": "2026-01-21",
+      "image": null
+    },
+    {
+      "airtable_id": "recs1hj1fLv5FGnno",
+      "name": "Ginny Skirt (Blue)",
+      "color": "Blue",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/recs1hj1fLv5FGnno.jpg"
     },
     {
       "airtable_id": "recsBehIwW8j9mdYR",
@@ -1682,7 +2172,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recsBehIwW8j9mdYR.jpg"
+      "image": "data/preorder-img/recsBehIwW8j9mdYR.png"
     },
     {
       "airtable_id": "recsVHaZTZO3eXsnh",
@@ -1696,7 +2186,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recsVHaZTZO3eXsnh.jpg"
+      "image": "data/preorder-img/recsVHaZTZO3eXsnh.png"
     },
     {
       "airtable_id": "recsqcX3qWK7vjeTi",
@@ -1710,7 +2200,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-08",
-      "image": "data/preorder-img/recsqcX3qWK7vjeTi.jpg"
+      "image": "data/preorder-img/recsqcX3qWK7vjeTi.png"
+    },
+    {
+      "airtable_id": "rect34e7vdKZ62ISl",
+      "name": "Irina Top (Grey)",
+      "color": "Grey",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Top",
+      "class": null,
+      "size_scale": "XS-XL",
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-08-08",
+      "image": "data/preorder-img/rect34e7vdKZ62ISl.png"
     },
     {
       "airtable_id": "rectHqr0b6blmgSHG",
@@ -1724,7 +2228,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-08",
-      "image": "data/preorder-img/rectHqr0b6blmgSHG.jpg"
+      "image": "data/preorder-img/rectHqr0b6blmgSHG.png"
     },
     {
       "airtable_id": "recuCfDchgMTz5r52",
@@ -1738,7 +2242,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recuCfDchgMTz5r52.jpg"
+      "image": "data/preorder-img/recuCfDchgMTz5r52.png"
     },
     {
       "airtable_id": "recuOwGE2XAc8XK3E",
@@ -1752,7 +2256,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-29",
-      "image": "data/preorder-img/recuOwGE2XAc8XK3E.jpg"
+      "image": "data/preorder-img/recuOwGE2XAc8XK3E.png"
+    },
+    {
+      "airtable_id": "recuYhHCjxRYQ1ava",
+      "name": "Mina Skirt 35\" (Plum)",
+      "color": "Plum",
+      "msrp": 0,
+      "status": "Placed",
+      "type": "Skirt",
+      "class": "Core",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": null,
+      "image": "data/preorder-img/recuYhHCjxRYQ1ava.jpg"
     },
     {
       "airtable_id": "recuduN849ZPq5HVL",
@@ -1766,7 +2284,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recuduN849ZPq5HVL.jpg"
+      "image": "data/preorder-img/recuduN849ZPq5HVL.png"
     },
     {
       "airtable_id": "recuo9y4RFxJipcn5",
@@ -1780,7 +2298,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": null,
-      "image": "data/preorder-img/recuo9y4RFxJipcn5.jpg"
+      "image": "data/preorder-img/recuo9y4RFxJipcn5.png"
     },
     {
       "airtable_id": "recvxcKzxswg3KZgc",
@@ -1794,7 +2312,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-27",
-      "image": "data/preorder-img/recvxcKzxswg3KZgc.jpg"
+      "image": "data/preorder-img/recvxcKzxswg3KZgc.png"
     },
     {
       "airtable_id": "recvyPpZTzcycKSX6",
@@ -1807,8 +2325,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recvyPpZTzcycKSX6.jpg"
+      "eta": "2026-07-25",
+      "image": "data/preorder-img/recvyPpZTzcycKSX6.png"
     },
     {
       "airtable_id": "recvyxVjtDJqfDLnb",
@@ -1822,7 +2340,21 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-06-22",
-      "image": "data/preorder-img/recvyxVjtDJqfDLnb.jpg"
+      "image": "data/preorder-img/recvyxVjtDJqfDLnb.png"
+    },
+    {
+      "airtable_id": "recwWPvoMexRccJ4W",
+      "name": "Camellia Dress (Brown)",
+      "color": "Brown",
+      "msrp": 118,
+      "status": "Placed",
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "shopify_gid": null,
+      "handle": null,
+      "eta": "2026-07-22",
+      "image": "data/preorder-img/recwWPvoMexRccJ4W.png"
     },
     {
       "airtable_id": "recwoKvzZ390n2zIC",
@@ -1836,21 +2368,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-08-06",
-      "image": "data/preorder-img/recwoKvzZ390n2zIC.jpg"
-    },
-    {
-      "airtable_id": "recz5SCzPC2dhOjQV",
-      "name": "Ania Top (Brown)",
-      "color": "Brown",
-      "msrp": 78,
-      "status": "Cancelled",
-      "type": "Top",
-      "class": "Fashion",
-      "size_scale": "XS-XL",
-      "shopify_gid": null,
-      "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/recz5SCzPC2dhOjQV.jpg"
+      "image": "data/preorder-img/recwoKvzZ390n2zIC.png"
     },
     {
       "airtable_id": "reczFHGpDQVss22I9",
@@ -1878,7 +2396,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/reczOZFzq5yKbmxzt.jpg"
+      "image": "data/preorder-img/reczOZFzq5yKbmxzt.png"
     },
     {
       "airtable_id": "reczZKSY8XDpqRqSs",
@@ -1891,8 +2409,8 @@
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/reczZKSY8XDpqRqSs.jpg"
+      "eta": "2026-07-20",
+      "image": "data/preorder-img/reczZKSY8XDpqRqSs.png"
     },
     {
       "airtable_id": "reczc5m2p48SdxCt6",
@@ -1906,7 +2424,7 @@
       "shopify_gid": null,
       "handle": null,
       "eta": "2026-07-06",
-      "image": "data/preorder-img/reczc5m2p48SdxCt6.jpg"
+      "image": "data/preorder-img/reczc5m2p48SdxCt6.png"
     },
     {
       "airtable_id": "reczo14Rvy0Bh6GJN",
@@ -1927,14 +2445,14 @@
       "name": "Lexi Dress (Plum Khaki)",
       "color": "Plum Khaki",
       "msrp": 118,
-      "status": null,
+      "status": "Placed",
       "type": "Dress",
       "class": "Banger",
       "size_scale": null,
       "shopify_gid": null,
       "handle": null,
-      "eta": null,
-      "image": "data/preorder-img/reczte7oRiXeogFYx.jpg"
+      "eta": "2026-08-22",
+      "image": "data/preorder-img/reczte7oRiXeogFYx.png"
     }
   ]
 }
