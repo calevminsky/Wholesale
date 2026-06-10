@@ -516,6 +516,7 @@
       const b = e.target.closest("button"); if (!b) return;
       filters.density = b.dataset.v; $$("#densitySeg button").forEach((x) => x.classList.toggle("on", x === b)); render();
     });
+    $("#xlsxBtn").addEventListener("click", () => { window.location.href = "api/linesheet.xlsx"; });
     $("#printBtn").addEventListener("click", printCatalog);
     $("#reviewBtn").addEventListener("click", openReview);
     $("#reviewBtn2").addEventListener("click", openReview);

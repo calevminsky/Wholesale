@@ -14,6 +14,7 @@ import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { loadOffPricing, saveOffPricing, OFF_MODES } from "./build/off-pricing.mjs";
 import { getHiddenHandles, listHidden, addHidden, removeHidden } from "./build/hidden-store.mjs";
+import { lineSheetBuffer } from "./build/linesheet-xlsx.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 10000;
@@ -194,6 +195,22 @@ app.get("/data/catalog.json", async (_req, res) => {
     const cat = readCatalog();
     const hide = await hiddenSet();
     res.json(hide.size ? { ...cat, products: (cat.products || []).filter((p) => !hide.has(p.handle)) } : cat);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
+// ---- line sheet as Excel (same filtered set buyers see) ----
+app.get("/api/linesheet.xlsx", async (_req, res) => {
+  try {
+    const cat = readCatalog();
+    const hide = await hiddenSet();
+    const filtered = hide.size ? { ...cat, products: (cat.products || []).filter((p) => !hide.has(p.handle)) } : cat;
+    const buf = await lineSheetBuffer(filtered, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
+    const date = new Date().toISOString().slice(0, 10);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-line-sheet-${date}.xlsx"`);
+    res.send(Buffer.from(buf));
   } catch (e) {
     res.status(500).json({ error: String(e.message || e) });
   }

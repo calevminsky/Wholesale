@@ -62,8 +62,8 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
 .grid.compact{grid-template-columns:repeat(auto-fill,minmax(178px,1fr));gap:11px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column}
 .card.has-qty{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow)}
-.card .imgwrap{aspect-ratio:3/4;background:var(--paper);overflow:hidden;position:relative}
-.card .imgwrap img{width:100%;height:100%;object-fit:cover;display:block}
+.card .imgwrap{aspect-ratio:3/4;background:#fff;overflow:hidden;position:relative}
+.card .imgwrap img{width:100%;height:100%;object-fit:contain;display:block}
 .badges{position:absolute;top:8px;left:8px;display:flex;gap:5px;flex-wrap:wrap}
 .badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
 .badge.full{background:var(--full-soft);border-color:#cadace;color:var(--full)}
