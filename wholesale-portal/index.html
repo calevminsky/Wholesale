@@ -99,6 +99,21 @@
   </div>
 </div>
 
+<!-- entry gate: public link, identify with company + email -->
+<div class="overlay gate" id="gateOverlay">
+  <div class="sheet gatesheet">
+    <div class="gatebody">
+      <div class="gatebrand">Yakira Bella · Wholesale</div>
+      <h2 id="gateTitle">F26 Line Sheet</h2>
+      <p>Enter your details to browse the collection and place your wholesale order.</p>
+      <div class="field"><label>Store / Company name</label><input id="gateCompany" type="text" autocomplete="organization" placeholder="Your boutique"></div>
+      <div class="field"><label>Email</label><input id="gateEmail" type="email" autocomplete="email" inputmode="email" placeholder="you@boutique.com"></div>
+      <div class="gateerr" id="gateErr"></div>
+      <button class="btn primary" id="gateGo">View the line sheet</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="app.js"></script>

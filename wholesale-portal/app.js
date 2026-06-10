@@ -38,7 +38,15 @@
 
   // ---------- account (display-only this pass) ----------
   const token = new URLSearchParams(location.search).get("t") || "";
-  let account = { name: "Guest", slug: "guest", customer_id: null };
+  let account = { name: "Guest", slug: "guest", customer_id: null, email: "" };
+
+  // Public-link identity: visitors identify with company + email (an entry gate),
+  // stored locally and stamped on their order. A per-account ?t= token still works.
+  const slugify = (s) => String(s || "").toLowerCase().replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "guest";
+  const IDENTITY_KEY = "yb_portal_identity";
+  const loadIdentity = () => { try { return JSON.parse(localStorage.getItem(IDENTITY_KEY)); } catch { return null; } };
+  const saveIdentity = (o) => { try { localStorage.setItem(IDENTITY_KEY, JSON.stringify(o)); } catch {} };
+  const clearIdentity = () => { try { localStorage.removeItem(IDENTITY_KEY); } catch {} };
 
   // ---------- state ----------
   let CATALOG = null;
@@ -80,21 +88,50 @@
     PRODUCTS.forEach((p) => byGid.set(p.gid, p));
     if (CATALOG.offer) $("#offerName").textContent = `${CATALOG.offer} Collection`;
 
-    if (token) {
-      try {
-        // Resolve just this token's account (name/slug/customer_id) — the full
-        // accounts list with emails is never exposed to the browser.
-        const j = await (await fetch(`api/account?token=${encodeURIComponent(token)}`, { cache: "no-store" })).json();
-        if (j.account) account = { name: j.account.name, slug: j.account.slug, customer_id: j.account.customer_id ?? null };
-      } catch {}
-    }
-    $("#acctLine").innerHTML = `Browsing as <b>${esc(account.name)}</b>`;
-
     buildFilterOptions();
     loadCart();
     wireEvents();
     render();
     refreshCart();
+
+    // Who's browsing? saved identity > per-account token > show the entry gate.
+    const id = loadIdentity();
+    if (id && id.company && id.email) {
+      account = { name: id.company, slug: slugify(id.company), customer_id: null, email: id.email };
+    } else if (token) {
+      try {
+        const j = await (await fetch(`api/account?token=${encodeURIComponent(token)}`, { cache: "no-store" })).json();
+        if (j.account) account = { name: j.account.name, slug: j.account.slug, customer_id: j.account.customer_id ?? null, email: "" };
+      } catch {}
+    }
+    if (account.name !== "Guest") showAccount(); else showGate();
+  }
+
+  // ---------- entry gate ----------
+  function showAccount() {
+    hideGate();
+    $("#acctLine").innerHTML = `Browsing as <b>${esc(account.name)}</b> · <a id="changeId">not you?</a>`;
+    $("#changeId")?.addEventListener("click", () => { clearIdentity(); showGate(); });
+    if (account.email) saveEmail(account.email);
+  }
+  function showGate() {
+    const id = loadIdentity();
+    if (id) { $("#gateCompany").value = id.company || ""; $("#gateEmail").value = id.email || ""; }
+    $("#gateErr").textContent = "";
+    $("#gateOverlay").classList.add("show");
+    setTimeout(() => $("#gateCompany").focus(), 60);
+  }
+  function hideGate() { $("#gateOverlay").classList.remove("show"); }
+  function gateSubmit() {
+    const company = $("#gateCompany").value.trim();
+    const email = $("#gateEmail").value.trim();
+    if (company.length < 2) { $("#gateErr").textContent = "Please enter your store or company name."; $("#gateCompany").focus(); return; }
+    if (!/.+@.+\..+/.test(email)) { $("#gateErr").textContent = "Please enter a valid email address."; $("#gateEmail").focus(); return; }
+    saveIdentity({ company, email });
+    account = { name: company, slug: slugify(company), customer_id: null, email };
+    saveEmail(email);
+    showAccount();
+    toast(`Welcome, ${company}!`);
   }
 
   function buildFilterOptions() {
@@ -434,7 +471,7 @@
     try {
       const res = await fetch("api/orders", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, lines, notes: loadNotes(), shipping: loadShipping(), buyerEmail: email, sendReceipt: loadReceiptPref() })
+        body: JSON.stringify({ token, company: account.name, lines, notes: loadNotes(), shipping: loadShipping(), buyerEmail: email, sendReceipt: loadReceiptPref() })
       });
       const j = await res.json();
       if (!res.ok || !j.ok) { toast(j.error || "Couldn’t submit — please try again."); btn.disabled = false; btn.textContent = "Submit order"; return; }
@@ -521,6 +558,10 @@
       cart = {}; saveCart(); render(); refreshCart();
     });
     $("#reviewOverlay").addEventListener("click", (e) => { if (e.target.id === "reviewOverlay") closeReview(); });
+    // entry gate
+    $("#gateGo").addEventListener("click", gateSubmit);
+    $("#gateCompany").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#gateEmail").focus(); });
+    $("#gateEmail").addEventListener("keydown", (e) => { if (e.key === "Enter") gateSubmit(); });
     // reflect the default filters in the controls (default: Non-Core, By color)
     $$("#classSeg .tiertab").forEach((x) => x.classList.toggle("on", x.dataset.v === filters.klass));
     $$("#viewSeg button").forEach((x) => x.classList.toggle("on", x.dataset.v === filters.view));

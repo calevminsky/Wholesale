@@ -216,10 +216,15 @@ function accountForToken(token) {
   } catch { return null; }
 }
 
+const slugify = (s) => String(s || "").toLowerCase().replace(/['"]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "guest";
+
 app.post("/api/orders", async (req, res) => {
   try {
-    const { token, lines, notes, shipping, buyerEmail, sendReceipt } = req.body || {};
-    const account = accountForToken(token) || { name: "Guest", slug: "guest", customer_id: null };
+    const { token, company, lines, notes, shipping, buyerEmail, sendReceipt } = req.body || {};
+    // A per-account token wins (carries customer_id); otherwise use the company
+    // name the visitor entered at the gate.
+    const co = String(company || "").trim();
+    const account = accountForToken(token) || { name: co || "Guest", slug: slugify(co || "guest"), customer_id: null };
     const cat = readCatalog();
     const { order, units, subtotal } = buildOrder({ account, lines, notes, shipping, catalog: cat });
     if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
