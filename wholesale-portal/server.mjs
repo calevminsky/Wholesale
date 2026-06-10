@@ -15,6 +15,8 @@ import { fileURLToPath } from "node:url";
 import { loadOffPricing, saveOffPricing, OFF_MODES } from "./build/off-pricing.mjs";
 import { getHiddenHandles, listHidden, addHidden, removeHidden } from "./build/hidden-store.mjs";
 import { lineSheetBuffer } from "./build/linesheet-xlsx.mjs";
+import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
+import sgMail from "@sendgrid/mail";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 10000;
@@ -197,6 +199,67 @@ app.get("/data/catalog.json", async (_req, res) => {
     res.json(hide.size ? { ...cat, products: (cat.products || []).filter((p) => !hide.has(p.handle)) } : cat);
   } catch (e) {
     res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
+// ---- submit an order: email it to the wholesale team (+ optional buyer copy) ----
+const ORDER_FROM = process.env.ORDER_FROM || process.env.EMAIL_FROM || "";
+const ORDER_TEAM = (process.env.WHOLESALE_TEAM_EMAIL || "atarag@yakirabella.com,calev@yakirabella.com")
+  .split(",").map((s) => s.trim()).filter(Boolean);
+
+function accountForToken(token) {
+  if (!token) return null;
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "build", "accounts.json"), "utf8"));
+    const h = data.accounts?.[token];
+    return h ? { name: h.name, slug: h.slug, customer_id: h.customer_id ?? null } : null;
+  } catch { return null; }
+}
+
+app.post("/api/orders", async (req, res) => {
+  try {
+    const { token, lines, notes, shipping, buyerEmail, sendReceipt } = req.body || {};
+    const account = accountForToken(token) || { name: "Guest", slug: "guest", customer_id: null };
+    const cat = readCatalog();
+    const { order, units, subtotal } = buildOrder({ account, lines, notes, shipping, catalog: cat });
+    if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
+
+    const email = String(buyerEmail || "").trim();
+    const date = order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || "";
+    const base = `${account.slug}-${date}`;
+    const csv = orderCSV(order);
+    const json = JSON.stringify(order, null, 2);
+    const summary = orderSummary({ order, units, subtotal, account, buyerEmail: email });
+
+    if (!process.env.SENDGRID_API_KEY || !ORDER_FROM) {
+      return res.status(503).json({ ok: false, error: "Order email isn't configured on the server (SENDGRID_API_KEY / ORDER_FROM)." });
+    }
+    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+    const attachments = [
+      { content: Buffer.from(csv).toString("base64"), filename: `${base}.csv`, type: "text/csv", disposition: "attachment" },
+      { content: Buffer.from(json).toString("base64"), filename: `${base}.json`, type: "application/json", disposition: "attachment" }
+    ];
+    await sgMail.send({
+      to: ORDER_TEAM,
+      from: ORDER_FROM,
+      ...(email ? { replyTo: email } : {}),
+      subject: `New wholesale order — ${account.name} — ${units} units / $${subtotal}`,
+      text: `A new wholesale order came in through the portal.\n\n${summary}\n\nThe attached CSV uploads straight into the wholesale importer.`,
+      attachments
+    });
+    if (sendReceipt && email) {
+      await sgMail.send({
+        to: email,
+        from: ORDER_FROM,
+        subject: `Your Yakira Bella wholesale order (${account.name})`,
+        text: `Thanks! We received your order and will confirm shortly.\n\n${summary}`,
+        attachments: [attachments[0]]
+      }).catch((e) => console.warn("buyer receipt failed:", e.message));
+    }
+    res.json({ ok: true, ref: base, units, subtotal, styles: order.items.length, account: account.name });
+  } catch (e) {
+    const detail = e?.response?.body?.errors?.[0]?.message || e.message || String(e);
+    res.status(500).json({ ok: false, error: detail });
   }
 });
 

@@ -387,12 +387,19 @@
          </div>
          <div class="note-info" style="margin-top:6px">${ship === "when_ready" ? "We’ll ship pieces as they’re ready (partial shipments)." : "We’ll hold the order and ship it complete in one go."}</div>
        </div>
+       <div class="field"><label>Your email</label><input id="buyerEmail" type="email" inputmode="email" placeholder="you@boutique.com" value="${esc(loadEmail())}"></div>
+       <div class="field"><label class="chkrow"><input type="checkbox" id="sendReceipt" ${loadReceiptPref() ? "checked" : ""}> Email me a copy of this order</label></div>
        <div class="field"><label>Notes / PO number</label><textarea id="notes" rows="2" placeholder="e.g. PO 8842">${esc(loadNotes())}</textarea></div>
        <div class="totrow"><span>${t.styles} styles · ${t.units} units</span><span></span></div>
        <div class="totrow grand"><span>Order subtotal</span><span class="v">${money(t.subtotal)}</span></div>`;
     $("#reviewFootInfo").innerHTML = `Account: <b>${esc(account.name)}</b>`;
+    // reset footer (it may have been left in the post-submit "Done" state)
+    $("#submitBtn").style.display = ""; $("#submitBtn").disabled = false; $("#submitBtn").textContent = "Submit order";
+    $("#backToBrowse").textContent = "Keep shopping";
     $$("[data-rm]", $("#reviewContent")).forEach((b) => b.addEventListener("click", () => { delete cart[b.dataset.rm]; saveCart(); render(); refreshCart(); openReview(); }));
     $("#notes").addEventListener("input", (e) => saveNotes(e.target.value));
+    $("#buyerEmail").addEventListener("input", (e) => saveEmail(e.target.value));
+    $("#sendReceipt").addEventListener("change", (e) => saveReceiptPref(e.target.checked));
     $("#shipSeg").addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;
       saveShipping(b.dataset.v); openReview();
@@ -407,61 +414,47 @@
   const shipKey = () => `yb_portal_ship_${token || "guest"}`;
   function loadShipping() { return localStorage.getItem(shipKey()) || "all"; }
   function saveShipping(v) { localStorage.setItem(shipKey(), v); }
+  const emailKey = () => `yb_portal_email_${token || "guest"}`;
+  function loadEmail() { return localStorage.getItem(emailKey()) || ""; }
+  function saveEmail(v) { localStorage.setItem(emailKey(), v); }
+  const rcptKey = () => `yb_portal_receipt_${token || "guest"}`;
+  function loadReceiptPref() { return localStorage.getItem(rcptKey()) === "1"; }
+  function saveReceiptPref(v) { localStorage.setItem(rcptKey(), v ? "1" : "0"); }
 
-  // ---------- order assembly (matches wholesale_orders.items exactly) ----------
-  function buildOrder() {
-    const lines = cartLines();
-    const items = lines.map((p) => {
-      const size_qty = {};
-      for (const k of SIZE_CORE) size_qty[k] = Number((cart[p.gid] || {})[k] || 0);
-      if (p.sizes.some((s) => s.size === "OS")) size_qty.OS = Number((cart[p.gid] || {}).OS || 0);
-      return { handle: p.handle, product_name: p.title, unit_price: p.wholesale_price, size_qty, _sources: [`(portal:${account.slug})`] };
-    });
-    const ship = loadShipping();
-    const shipLabel = ship === "when_ready" ? "Ship when ready" : "Ship all together";
-    const userNotes = loadNotes().trim();
-    const notes = `[${shipLabel}]${userNotes ? " " + userNotes : ""}`;
-    const dateStr = new Date().toISOString().slice(0, 10);
-    return {
-      name: `${account.name} ${dateStr}`,
-      customer_id: account.customer_id ?? null,
-      line_sheet_id: null,
-      location_ids: LOCATIONS,
-      shipping: ship,                 // "all" | "when_ready" (also surfaced in notes for the importer)
-      notes,
-      source_filename: `wholesale-portal/${account.slug}-${dateStr}.json`,
-      items
-    };
-  }
-
-  function buildCSV(order) {
-    const hasOS = order.items.some((it) => "OS" in it.size_qty);
-    const cols = ["handle", "product_name", "unit_price", ...SIZE_CORE, ...(hasOS ? ["OS"] : [])];
-    const q = (v) => { const s = String(v ?? ""); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
-    const rows = [cols.join(",")];
-    for (const it of order.items) {
-      rows.push([it.handle, q(it.product_name), it.unit_price, ...SIZE_CORE.map((k) => it.size_qty[k] || 0), ...(hasOS ? [it.size_qty.OS || 0] : [])].join(","));
+  // ---------- order submission ----------
+  // The order is assembled server-side (server-authoritative pricing) from just
+  // {handle, size_qty} per line — see build/orderfile.mjs + POST /api/orders.
+  async function submit() {
+    const lines = cartLines().map((p) => ({ handle: p.handle, size_qty: cart[p.gid] }));
+    if (!lines.length) return;
+    const email = (loadEmail() || "").trim();
+    if (!/.+@.+\..+/.test(email)) { toast("Please enter your email so we can confirm your order."); $("#buyerEmail")?.focus(); return; }
+    const btn = $("#submitBtn");
+    btn.disabled = true; btn.textContent = "Submitting…";
+    try {
+      const res = await fetch("api/orders", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, lines, notes: loadNotes(), shipping: loadShipping(), buyerEmail: email, sendReceipt: loadReceiptPref() })
+      });
+      const j = await res.json();
+      if (!res.ok || !j.ok) { toast(j.error || "Couldn’t submit — please try again."); btn.disabled = false; btn.textContent = "Submit order"; return; }
+      showConfirmation(j);
+      cart = {}; saveCart(); refreshCart();
+    } catch (e) {
+      toast("Network error — please try again."); btn.disabled = false; btn.textContent = "Submit order";
     }
-    return rows.join("\n");
   }
 
-  function download(filename, text, type) {
-    const blob = new Blob([text], { type });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = filename; document.body.appendChild(a); a.click();
-    a.remove(); setTimeout(() => URL.revokeObjectURL(url), 1000);
-  }
-
-  function submit() {
-    const order = buildOrder();
-    if (!order.items.length) return;
-    const dateStr = new Date().toISOString().slice(0, 10);
-    const base = `${account.slug}-${dateStr}`;
-    download(`${base}.csv`, buildCSV(order), "text/csv");
-    download(`${base}.json`, JSON.stringify(order, null, 2), "application/json");
-    console.log("[wholesale-portal] order object (matches wholesale_orders.items):", order);
-    toast("Order files downloaded — hand to the wholesale team to upload.");
+  function showConfirmation(j) {
+    $("#reviewContent").innerHTML = `<div class="confirm">
+      <div class="confirm-check">✓</div>
+      <h3>Order received</h3>
+      <p>Thanks, ${esc(account.name)}! Your order — <b>${j.styles} ${j.styles === 1 ? "style" : "styles"} · ${j.units} units · ${money(j.subtotal)}</b> — was sent to our wholesale team. We’ll confirm shortly${loadReceiptPref() ? ", and a copy is on its way to your inbox" : ""}.</p>
+      <p class="ref">Reference: <b>${esc(j.ref)}</b></p>
+    </div>`;
+    $("#reviewFootInfo").textContent = "";
+    $("#submitBtn").style.display = "none";
+    $("#backToBrowse").textContent = "Done";
   }
 
   // ---------- print ----------
