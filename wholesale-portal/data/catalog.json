@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-10T20:19:38.192Z",
+  "generated_at": "2026-06-10T20:21:36.982Z",
   "offer": "F26",
   "currency": "USD",
   "size_order": [
@@ -35,10 +35,10 @@
     }
   },
   "counts": {
-    "full": 155,
+    "full": 156,
     "off": 113,
     "preorder": 154,
-    "total": 422
+    "total": 423
   },
   "products": [
     {
@@ -9144,6 +9144,51 @@
           "size": "XL",
           "sku": "F5-SW-449-BL837-36N-XL",
           "available": 7
+        }
+      ]
+    },
+    {
+      "product_id": "7572646166625",
+      "gid": "gid://shopify/Product/7572646166625",
+      "handle": "lennon-dress-pink",
+      "title": "Lennon Dress (Pink)",
+      "color": "Pink",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Lennon Dress",
+      "tier": "full",
+      "status": "ACTIVE",
+      "image": null,
+      "retail_price": 118,
+      "compare_at": null,
+      "wholesale_price": 59,
+      "list_wholesale": 59,
+      "total_available": 97,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-DW-779-PK1123-53L-XS",
+          "available": 28
+        },
+        {
+          "size": "S",
+          "sku": "S6-DW-779-PK1123-53L-S",
+          "available": 29
+        },
+        {
+          "size": "M",
+          "sku": "S6-DW-779-PK1123-53L-M",
+          "available": 18
+        },
+        {
+          "size": "L",
+          "sku": "S6-DW-779-PK1123-53L-L",
+          "available": 11
+        },
+        {
+          "size": "XL",
+          "sku": "S6-DW-779-PK1123-53L-XL",
+          "available": 11
         }
       ]
     },
