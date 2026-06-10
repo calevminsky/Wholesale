@@ -55,7 +55,10 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
 .seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
 .seg button{border:0;background:transparent;padding:9px 13px;font:inherit;font-size:13px;font-weight:600;color:var(--muted);cursor:pointer}
 .seg button.on{background:var(--ink);color:#fff}
-.count{font-size:12px;color:var(--muted);margin-left:auto;padding-left:8px}
+.count{font-size:12px;color:var(--muted)}
+.toolbar .actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.btn.dl{background:var(--accent-soft);border-color:#e3cabf;color:var(--accent);font-weight:700}
+.btn.dl:hover{border-color:var(--accent)}
 
 /* grid */
 .grid{display:grid;gap:16px;padding:20px 0 120px;grid-template-columns:repeat(auto-fill,minmax(240px,1fr))}
