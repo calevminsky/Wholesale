@@ -44,38 +44,8 @@
     }
   }
 
-  async function saveTarget(period_index, target_amount) {
-    state.busy = true; render();
-    try {
-      await api(`/api/sales/plan/target?fy=${state.fy}`, {
-        method: "PUT",
-        body: JSON.stringify({ period_index, target_amount })
-      });
-      await load();
-    } catch (e) { alert("Could not save target: " + e.message); }
-    finally { state.busy = false; }
-  }
-
-  async function saveGoal(annual_goal) {
-    state.busy = true; render();
-    try {
-      await api(`/api/sales/plan/goal?fy=${state.fy}`, {
-        method: "PUT", body: JSON.stringify({ annual_goal })
-      });
-      await load();
-    } catch (e) { alert("Could not save goal: " + e.message); }
-    finally { state.busy = false; }
-  }
-
-  async function reseed() {
-    if (!confirm("Rebuild the monthly targets from the annual goal?\n\nClosed months get locked to what actually sold; the remaining goal is spread across the open months by selling weeks. This overwrites your current targets.")) return;
-    state.busy = true; render();
-    try {
-      await api(`/api/sales/plan/reseed?fy=${state.fy}`, { method: "POST", body: "{}" });
-      await load();
-    } catch (e) { alert("Could not rebuild plan: " + e.message); }
-    finally { state.busy = false; }
-  }
+  // This dashboard is read-only. The plan (goal + monthly targets) is edited in
+  // the password-gated admin page at /admin/sales-plan.
 
   // ---- KPI header ----
   function kpi(label, value, sub) {
@@ -88,17 +58,9 @@
 
   function renderHeader(d) {
     const t = d.totals;
-    const goalInput = el("input", {
-      type: "number", value: d.annual_goal, step: "1000",
-      style: { width: "120px", fontSize: "20px", fontWeight: "700", border: "1px solid #ccc", borderRadius: "6px", padding: "2px 6px" },
-      onchange: (e) => saveGoal(Number(e.target.value))
-    });
     return el("div", {}, [
       el("div", { style: { display: "flex", gap: "10px", flexWrap: "wrap", alignItems: "stretch" } }, [
-        el("div", { style: { flex: "1", minWidth: "170px", border: "1px solid #eee", borderRadius: "10px", padding: "12px 14px", background: "#fff" } }, [
-          el("div", { class: "muted", style: { fontSize: "12px" } }, `FY${d.fiscal_year} annual goal`),
-          el("div", { style: { display: "flex", alignItems: "center", gap: "4px", margin: "2px 0" } }, [el("span", { style: { fontSize: "20px", fontWeight: "700" } }, "$"), goalInput])
-        ]),
+        kpi(`FY${d.fiscal_year} annual goal`, money(d.annual_goal)),
         kpi("Booked YTD", money(t.booked_ytd), `${pct(t.attainment_to_goal)} of goal`),
         kpi("Remaining to goal", money(t.remaining_to_goal), `${t.open_periods} months left`),
         kpi("Pace needed", money(t.avg_needed_per_open_period) + "/mo", money(t.avg_needed_per_open_week) + "/wk to close")
@@ -123,11 +85,6 @@
   function renderPlanTable(d) {
     const rowBg = { closed: "#fafafa", current: "#fff7e6", future: "#fff" };
     const trs = d.periods.map((p) => {
-      const targetInput = el("input", {
-        type: "number", value: p.target, step: "500",
-        style: { width: "90px", textAlign: "right", border: "1px solid #ddd", borderRadius: "6px", padding: "2px 6px", fontVariantNumeric: "tabular-nums" },
-        onchange: (e) => saveTarget(p.period_index, Number(e.target.value))
-      });
       const deltaColor = p.delta >= 0 ? "#1a7f37" : "#b42318";
       return el("tr", { style: { background: rowBg[p.status] || "#fff" } }, [
         el("td", {}, [
@@ -135,7 +92,7 @@
           p.status === "current" ? el("span", { class: "pill", style: { marginLeft: "6px", fontSize: "10px" } }, "current") : null
         ]),
         el("td", { class: "muted", style: { fontSize: "12px" } }, `${p.starts_on.slice(5)} – ${p.ends_on.slice(5)} · ${p.weeks}w`),
-        el("td", { class: "num" }, targetInput),
+        el("td", { class: "num", style: { fontVariantNumeric: "tabular-nums" } }, money(p.target)),
         el("td", { class: "num", style: { fontVariantNumeric: "tabular-nums" } }, money(p.actual)),
         el("td", { class: "num", style: { color: deltaColor, fontVariantNumeric: "tabular-nums" } }, (p.delta >= 0 ? "+" : "") + money(p.delta)),
         el("td", { class: "num" }, p.status === "future" ? "—" : pct(p.attainment)),
@@ -158,15 +115,12 @@
       .map((h, i) => el("th", { class: i >= 2 && i <= 5 ? "num" : "", style: { textAlign: i >= 2 && i <= 5 ? "right" : "left", borderBottom: "1px solid #eee", padding: "6px 8px", fontSize: "12px" } }, h)));
 
     return el("div", { class: "box" }, [
-      el("div", { style: { display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "8px" } }, [
-        el("h3", { style: { margin: 0 } }, "Monthly plan vs. actual"),
-        el("button", { class: "app-tab", onclick: reseed, disabled: state.busy ? "" : null }, "Rebuild plan to hit goal")
-      ]),
+      el("h3", { style: { margin: "0 0 8px 0" } }, "Monthly plan vs. actual"),
       el("div", { class: "order-table-wrap" }, [
         el("table", {}, [el("thead", {}, head), el("tbody", {}, [...trs, totalRow])])
       ]),
       el("div", { class: "muted", style: { fontSize: "12px", marginTop: "6px" } },
-        "Targets are editable — type a new number to override. “Rebuild plan” locks closed months to actuals and spreads the rest of the goal across open months by selling weeks.")
+        "Read-only. Closed months are locked to actuals; the rest of the goal is spread across open months by selling weeks. The goal and targets are edited in the gated admin page.")
     ]);
   }
 

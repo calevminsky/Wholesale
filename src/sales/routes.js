@@ -35,8 +35,11 @@ async function resolveFy(req) {
   return (await getCurrentFiscalPosition()).fiscal_year;
 }
 
-export function createSalesRouter() {
+export function createSalesRouter({ adminAuth } = {}) {
   const router = express.Router();
+  // Reads are open (within the app gate); writes require the admin gate so the
+  // plan is only editable from the admin page, not the read-only dashboard.
+  const requireAdmin = adminAuth || ((_req, _res, next) => next());
 
   router.get("/api/sales/plan", async (req, res) => {
     try {
@@ -106,7 +109,7 @@ export function createSalesRouter() {
     }
   });
 
-  router.put("/api/sales/plan/target", express.json(), async (req, res) => {
+  router.put("/api/sales/plan/target", requireAdmin, express.json(), async (req, res) => {
     try {
       const fy = await resolveFy(req);
       const idx = parseInt(req.body.period_index, 10);
@@ -121,7 +124,7 @@ export function createSalesRouter() {
     }
   });
 
-  router.put("/api/sales/plan/goal", express.json(), async (req, res) => {
+  router.put("/api/sales/plan/goal", requireAdmin, express.json(), async (req, res) => {
     try {
       const fy = await resolveFy(req);
       const amount = Number(req.body.annual_goal);
@@ -137,7 +140,7 @@ export function createSalesRouter() {
 
   // Rebuild monthly targets from the current goal + live actuals (closed months
   // locked to actuals, remainder spread across open months by selling weeks).
-  router.post("/api/sales/plan/reseed", express.json(), async (req, res) => {
+  router.post("/api/sales/plan/reseed", requireAdmin, express.json(), async (req, res) => {
     try {
       const fy = await resolveFy(req);
       const current = await getCurrentFiscalPosition();

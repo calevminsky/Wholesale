@@ -1,0 +1,153 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Sales Plan — Admin</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background: #f6f6f6; color: #111; }
+    .wrap { max-width: 760px; margin: 0 auto; padding: 24px 18px 60px; }
+    h1 { margin: 0 0 4px; font-size: 22px; }
+    .muted { color: #777; }
+    .box { background: #fff; border: 1px solid #eee; border-radius: 12px; padding: 16px; margin-top: 16px; }
+    .goal-row { display: flex; align-items: center; gap: 8px; }
+    input[type="number"] { border: 1px solid #ccc; border-radius: 8px; padding: 6px 8px; font-size: 15px; text-align: right; font-variant-numeric: tabular-nums; }
+    table { border-collapse: collapse; width: 100%; margin-top: 8px; }
+    th, td { padding: 7px 8px; border-bottom: 1px solid #eee; font-size: 14px; }
+    th { text-align: right; font-size: 12px; color: #777; }
+    th:first-child, td:first-child { text-align: left; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    tr.closed { background: #fafafa; color: #888; }
+    tr.current { background: #fff7e6; }
+    button { background: #111; color: #fff; border: 0; border-radius: 8px; padding: 9px 14px; font-size: 14px; cursor: pointer; }
+    button:disabled { opacity: .5; cursor: default; }
+    .bar { display: flex; gap: 10px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+    .ok { color: #1a7f37; } .bad { color: #b42318; }
+    .toast { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); background: #111; color: #fff; padding: 8px 14px; border-radius: 8px; font-size: 13px; opacity: 0; transition: opacity .2s; }
+    .toast.show { opacity: 1; }
+    a { color: #1a55cc; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Sales Plan — Admin</h1>
+    <div class="muted">Edit the annual goal and monthly targets. Actuals are read-only (from yb_reports).</div>
+    <div id="app"></div>
+  </div>
+  <div class="toast" id="toast"></div>
+  <script>
+  (function () {
+    const appEl = document.getElementById("app");
+    const toastEl = document.getElementById("toast");
+    // The owner key is in this page's URL (?key=...). Forward it on write calls.
+    const KEY = new URLSearchParams(location.search).get("key") || "";
+    let data = null;
+
+    const money = (n) => "$" + Math.round(Number(n) || 0).toLocaleString();
+    const pct = (n) => (n == null ? "—" : Math.round(n * 100) + "%");
+
+    function toast(msg) {
+      toastEl.textContent = msg;
+      toastEl.classList.add("show");
+      setTimeout(() => toastEl.classList.remove("show"), 1500);
+    }
+
+    async function api(path, opts = {}) {
+      const headers = { "Content-Type": "application/json" };
+      if (opts.method && opts.method !== "GET") headers["x-sales-admin-key"] = KEY;
+      const res = await fetch(path, { headers, ...opts });
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(json.error || `HTTP ${res.status}`);
+      return json;
+    }
+
+    async function load() { data = await api("/api/sales/plan"); render(); }
+
+    async function saveGoal(v) {
+      try { await api("/api/sales/plan/goal", { method: "PUT", body: JSON.stringify({ annual_goal: v }) }); toast("Goal saved"); await load(); }
+      catch (e) { alert("Save failed: " + e.message); }
+    }
+    async function saveTarget(idx, v) {
+      try { await api("/api/sales/plan/target", { method: "PUT", body: JSON.stringify({ period_index: idx, target_amount: v }) }); toast("Saved " + label(idx)); await load(); }
+      catch (e) { alert("Save failed: " + e.message); }
+    }
+    async function reseed() {
+      if (!confirm("Rebuild monthly targets from the annual goal?\n\nClosed months lock to actuals; the rest of the goal is spread across open months by selling weeks. Overwrites current targets.")) return;
+      try { await api("/api/sales/plan/reseed", { method: "POST", body: "{}" }); toast("Plan rebuilt"); await load(); }
+      catch (e) { alert("Rebuild failed: " + e.message); }
+    }
+    function label(idx) { const p = data && data.periods.find((x) => x.period_index === idx); return p ? p.label : "month " + idx; }
+
+    function render() {
+      const d = data;
+      const plannedTotal = d.totals.planned_total;
+      const diff = plannedTotal - d.annual_goal;
+      appEl.innerHTML = "";
+
+      const goalBox = document.createElement("div");
+      goalBox.className = "box";
+      goalBox.innerHTML = `<div class="muted" style="font-size:12px">FY${d.fiscal_year} annual goal</div>`;
+      const goalRow = document.createElement("div");
+      goalRow.className = "goal-row"; goalRow.style.marginTop = "6px";
+      const span = document.createElement("span");
+      span.textContent = "$"; span.style.fontSize = "20px"; span.style.fontWeight = "700";
+      const goalInput = document.createElement("input");
+      goalInput.type = "number"; goalInput.step = "1000"; goalInput.value = d.annual_goal;
+      goalInput.style.fontSize = "20px"; goalInput.style.fontWeight = "700"; goalInput.style.width = "150px";
+      goalInput.addEventListener("change", () => saveGoal(Number(goalInput.value)));
+      const rebuildBtn = document.createElement("button");
+      rebuildBtn.textContent = "Rebuild monthly from goal"; rebuildBtn.style.marginLeft = "auto";
+      rebuildBtn.addEventListener("click", reseed);
+      goalRow.append(span, goalInput, rebuildBtn);
+      goalBox.append(goalRow);
+      appEl.append(goalBox);
+
+      const box = document.createElement("div");
+      box.className = "box";
+      const table = document.createElement("table");
+      table.innerHTML = `<thead><tr><th>Month</th><th>Period (4-5-4)</th><th>Target</th><th>Actual</th><th>Att.</th></tr></thead>`;
+      const tbody = document.createElement("tbody");
+      for (const p of d.periods) {
+        const tr = document.createElement("tr");
+        tr.className = p.status;
+        const tdMonth = document.createElement("td");
+        tdMonth.innerHTML = `<strong>${p.label}</strong>` + (p.status === "current" ? ' <span class="muted">(current)</span>' : "");
+        const tdPeriod = document.createElement("td");
+        tdPeriod.className = "muted"; tdPeriod.style.fontSize = "12px";
+        tdPeriod.textContent = `${p.starts_on.slice(5)} – ${p.ends_on.slice(5)} · ${p.weeks}w`;
+        const tdTarget = document.createElement("td");
+        tdTarget.className = "num";
+        const inp = document.createElement("input");
+        inp.type = "number"; inp.step = "500"; inp.value = p.target; inp.style.width = "110px";
+        inp.addEventListener("change", () => saveTarget(p.period_index, Number(inp.value)));
+        tdTarget.append(inp);
+        const tdActual = document.createElement("td");
+        tdActual.className = "num"; tdActual.textContent = money(p.actual);
+        const tdAtt = document.createElement("td");
+        tdAtt.className = "num"; tdAtt.textContent = p.status === "future" ? "—" : pct(p.attainment);
+        tr.append(tdMonth, tdPeriod, tdTarget, tdActual, tdAtt);
+        tbody.append(tr);
+      }
+      table.append(tbody);
+      box.append(table);
+
+      const summary = document.createElement("div");
+      summary.className = "bar";
+      summary.innerHTML =
+        `<div>Planned total: <strong>${money(plannedTotal)}</strong></div>` +
+        `<div class="${Math.abs(diff) < 1 ? "ok" : "bad"}">${diff === 0 ? "= goal" : (diff > 0 ? "+" : "") + money(diff) + " vs goal"}</div>` +
+        `<div class="muted" style="margin-left:auto">Booked YTD ${money(d.totals.booked_ytd)} · through ${d.as_of || "—"}</div>`;
+      box.append(summary);
+
+      const note = document.createElement("div");
+      note.className = "muted"; note.style.cssText = "font-size:12px;margin-top:10px";
+      note.innerHTML = 'Set the goal, then “Rebuild monthly from goal” to auto-spread it (closed months stay at actuals). Or hand-edit any month.';
+      box.append(note);
+      appEl.append(box);
+    }
+
+    load().catch((e) => { appEl.innerHTML = '<div class="box bad">Could not load: ' + e.message + "</div>"; });
+  })();
+  </script>
+</body>
+</html>

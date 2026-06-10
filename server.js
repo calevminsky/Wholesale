@@ -14,7 +14,7 @@ import { createLineSheetsRouter } from "./src/linesheets/routes.js";
 import { createCustomersRouter } from "./src/customers/routes.js";
 import { createOrdersRouter } from "./src/orders/routes.js";
 import { createSalesRouter } from "./src/sales/routes.js";
-import { createBasicAuth } from "./src/auth.js";
+import { createBasicAuth, createKeyGate } from "./src/auth.js";
 import { pgAvailable, query as pgQuery } from "./src/pg.js";
 
 const app = express();
@@ -2828,7 +2828,15 @@ app.get("/api/orders/:orderId/invoice.pdf", async (req, res) => {
 // ----------------- Line Sheet Builder -----------------
 app.use(createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }));
 app.use(createCustomersRouter({ shopifyGraphQL }));
-app.use(createSalesRouter());
+// Sales-plan editing is owner-only: gated by an unguessable SALES_ADMIN_KEY (the
+// CURATE_KEY pattern — `?key=` for the page, x-sales-admin-key header for write
+// APIs). Unset = open (dev). The read-only dashboard tab uses the open GET; the
+// admin page is the only place that loads the key and calls the gated writes.
+const salesAdminAuth = createKeyGate({ envVar: "SALES_ADMIN_KEY", headerName: "x-sales-admin-key" });
+const salesAdminDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "admin");
+app.get("/admin/sales-plan", salesAdminAuth, (_req, res) =>
+  res.sendFile(path.join(salesAdminDir, "sales-plan.html")));
+app.use(createSalesRouter({ adminAuth: salesAdminAuth }));
 app.use(createOrdersRouter({
   runAllocation,
   upload,

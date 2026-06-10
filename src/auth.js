@@ -46,3 +46,21 @@ export function createBasicAuth({ publicPaths = [] } = {}) {
     res.status(401).send("Authentication required.");
   };
 }
+
+// Key-based gate for owner-only pages/APIs (e.g. editing the sales plan).
+// Matches the CURATE_KEY pattern already used here: an unguessable key passed
+// via `?key=` (for page loads) or a header (for API writes). This composes
+// cleanly on top of the app-wide Basic gate, where a second Basic password
+// would not (browsers send one credential per request). Open when the key isn't
+// set, so dev keeps working. Returns a middleware.
+export function createKeyGate({ envVar, headerName = "x-admin-key" } = {}) {
+  const key = process.env[envVar] || "";
+  if (!key) return (_req, _res, next) => next();
+
+  const header = headerName.toLowerCase();
+  return (req, res, next) => {
+    const provided = String(req.query.key || req.headers[header] || "");
+    if (provided && timingSafeEq(provided, key)) return next();
+    res.status(404).send("Not found.");
+  };
+}
