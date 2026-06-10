@@ -51,10 +51,10 @@ export async function lineSheetPdf(catalog, opts = {}) {
     }
   }));
 
-  const PW = 612, PH = 792, M = 36, COLS = 3, GAP = 16, ROWGAP = 16;
+  const PW = 612, PH = 792, M = 36, COLS = 3, GAP = 16, ROWGAP = 14;
   const cellW = (PW - 2 * M - (COLS - 1) * GAP) / COLS;
-  const imgH = cellW * 4 / 3;
-  const TEXT = 50;
+  const imgH = 164;   // fixed so exactly 3 rows fit per page
+  const TEXT = 46;
   const cellH = imgH + TEXT;
 
   const trunc = (s, f, size, max) => {

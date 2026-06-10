@@ -28,6 +28,7 @@ export function lineSheetRows(catalog, { defaultLeadDays = 14 } = {}) {
       type: p.type || "",
       group: (p.class || "").toLowerCase() === "core" ? "Core" : "Non-Core",
       sizes: sizeRange(p.sizes),
+      sizeList: (p.sizes || []).map((s) => s.size).filter((s) => SIZE_ORDER.includes(s)).sort((a, b) => SIZE_ORDER.indexOf(a) - SIZE_ORDER.indexOf(b)),
       msrp: Math.max(p.compare_at || 0, p.retail_price || 0) || null,
       wholesale: Number.isFinite(p.wholesale_price) ? p.wholesale_price : null,
       availability: p.preorder ? "Pre-order" : "In stock",
