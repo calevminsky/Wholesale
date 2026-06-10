@@ -15,6 +15,7 @@ import { fileURLToPath } from "node:url";
 import { loadOffPricing, saveOffPricing, OFF_MODES } from "./build/off-pricing.mjs";
 import { getHiddenHandles, listHidden, addHidden, removeHidden } from "./build/hidden-store.mjs";
 import { lineSheetBuffer } from "./build/linesheet-xlsx.mjs";
+import { lineSheetPdf } from "./build/linesheet-pdf.mjs";
 import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
 import { logVisit, listVisits } from "./build/visits-store.mjs";
 import sgMail from "@sendgrid/mail";
@@ -299,6 +300,21 @@ app.get("/api/linesheet.xlsx", async (_req, res) => {
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-line-sheet-${date}.xlsx"`);
     res.send(Buffer.from(buf));
+  } catch (e) {
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
+app.get("/api/linesheet.pdf", async (req, res) => {
+  try {
+    const cat = readCatalog();
+    const hide = await hiddenSet();
+    const filtered = hide.size ? { ...cat, products: (cat.products || []).filter((p) => !hide.has(p.handle)) } : cat;
+    const pdf = await lineSheetPdf(filtered, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
+    const date = new Date().toISOString().slice(0, 10);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-line-sheet-${date}.pdf"`);
+    res.send(Buffer.from(pdf));
   } catch (e) {
     res.status(500).json({ error: String(e.message || e) });
   }

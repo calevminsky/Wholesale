@@ -519,26 +519,21 @@
     $("#backToBrowse").textContent = "Done";
   }
 
-  // ---------- print ----------
-  // Print exactly what's on screen: the print stylesheet hides the chrome
-  // (header, toolbar, cart bar) and keeps the live card grid as-is.
-  // Card images are loading="lazy", so anything below the first screen hasn't
-  // loaded — it would print blank. Eager-load every image and wait before print.
-  async function printCatalog() {
-    const imgs = $$("#grid img");
-    const waits = imgs.map((im) => {
-      if (im.complete && im.naturalWidth > 0) return Promise.resolve();
-      im.loading = "eager";
-      return new Promise((res) => {
-        im.addEventListener("load", res, { once: true });
-        im.addEventListener("error", res, { once: true });
-        const src = im.currentSrc || im.getAttribute("src"); // nudge images the lazy loader never started
-        if (src) { im.removeAttribute("src"); im.setAttribute("src", src); }
-      });
-    });
-    // don't hang forever if a stray image 404s
-    await Promise.race([Promise.all(waits), new Promise((r) => setTimeout(r, 10000))]);
-    window.print();
+  // ---------- PDF line sheet ----------
+  // Server renders a branded PDF catalog (with photos); it can take a bit, so
+  // show a toast and stream it down as a download.
+  async function downloadPdf() {
+    toast("Preparing your PDF line sheet… this can take a moment.");
+    try {
+      const res = await fetch("api/linesheet.pdf");
+      if (!res.ok) { toast("Couldn’t generate the PDF — please try again."); return; }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = "yakira-bella-line-sheet.pdf";
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+    } catch { toast("Couldn’t generate the PDF — please try again."); }
   }
 
   // ---------- toast ----------
@@ -571,8 +566,8 @@
       const b = e.target.closest("button"); if (!b) return;
       filters.density = b.dataset.v; $$("#densitySeg button").forEach((x) => x.classList.toggle("on", x === b)); render();
     });
+    $("#pdfBtn").addEventListener("click", downloadPdf);
     $("#xlsxBtn").addEventListener("click", () => { window.location.href = "api/linesheet.xlsx"; });
-    $("#printBtn").addEventListener("click", printCatalog);
     $("#reviewBtn").addEventListener("click", openReview);
     $("#reviewBtn2").addEventListener("click", openReview);
     $("#closeReview").addEventListener("click", closeReview);
