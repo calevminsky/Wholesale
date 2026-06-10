@@ -135,6 +135,32 @@ app.post("/api/rebuild", adminAuth, async (req, res) => {
   }
 });
 
+// ---- durable resync: trigger the GitHub Action (it commits the refreshed
+// catalog, so the result survives redeploys — unlike /api/rebuild which writes
+// to this container's ephemeral disk). Needs GITHUB_DISPATCH_TOKEN on the server.
+const GH_REPO = process.env.GITHUB_REPO || "calevminsky/wholesale";
+app.post("/api/resync", adminAuth, async (_req, res) => {
+  const token = process.env.GITHUB_DISPATCH_TOKEN || "";
+  if (!token) return res.status(400).json({ ok: false, error: "GITHUB_DISPATCH_TOKEN is not set on the server." });
+  try {
+    const r = await fetch(`https://api.github.com/repos/${GH_REPO}/dispatches`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/vnd.github+json",
+        "Content-Type": "application/json",
+        "User-Agent": "yb-wholesale-portal"
+      },
+      body: JSON.stringify({ event_type: "resync" })
+    });
+    if (r.status === 204) return res.json({ ok: true });
+    const detail = await r.text().catch(() => "");
+    res.status(502).json({ ok: false, error: `GitHub dispatch failed: ${r.status} ${detail.slice(0, 200)}` });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
 // ---- curate / remove products (Emily's secret link) ----
 // The page is key-gated; curate.js itself carries no secrets and loads via the
 // static handler. All data lives behind the key-gated /api/* routes below.

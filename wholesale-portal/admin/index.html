@@ -52,6 +52,15 @@ tr:hover td{background:var(--paper)}
 <div class="wrap">
 
   <div class="panel">
+    <h2>Refresh the catalog</h2>
+    <p class="hint">Re-pulls the latest products, images, prices &amp; ETAs (Airtable) and inventory (database), then publishes it <b>durably</b> — it survives redeploys. Goes live in ~2–3 minutes. Removed products stay removed.</p>
+    <div class="bar">
+      <button class="btn go" id="resync">Resync &amp; publish</button>
+      <span class="status" id="resyncStatus"></span>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Default off-price rule</h2>
     <p class="hint">Applies to every <span class="pill">Off price</span> style except those with a per-style override below. Full-price styles are always 50% of MSRP and aren’t affected here.</p>
     <div class="ruleRow">

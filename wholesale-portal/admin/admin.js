@@ -108,7 +108,21 @@
     }
   }
 
+  // Durable resync: triggers the GitHub Action (re-pull + rebuild + commit).
+  async function resync() {
+    const btn = $("#resync"), st = $("#resyncStatus");
+    btn.disabled = true; st.textContent = "Starting resync…"; st.className = "status";
+    try {
+      const res = await fetch("/api/resync", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      const j = await res.json();
+      if (!res.ok || !j.ok) { st.textContent = "Failed: " + (j.error || res.status); st.className = "status err"; }
+      else { st.textContent = "Resync started — products/images/prices refresh and go live in ~2–3 minutes. You can leave this page."; st.className = "status ok"; }
+    } catch (e) { st.textContent = "Error: " + e.message; st.className = "status err"; }
+    finally { setTimeout(() => { btn.disabled = false; }, 5000); }
+  }
+
   function wire() {
+    $("#resync").addEventListener("click", resync);
     $("#mode").addEventListener("change", (e) => { rule.mode = e.target.value; syncValVisibility(); renderRows(); });
     $("#value").addEventListener("input", (e) => { rule.value = Number(e.target.value) || 0; renderRows(); });
     let t; $("#search").addEventListener("input", () => { clearTimeout(t); t = setTimeout(renderRows, 120); });
