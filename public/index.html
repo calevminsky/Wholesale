@@ -264,6 +264,7 @@
     <h1>Wholesale Tools</h1>
 
     <div class="app-tabs">
+      <button class="app-tab" data-page="sales">Sales Plan</button>
       <button class="app-tab" data-page="orders">Orders</button>
       <button class="app-tab" data-page="linesheets">Line Sheets</button>
       <button class="app-tab" data-page="customers">Customers</button>
@@ -391,6 +392,7 @@
 
     <div id="ordersPage" style="display:none;"></div>
     <div id="customersPage" style="display:none;"></div>
+    <div id="salesPage" style="display:none;"></div>
 
     <script src="/linesheets/filter-bar.js"></script>
     <script src="/linesheets/filter-rail.js"></script>
@@ -399,6 +401,7 @@
     <script src="/linesheets/list.js"></script>
     <script src="/orders.js"></script>
     <script src="/customers.js"></script>
+    <script src="/sales.js"></script>
     <script>
       // ===== Top-level tab switching =====
       (function () {
@@ -407,7 +410,8 @@
           import: document.getElementById("wholesaleImportPage"),
           linesheets: document.getElementById("lineSheetsPage"),
           orders: document.getElementById("ordersPage"),
-          customers: document.getElementById("customersPage")
+          customers: document.getElementById("customersPage"),
+          sales: document.getElementById("salesPage")
         };
         let lsInitialized = false;
         tabs.forEach((t) => t.addEventListener("click", async () => {
@@ -425,6 +429,9 @@
           }
           if (p === "customers" && window.CustomersPage) {
             await window.CustomersPage.show();
+          }
+          if (p === "sales" && window.SalesPage) {
+            await window.SalesPage.show();
           }
         }));
       })();

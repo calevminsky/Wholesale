@@ -13,6 +13,7 @@ import { fileURLToPath } from "url";
 import { createLineSheetsRouter } from "./src/linesheets/routes.js";
 import { createCustomersRouter } from "./src/customers/routes.js";
 import { createOrdersRouter } from "./src/orders/routes.js";
+import { createSalesRouter } from "./src/sales/routes.js";
 import { createBasicAuth } from "./src/auth.js";
 import { pgAvailable, query as pgQuery } from "./src/pg.js";
 
@@ -176,10 +177,10 @@ async function getAccessToken() {
 }
 
 // ----------------- Shopify GraphQL helper -----------------
-async function shopifyGraphQL(query, variables = {}) {
+async function shopifyGraphQL(query, variables = {}, { apiVersion } = {}) {
   const token = await getAccessToken();
 
-  const res = await fetch(`https://${SHOP}/admin/api/${VERSION}/graphql.json`, {
+  const res = await fetch(`https://${SHOP}/admin/api/${apiVersion || VERSION}/graphql.json`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -2827,6 +2828,7 @@ app.get("/api/orders/:orderId/invoice.pdf", async (req, res) => {
 // ----------------- Line Sheet Builder -----------------
 app.use(createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }));
 app.use(createCustomersRouter({ shopifyGraphQL }));
+app.use(createSalesRouter({ shopifyGraphQL }));
 app.use(createOrdersRouter({
   runAllocation,
   upload,
