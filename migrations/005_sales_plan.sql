@@ -1,20 +1,9 @@
--- Wholesale sales plan: a 4-5-4 (NRF retail) monthly plan + per-month targets.
--- Actuals are NOT stored here — they're read live from Shopify (orders tagged
--- "Wholesale"). This holds only the plan/goals side. Safe to run more than once.
+-- Wholesale sales plan (PLAN side only). Actuals come live from the reporting
+-- DB (shopify_sales_daily.total_wholesale + order_lines), bucketed by the
+-- company's own `fiscal_calendar` (4-5-4, January-anchored). Safe to re-run.
 
--- The 4-5-4 fiscal calendar. Rows are seeded by the app from src/sales/calendar.js
--- (single source of truth for the boundaries) on first access to a fiscal year.
-CREATE TABLE IF NOT EXISTS wholesale_fiscal_periods (
-  fiscal_year   INTEGER NOT NULL,
-  period_index  INTEGER NOT NULL CHECK (period_index BETWEEN 1 AND 12),
-  label         TEXT    NOT NULL,           -- "Feb".."Jan"
-  starts_on     DATE    NOT NULL,
-  ends_on       DATE    NOT NULL,
-  weeks         INTEGER NOT NULL,           -- 4 or 5
-  PRIMARY KEY (fiscal_year, period_index)
-);
-
--- Per-month revenue target. Absent row = no target set yet for that month.
+-- Per-fiscal-month wholesale revenue target. period_index = fiscal_month (1-12)
+-- of the company fiscal_calendar. Absent row = no target set yet.
 CREATE TABLE IF NOT EXISTS wholesale_sales_targets (
   fiscal_year   INTEGER NOT NULL,
   period_index  INTEGER NOT NULL CHECK (period_index BETWEEN 1 AND 12),
@@ -34,3 +23,7 @@ CREATE TABLE IF NOT EXISTS wholesale_plan_settings (
 INSERT INTO wholesale_plan_settings (fiscal_year, annual_goal)
 VALUES (2026, 500000)
 ON CONFLICT (fiscal_year) DO NOTHING;
+
+-- Drop the redundant calendar table from the first cut — the company's
+-- `fiscal_calendar` is the source of truth for 4-5-4 boundaries now.
+DROP TABLE IF EXISTS wholesale_fiscal_periods;

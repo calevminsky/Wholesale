@@ -1,27 +1,7 @@
-// Storage for the sales PLAN side (4-5-4 calendar rows, per-month targets, the
-// annual goal). Actuals are not stored here — see shopify-actuals.js.
+// Storage for the sales PLAN side (annual goal + per-fiscal-month targets).
+// The calendar comes from `fiscal_calendar` (see calendar.js); actuals from
+// the reporting tables (see actuals.js). period_index = fiscal_month (1-12).
 import { query } from "../pg.js";
-import { generatePeriods } from "./calendar.js";
-
-// Make sure the 12 calendar rows exist for a fiscal year, sourced from
-// calendar.js (the single source of truth for 4-5-4 boundaries).
-export async function ensurePeriods(fiscalYear) {
-  const periods = generatePeriods(fiscalYear);
-  for (const p of periods) {
-    await query(
-      `INSERT INTO wholesale_fiscal_periods
-         (fiscal_year, period_index, label, starts_on, ends_on, weeks)
-       VALUES ($1,$2,$3,$4,$5,$6)
-       ON CONFLICT (fiscal_year, period_index) DO UPDATE
-         SET label = EXCLUDED.label,
-             starts_on = EXCLUDED.starts_on,
-             ends_on = EXCLUDED.ends_on,
-             weeks = EXCLUDED.weeks`,
-      [fiscalYear, p.period_index, p.label, p.starts_on, p.ends_on, p.weeks]
-    );
-  }
-  return periods;
-}
 
 export async function getAnnualGoal(fiscalYear) {
   const { rows } = await query(
@@ -42,7 +22,7 @@ export async function setAnnualGoal(fiscalYear, amount) {
   return getAnnualGoal(fiscalYear);
 }
 
-// Returns { [period_index]: target_amount } for periods that have a target set.
+// Returns { [fiscal_month]: target_amount } for months that have a target set.
 export async function getTargets(fiscalYear) {
   const { rows } = await query(
     `SELECT period_index, target_amount

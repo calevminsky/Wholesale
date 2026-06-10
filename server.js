@@ -177,10 +177,10 @@ async function getAccessToken() {
 }
 
 // ----------------- Shopify GraphQL helper -----------------
-async function shopifyGraphQL(query, variables = {}, { apiVersion } = {}) {
+async function shopifyGraphQL(query, variables = {}) {
   const token = await getAccessToken();
 
-  const res = await fetch(`https://${SHOP}/admin/api/${apiVersion || VERSION}/graphql.json`, {
+  const res = await fetch(`https://${SHOP}/admin/api/${VERSION}/graphql.json`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -2828,7 +2828,7 @@ app.get("/api/orders/:orderId/invoice.pdf", async (req, res) => {
 // ----------------- Line Sheet Builder -----------------
 app.use(createLineSheetsRouter({ shopifyGraphQL, renderPdfFromHtml }));
 app.use(createCustomersRouter({ shopifyGraphQL }));
-app.use(createSalesRouter({ shopifyGraphQL }));
+app.use(createSalesRouter());
 app.use(createOrdersRouter({
   runAllocation,
   upload,

@@ -104,9 +104,8 @@
         kpi("Pace needed", money(t.avg_needed_per_open_period) + "/mo", money(t.avg_needed_per_open_week) + "/wk to close")
       ]),
       el("div", { class: "muted", style: { fontSize: "12px", marginTop: "8px" } }, [
-        `Actuals: Shopify orders tagged “Wholesale”, as of ${d.as_of}. `,
-        el("span", { class: "pill", style: { fontSize: "11px" } }, d.source === "shopifyql" ? "Shopify Analytics (total sales)" : "Order subtotals (fallback)"),
-        d.source !== "shopifyql" ? " — ShopifyQL unavailable; showing merchandise subtotals, which can differ slightly from Analytics." : ""
+        `Actuals from yb_reports${d.as_of ? `, through ${d.as_of}` : ""}. `,
+        el("span", { class: "pill", style: { fontSize: "11px" } }, "shopify_sales_daily · total_wholesale")
       ])
     ]);
   }
@@ -185,9 +184,8 @@
     return el("div", { class: "box" }, [
       el("h3", { style: { marginTop: 0 } }, `By vendor · FY${d.fiscal_year} to date`),
       el("div", { class: "order-table-wrap" }, [el("table", {}, [el("thead", {}, head), el("tbody", {}, trs)])]),
-      d.by_vendor.some((v) => v.name === "(unattributed)")
-        ? el("div", { class: "muted", style: { fontSize: "12px", marginTop: "6px" } }, "“(unattributed)” = wholesale-tagged orders with no customer on file in Shopify.")
-        : null
+      el("div", { class: "muted", style: { fontSize: "12px", marginTop: "6px" } },
+        "From order_lines (is_wholesale), net of returns — names from the customers table where the email matches, otherwise the order email. Totals can differ slightly from the headline rollup.")
     ]);
   }
 
@@ -200,7 +198,7 @@
     if (state.error) {
       root.appendChild(el("div", { class: "box", style: { borderColor: "#f3c2c2", background: "#fff5f5" } }, [
         el("strong", {}, "Couldn’t load sales data. "), state.error,
-        el("div", { class: "muted", style: { marginTop: "6px", fontSize: "12px" } }, "Actuals read from Shopify. If this mentions read_reports/permissions, the app token may need the read_reports scope (it then falls back to order subtotals).")
+        el("div", { class: "muted", style: { marginTop: "6px", fontSize: "12px" } }, "Actuals read from the yb_reports DB (shopify_sales_daily, order_lines, fiscal_calendar). Check REPORTING_DATABASE_URL is set and those tables are populated.")
       ]));
       return;
     }

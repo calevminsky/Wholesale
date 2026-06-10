@@ -1,68 +1,50 @@
-// NRF 4-5-4 retail calendar.
-//
-// The retail year starts on the first Sunday on/after Feb 1 and is divided into
-// 12 "months" of 4 or 5 weeks following the 4-5-4 pattern per quarter, labeled
-// Feb..Jan. (FY2026 starts Sun Feb 1 2026; weeks run Sunday..Saturday.)
-//
-// We bucket actual sales (Shopify order dates) into these periods so the numbers
-// line up with the merchant's other 4-5-4 sales plans instead of calendar months.
+// The company's official 4-5-4 retail calendar lives in the reporting DB
+// (`fiscal_calendar`, one row per day → fiscal_year/quarter/month/week). The
+// fiscal year is January-anchored (FY2026 = Jan 4 2026 → Jan 2 2027), with
+// 4-5-4 week-count months. We read it rather than computing our own so the
+// sales plan buckets exactly match the other (retail) sales plans.
+import { query } from "../pg.js";
 
-export const MONTH_LABELS = ["Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec","Jan"];
-// Weeks per period: quarters of 4-5-4.
-export const PERIOD_WEEKS = [4,5,4, 4,5,4, 4,5,4, 4,5,4];
-
-function ymd(d) {
-  return d.toISOString().slice(0, 10);
+// The 12 fiscal "months" for a year:
+//   [{ period_index:1..12, label:'Jan'..'Dec', starts_on, ends_on, weeks }]
+export async function getFiscalPeriods(fiscalYear) {
+  const { rows } = await query(
+    `SELECT fiscal_month AS period_index,
+            to_char(MIN(month_start), 'Mon') AS label,
+            to_char(MIN(date), 'YYYY-MM-DD') AS starts_on,
+            to_char(MAX(date), 'YYYY-MM-DD') AS ends_on,
+            COUNT(DISTINCT fiscal_week)::int AS weeks
+       FROM fiscal_calendar
+      WHERE fiscal_year = $1
+      GROUP BY fiscal_month
+      ORDER BY fiscal_month`,
+    [fiscalYear]
+  );
+  return rows.map((r) => ({ ...r, period_index: Number(r.period_index) }));
 }
 
-// First Sunday on/after Feb 1 of the given fiscal year (UTC, date-only math).
-function fiscalYearStart(fiscalYear) {
-  const d = new Date(Date.UTC(fiscalYear, 1, 1)); // Feb 1
-  const dow = d.getUTCDay(); // 0 = Sunday
-  if (dow !== 0) d.setUTCDate(d.getUTCDate() + (7 - dow));
-  return d;
-}
-
-// Returns the 12 periods for a fiscal year:
-//   [{ period_index:1..12, label, weeks, starts_on:'YYYY-MM-DD', ends_on:'YYYY-MM-DD' }]
-export function generatePeriods(fiscalYear) {
-  let cursor = fiscalYearStart(fiscalYear);
-  const periods = [];
-  for (let i = 0; i < 12; i++) {
-    const start = new Date(cursor);
-    const end = new Date(cursor);
-    end.setUTCDate(end.getUTCDate() + PERIOD_WEEKS[i] * 7 - 1);
-    periods.push({
-      period_index: i + 1,
-      label: MONTH_LABELS[i],
-      weeks: PERIOD_WEEKS[i],
-      starts_on: ymd(start),
-      ends_on: ymd(end)
-    });
-    cursor = new Date(end);
-    cursor.setUTCDate(cursor.getUTCDate() + 1);
+// Where "today" sits in the retail calendar: { fiscal_year, fiscal_month }.
+// Falls back to the latest covered day if today is outside the calendar range.
+export async function getCurrentFiscalPosition() {
+  const { rows } = await query(
+    `SELECT fiscal_year, fiscal_month FROM fiscal_calendar WHERE date = CURRENT_DATE`
+  );
+  if (rows[0]) {
+    return { fiscal_year: Number(rows[0].fiscal_year), fiscal_month: Number(rows[0].fiscal_month) };
   }
-  return periods;
+  const { rows: last } = await query(
+    `SELECT fiscal_year, fiscal_month FROM fiscal_calendar ORDER BY date DESC LIMIT 1`
+  );
+  return last[0]
+    ? { fiscal_year: Number(last[0].fiscal_year), fiscal_month: Number(last[0].fiscal_month) }
+    : { fiscal_year: new Date().getFullYear(), fiscal_month: 1 };
 }
 
-// Which fiscal year does a calendar date belong to? The 4-5-4 year that contains
-// it. e.g. 2026-01-15 belongs to FY2025 (its Jan period), 2026-02-10 to FY2026.
-export function fiscalYearOf(dateStr) {
-  const d = String(dateStr).slice(0, 10);
-  const yr = Number(d.slice(0, 4));
-  // Try the calendar year and the one before; pick whichever range contains it.
-  for (const fy of [yr, yr - 1]) {
-    const ps = generatePeriods(fy);
-    if (d >= ps[0].starts_on && d <= ps[11].ends_on) return fy;
-  }
-  return yr;
-}
-
-// Find the period (1..12) that contains a calendar date within a given FY.
-// Returns null if the date is outside that fiscal year's range.
-export function periodIndexFor(dateStr, fiscalYear) {
-  const d = String(dateStr).slice(0, 10);
-  const ps = generatePeriods(fiscalYear);
-  const hit = ps.find((p) => d >= p.starts_on && d <= p.ends_on);
-  return hit ? hit.period_index : null;
+// Status of a period relative to the current fiscal position.
+export function periodStatus(fiscalYear, periodIndex, current) {
+  if (fiscalYear < current.fiscal_year) return "closed";
+  if (fiscalYear > current.fiscal_year) return "future";
+  if (periodIndex < current.fiscal_month) return "closed";
+  if (periodIndex > current.fiscal_month) return "future";
+  return "current";
 }
