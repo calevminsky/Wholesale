@@ -92,7 +92,32 @@
     renderRows();
     setStatus(`${OFF.length} off-price styles · prices are whole dollars`, "");
     wire();
+    loadOrders();
     loadLeads();
+  }
+
+  // ---- orders ----
+  let ORDERS = [];
+  async function loadOrders() {
+    try { ORDERS = (await fetch("/api/orders").then((r) => r.ok ? r.json() : { orders: [] })).orders || []; }
+    catch { ORDERS = []; }
+    renderOrders();
+  }
+  function renderOrders() {
+    const money = (n) => "$" + Number(n).toLocaleString("en-US", { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+    const fmtDate = (s) => { if (!s) return ""; const d = new Date(s); return isNaN(d) ? "" : d.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) + " " + d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" }); };
+    $("#orderRows").innerHTML = ORDERS.map((o) =>
+      `<tr>
+        <td style="white-space:nowrap">${fmtDate(o.submitted_at)}</td>
+        <td class="tname">${esc(o.account_name)}</td>
+        <td>${esc(o.buyer_email || "—")}</td>
+        <td class="num">${o.styles}</td>
+        <td class="num">${o.units}</td>
+        <td class="num"><b>${money(o.subtotal)}</b></td>
+        <td><a class="btn" style="font-size:11px;padding:4px 10px;text-decoration:none" href="/api/orders/${o.id}/csv" download="${esc(o.ref)}.csv">CSV</a></td>
+      </tr>`
+    ).join("");
+    $("#orderCount").textContent = ORDERS.length ? `${ORDERS.length} order${ORDERS.length === 1 ? "" : "s"}` : "no orders yet";
   }
 
   // ---- leads (who entered via the public gate) ----
@@ -201,6 +226,7 @@
     $("#saveRule").addEventListener("click", save);
     $("#rebuild").addEventListener("click", rebuild);
     $("#clearOvr").addEventListener("click", () => { if (Object.keys(overrides).length && confirm("Remove all per-style overrides?")) { overrides = {}; renderRows(); } });
+    $("#refreshOrders").addEventListener("click", loadOrders);
     $("#refreshLeads").addEventListener("click", loadLeads);
     let lt; $("#leadSearch").addEventListener("input", () => { clearTimeout(lt); lt = setTimeout(renderLeads, 120); });
     $("#saveEta").addEventListener("click", saveEta);

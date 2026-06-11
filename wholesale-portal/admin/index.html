@@ -55,6 +55,21 @@ input[type=date].set{border-color:var(--accent);background:var(--accent-soft);fo
 <div class="wrap">
 
   <div class="panel">
+    <h2>Submitted orders</h2>
+    <p class="hint">Every order placed through the portal. Backup log — the CSV is also emailed to the team on submission.</p>
+    <div class="toolbar2">
+      <span class="muted" id="orderCount"></span>
+      <button class="btn" id="refreshOrders">Refresh</button>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Date</th><th>Company</th><th>Email</th><th class="num">Styles</th><th class="num">Units</th><th class="num">Subtotal</th><th></th></tr></thead>
+        <tbody id="orderRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Refresh the catalog</h2>
     <p class="hint">Re-pulls the latest pre-order products, images &amp; prices (pd) and in-stock inventory (database), then publishes it <b>durably</b> — it survives redeploys. Goes live in ~2–3 minutes. Removed products stay removed.</p>
     <div class="bar">

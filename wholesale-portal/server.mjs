@@ -19,6 +19,7 @@ import { lineSheetBuffer } from "./build/linesheet-xlsx.mjs";
 import { lineSheetPdf } from "./build/linesheet-pdf.mjs";
 import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
 import { logVisit, listVisits } from "./build/visits-store.mjs";
+import { saveOrder, listOrders, getOrderCsv } from "./build/orders-store.mjs";
 import sgMail from "@sendgrid/mail";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -301,6 +302,21 @@ app.get("/api/visits", adminAuth, async (_req, res) => {
   catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
+app.get("/api/orders", adminAuth, async (_req, res) => {
+  try { res.json({ orders: await listOrders() }); }
+  catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+
+app.get("/api/orders/:id/csv", adminAuth, async (req, res) => {
+  try {
+    const result = await getOrderCsv(req.params.id);
+    if (!result) return res.status(404).json({ error: "Order not found" });
+    res.setHeader("Content-Type", "text/csv");
+    res.setHeader("Content-Disposition", `attachment; filename="${result.ref}.csv"`);
+    res.send(result.csv);
+  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+
 // ---- submit an order: email it to the wholesale team (+ optional buyer copy) ----
 const ORDER_FROM = process.env.ORDER_FROM || process.env.EMAIL_FROM || "";
 const ORDER_TEAM = (process.env.WHOLESALE_TEAM_EMAIL || "atarag@yakirabella.com,calev@yakirabella.com")
@@ -334,6 +350,10 @@ app.post("/api/orders", async (req, res) => {
     const csv = orderCSV(order);
     const json = JSON.stringify(order, null, 2);
     const summary = orderSummary({ order, units, subtotal, account, buyerEmail: email });
+
+    // Always save to DB first — the admin log works even if email isn't configured.
+    saveOrder({ ref: base, accountName: account.name, buyerEmail: email, units, subtotal, order })
+      .catch((e) => console.warn("saveOrder failed:", e.message));
 
     if (!process.env.SENDGRID_API_KEY || !ORDER_FROM) {
       return res.status(503).json({ ok: false, error: "Order email isn't configured on the server (SENDGRID_API_KEY / ORDER_FROM)." });
