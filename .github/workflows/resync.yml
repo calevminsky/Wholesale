@@ -50,3 +50,11 @@ jobs:
             git commit -m "Auto-resync catalog (products/images/prices/ETAs/inventory)"
             git push
           fi
+      - name: Trigger Render redeploy
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK" ]; then
+            curl -s "$RENDER_DEPLOY_HOOK"
+            echo "Render redeploy triggered."
+          fi
