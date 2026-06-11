@@ -109,10 +109,11 @@ an MSRP show **Price TBD** and aren't orderable until priced.
 ("By &lt;date&gt;") and sortable, and matched by search. In-stock styles =
 **today + `delivery_default_days`** (14), computed live in the browser so it stays
 fresh. Pre-order styles = **PO cancel date + 7 days**, baked in at build
-(`est_delivery`). pd stores the PO delivery window (`colorway.wholesale_start` /
-`wholesale_cancel` — the dates we demand vendor delivery); the portal adds a 7-day
-cushion (`PREORDER_BUFFER_DAYS`) to the cancel date for the wholesale-customer
-delivery promise. A colorway with no window in pd shows "Delivery TBD".
+(`est_delivery`). The cancel date is the colorway's purchase-order
+`cancel_date` in pd (`pd.purchase_order.cancel_date`, preferring the F26 PO — the
+date we demand vendor delivery); the portal adds a 7-day cushion
+(`PREORDER_BUFFER_DAYS`) for the wholesale-customer delivery promise. A colorway
+whose PO has no cancel date shows "Delivery TBD".
 
 ```bash
 # refresh the pre-order snapshot from pd (reads REPORTING_DATABASE_URL):

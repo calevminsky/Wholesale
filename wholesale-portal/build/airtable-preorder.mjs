@@ -161,7 +161,6 @@ export function preorderRecordsToRows(records) {
       msrp,
       handle: r.handle || slugify(name),
       image: r.image || null,
-      ship_start: r.ship_start || null,
       ship_cancel: r.ship_cancel || null,
       // Prefer real variant sizes captured from pd; fall back to the size-scale string.
       sizes: Array.isArray(r.sizes) && r.sizes.length ? r.sizes : sizesFromScale(r.size_scale)
@@ -205,8 +204,16 @@ async function fetchAll(pool) {
             s.class,
             c.shopify_gid,
             c.shopify_handle,
-            c.wholesale_start,
-            c.wholesale_cancel,
+            -- The PO delivery-demanded-by (cancel) date for this colorway. Prefer the
+            -- F26 PO, then the latest cancel date. The portal promises wholesale
+            -- delivery at cancel + 7d.
+            (SELECT po.cancel_date
+               FROM pd.po_line pl
+               JOIN pd.variant v2 ON v2.id = pl.variant_id
+               JOIN pd.purchase_order po ON po.id = pl.po_id
+              WHERE v2.colorway_id = c.id AND po.cancel_date IS NOT NULL
+              ORDER BY (po.season = 'F26') DESC, po.cancel_date DESC
+              LIMIT 1) AS po_cancel,
             (SELECT array_agg(v.size) FROM pd.variant v WHERE v.colorway_id = c.id) AS variant_sizes
        FROM pd.colorway c
        JOIN pd.style s ON s.id = c.style_id
@@ -234,11 +241,9 @@ async function fetchAll(pool) {
       sizes: orderSizes(r.variant_sizes),
       shopify_gid: r.shopify_gid || null,
       handle: r.shopify_handle || null,
-      // PO delivery window from pd (the dates we demand vendor delivery). The build
-      // derives the customer delivery date from the cancel date (cancel + 7d).
-      // Null → "Delivery TBD".
-      ship_start: isoDate(r.wholesale_start),
-      ship_cancel: isoDate(r.wholesale_cancel),
+      // PO cancel date (delivery demanded by) from pd. The build derives the
+      // customer delivery date from it (cancel + 7d). Null → "Delivery TBD".
+      ship_cancel: isoDate(r.po_cancel),
       image: null
     };
   });
