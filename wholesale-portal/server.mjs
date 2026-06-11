@@ -13,7 +13,8 @@ import fs from "node:fs";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { loadOffPricing, saveOffPricing, OFF_MODES } from "./build/off-pricing.mjs";
-import { loadEtaOverrides, saveEtaOverrides, ETA_OVERRIDES_PATH } from "./build/eta-overrides.mjs";
+import { loadEtaOverrides } from "./build/eta-overrides.mjs";
+import { initAdminSettings, getAdminSetting, setAdminSetting } from "./build/admin-settings-store.mjs";
 import { getHiddenHandles, listHidden, addHidden, removeHidden } from "./build/hidden-store.mjs";
 import { lineSheetBuffer } from "./build/linesheet-xlsx.mjs";
 import { lineSheetPdf } from "./build/linesheet-pdf.mjs";
@@ -82,18 +83,10 @@ async function hiddenSet(force = false) {
 }
 
 // ---- ETA overrides (serve-time, no rebuild needed) ----
-let _etaOverrides = null, _etaMtime = 0;
-function etaOverridesMap() {
-  try {
-    if (!fs.existsSync(ETA_OVERRIDES_PATH)) return (_etaOverrides = {});
-    const st = fs.statSync(ETA_OVERRIDES_PATH);
-    if (!_etaOverrides || st.mtimeMs !== _etaMtime) {
-      _etaOverrides = loadEtaOverrides();
-      _etaMtime = st.mtimeMs;
-    }
-  } catch { _etaOverrides = _etaOverrides || {}; }
-  return _etaOverrides;
-}
+// Stored in Postgres so git commits can never accidentally wipe them.
+// Loaded from DB at startup; updated in-memory when admin saves.
+let _etaOverrides = {};
+function etaOverridesMap() { return _etaOverrides; }
 
 // Shared helper: apply hidden-product filter + ETA overrides, used by all three
 // buyer-facing catalog/linesheet endpoints so they all stay consistent.
@@ -288,19 +281,15 @@ app.get("/api/eta-overrides", adminAuth, (_req, res) => {
   res.json({ overrides: etaOverridesMap() });
 });
 
-app.post("/api/eta-overrides", adminAuth, (req, res) => {
+app.post("/api/eta-overrides", adminAuth, async (req, res) => {
   try {
     const raw = req.body?.overrides || {};
     const clean = {};
     for (const [gid, date] of Object.entries(raw)) {
       if (date && /^\d{4}-\d{2}-\d{2}$/.test(String(date))) clean[gid] = date;
-      // empty/null = cleared, omit from saved map
     }
-    saveEtaOverrides(clean);
+    await setAdminSetting("eta-overrides", clean);
     _etaOverrides = clean;
-    _etaMtime = Date.now();
-    persistFileToGit("wholesale-portal/build/eta-overrides.json", JSON.stringify(clean, null, 2))
-      .catch((e) => console.warn("eta-overrides git persist failed:", e.message));
     res.json({ ok: true, saved: clean });
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e.message || e) });
@@ -450,4 +439,16 @@ app.use((req, res, next) => {
 });
 app.use(express.static(__dirname, { extensions: ["html"] }));
 
-app.listen(PORT, () => console.log(`Wholesale portal on :${PORT}  (admin at /admin${process.env.ADMIN_PASSWORD ? "" : " — OPEN, set ADMIN_PASSWORD"})`));
+async function start() {
+  try {
+    const fileEta = loadEtaOverrides();
+    await initAdminSettings(Object.keys(fileEta).length ? { "eta-overrides": fileEta } : {});
+    _etaOverrides = (await getAdminSetting("eta-overrides")) || {};
+    console.log(`ETA overrides loaded from Postgres (${Object.keys(_etaOverrides).length} entries)`);
+  } catch (e) {
+    console.error("Admin settings init failed — falling back to file:", e.message);
+    _etaOverrides = loadEtaOverrides();
+  }
+  app.listen(PORT, () => console.log(`Wholesale portal on :${PORT}  (admin at /admin${process.env.ADMIN_PASSWORD ? "" : " — OPEN, set ADMIN_PASSWORD"})`));
+}
+start();
