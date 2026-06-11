@@ -265,21 +265,22 @@ async function downloadImages(pool, records) {
     while (QUEUE.length) {
       const r = QUEUE.shift();
       try {
+        // Prefer stable R2 rows; fall back to bytes (Airtable source_urls expire).
         const { rows } = await pool.query(
           `SELECT bytes, source_url FROM pd.asset
             WHERE colorway_id = $1 AND kind = 'image'
-            ORDER BY (bytes IS NOT NULL) DESC, id DESC LIMIT 1`,
+            ORDER BY (source_url LIKE '%r2.dev%') DESC, id DESC LIMIT 1`,
           [Number(r.airtable_id)]
         );
         if (!rows.length) continue;
-        let buf = rows[0].bytes;
-        if (!buf || !buf.length) {
-          // Fall back to source_url (R2 or other CDN)
-          const url = rows[0].source_url;
-          if (!url) continue;
+        let buf;
+        const url = rows[0].source_url;
+        if (url && url.includes('.r2.dev')) {
           const resp = await fetch(url);
           if (!resp.ok) continue;
           buf = Buffer.from(await resp.arrayBuffer());
+        } else {
+          buf = rows[0].bytes;
         }
         if (!buf || !buf.length) continue;
         const file = await compressToJpeg(buf, r.airtable_id);
