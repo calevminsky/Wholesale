@@ -36,8 +36,8 @@ import { loadPreorderSnapshot, preorderRecordsToRows, normTitle } from "./airtab
 const HIDDEN_PATH = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "hidden.json");
 // Optional manual hide list (build/hidden.json): { ids:[], handles:[], titles:[] }.
 // Anything matched is excluded from the catalog — used to drop pre-order styles
-// that are still missing info. (You can also just uncheck "Wholesale Fall2026"
-// in Airtable and re-fetch.)
+// that are still missing info. (You can also just untag the wholesale season on
+// the colorway in pd and re-fetch.)
 function loadHidden() {
   const empty = { ids: new Set(), handles: new Set(), titles: new Set() };
   if (!fs.existsSync(HIDDEN_PATH)) return empty;
@@ -328,7 +328,7 @@ async function main() {
     });
   }
 
-  // ---- Pre-order styles from Airtable (not-yet-in-Shopify F26 buys) ----
+  // ---- Pre-order styles from pd (not-yet-in-Shopify F26 buys) ----
   // Merge AFTER the Shopify-sourced products and de-dupe by normalized title so
   // anything already coming from Shopify is never doubled. Priced with the SAME
   // full-tier engine (50% of MSRP); no live availability ("book now").
@@ -399,7 +399,7 @@ async function main() {
   console.log(`\nWrote ${path.relative(ROOT, OUT_PATH)}`);
   console.log(`  Products: ${catalog.counts.total} (${catalog.counts.full} full / ${catalog.counts.off} off / ${catalog.counts.preorder} pre-order)`);
   if (preRows.length) {
-    console.log(`  Pre-order (Airtable): +${preStats.added} added (${preStats.no_price} without a price yet), ${preStats.dup_title} skipped as already-in-Shopify, ${preStats.hidden} hidden`);
+    console.log(`  Pre-order (pd): +${preStats.added} added (${preStats.no_price} without a price yet), ${preStats.dup_title} skipped as already-in-Shopify, ${preStats.hidden} hidden`);
   }
   const droppedTotal = Object.values(dropped).reduce((s, a) => s + a.length, 0);
   if (droppedTotal) {

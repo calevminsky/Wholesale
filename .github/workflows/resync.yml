@@ -1,10 +1,11 @@
 name: Resync catalog
 
-# Durable catalog resync: re-pulls Airtable (pre-order products/images/prices/ETAs)
-# and rebuilds from the yb_reports DB (in-stock products/prices/inventory), then
-# commits the refreshed catalog so Render redeploys it. Because the result is
-# committed to git, it survives every redeploy/restart. Emily's removals are not
-# touched — they live in Postgres and are applied at serve time.
+# Durable catalog resync: re-pulls pre-order products/images/prices from pd
+# (the yb_reports DB's pd.* schema) and rebuilds from the same DB (in-stock
+# products/prices/inventory), then commits the refreshed catalog so Render
+# redeploys it. Because the result is committed to git, it survives every
+# redeploy/restart. Emily's removals are not touched — they live in Postgres
+# and are applied at serve time.
 on:
   schedule:
     - cron: "0 10 * * *"          # ~6am ET (10:00 UTC); shifts 1h with DST — adjust if needed
@@ -28,10 +29,9 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci
-      - name: Pull Airtable + rebuild catalog
+      - name: Pull pd pre-orders + rebuild catalog
         working-directory: wholesale-portal
         env:
-          AIRTABLE_API_KEY: ${{ secrets.AIRTABLE_API_KEY }}
           REPORTING_DATABASE_URL: ${{ secrets.REPORTING_DATABASE_URL }}
           SHOPIFY_SHOP: ${{ secrets.SHOPIFY_SHOP }}
           SHOPIFY_API_VERSION: ${{ secrets.SHOPIFY_API_VERSION }}

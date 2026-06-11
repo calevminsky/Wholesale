@@ -16,7 +16,7 @@ wholesale-portal/
   build/
     build-catalog.mjs      # catalog pipeline (DB + Shopify + pricing -> catalog.json)
     build-accounts.mjs     # vendor links from the customers table -> accounts.json
-    airtable-preorder.mjs  # fetch "Wholesale Fall2026" rows -> airtable-preorder.json
+    airtable-preorder.mjs  # fetch pd wholesale-tagged colorways -> airtable-preorder.json
     airtable-preorder.json # pre-order snapshot the build merges in (committed)
     hidden.json            # optional {ids,handles,titles} excluded from catalog
     tiers.config.json      # FULL-tier rule (50% of MSRP) — full price only
@@ -94,43 +94,48 @@ node build/build-catalog.mjs --allow-drafts  # include DRAFT products
 Needs `REPORTING_DATABASE_URL` (+ Shopify creds for any handle-cache misses).
 Reuses the importer's `.env` automatically when run inside this repo.
 
-### Pre-order styles (pre-season F26 from Airtable)
+### Pre-order styles (pre-season F26 from pd)
 
 Upcoming F26 buys that aren't in Shopify yet (no handle, no on-hand stock) can't
-flow through the availability-driven build above. They come from Airtable instead:
-any **Products** row with the **Wholesale Fall2026** checkbox ticked. The build
-merges them in **as Full-price styles** (same 50%-of-MSRP rule) — they're not
-called out separately in the UI, just shown without live stock counts. Styles
-still missing an MSRP show **Price TBD** and aren't orderable until priced.
+flow through the availability-driven build above. They come from **pd** instead
+(the product-development app's `pd.*` schema in the same yb_reports DB): any
+colorway tagged wholesale for the active season in `pd.colorway_wholesale`
+(season `F26`; override with `PD_WHOLESALE_SEASONS`). The build merges them in
+**as Full-price styles** (same 50%-of-MSRP rule) — they're not called out
+separately in the UI, just shown without live stock counts. Styles still missing
+an MSRP show **Price TBD** and aren't orderable until priced.
 
 **Estimated delivery.** Every card shows an est. delivery date, filterable
 ("By &lt;date&gt;") and sortable, and matched by search. In-stock styles =
 **today + `delivery_default_days`** (14), computed live in the browser so it stays
-fresh. Pre-stock styles = **Airtable `TrueETA` + 7 days** baked in at build
-(`est_delivery`); no ETA → "Delivery TBD".
+fresh. Pre-order styles from pd currently have **no per-colorway ETA** (the old
+Airtable `TrueETA` field didn't migrate), so they show "Delivery TBD" until a
+delivery date is wired up in pd.
 
 ```bash
-# refresh the pre-order snapshot from Airtable (read-only PAT):
-AIRTABLE_API_KEY=pat... node build/airtable-preorder.mjs   # -> build/airtable-preorder.json
-node build/build-catalog.mjs                                # merges it into catalog.json
+# refresh the pre-order snapshot from pd (reads REPORTING_DATABASE_URL):
+node build/airtable-preorder.mjs   # -> build/airtable-preorder.json
+node build/build-catalog.mjs        # merges it into catalog.json
 ```
 
-Images: Airtable hands out expiring attachment URLs, so the fetch downloads each
-style's photo (Product/Swatch, else Style Image) into `data/preorder-img/<id>.<ext>`
-(committed) and stores that local path. Re-fetching overwrites by record id.
+Images: pd's `asset.source_url` points at Airtable's expiring CDN, so the fetch
+reads the stored image **bytes** from `pd.asset` (kind `image`), re-encodes each
+to a small JPEG in `data/preorder-img/<colorway_id>.jpg` (committed), and stores
+that local path. Re-fetching overwrites by colorway id.
 
 De-dupe: a pre-order row is dropped if its title matches a style already coming
-from Shopify, so nothing is doubled. **To hide** a pre-order style, uncheck
-*Wholesale Fall2026* in Airtable and re-fetch, or add its `airtable_id`/`handle`/
-`title` to `build/hidden.json`. Set `AIRTABLE_API_KEY` on Render so the nightly
-build picks up Airtable edits. (Pre-order order lines carry a slug handle, not a
-real Shopify handle — fine while Submit is download-only.)
+from Shopify, so nothing is doubled (colorways that already carry a Shopify GID
+are skipped outright). **To hide** a pre-order style, untag its wholesale season
+on the colorway in pd and re-fetch, or add its `airtable_id` (= pd colorway id) /
+`handle` / `title` to `build/hidden.json`. Set `REPORTING_DATABASE_URL` on Render
+so the nightly build picks up pd edits. (Pre-order order lines carry a slug
+handle, not a real Shopify handle — fine while Submit is download-only.)
 
 ## Deploy (Render, same repo)
 
 Deploy `wholesale-portal/` as a **Web Service**: build `npm install`, start
-`node server.mjs`. Set `REPORTING_DATABASE_URL`, Shopify creds, `ADMIN_PASSWORD`
-(gates `/admin`), `AIRTABLE_API_KEY` (pre-order pull on rebuild), and `CURATE_KEY`
+`node server.mjs`. Set `REPORTING_DATABASE_URL` (also drives the pd pre-order pull
+on rebuild), Shopify creds, `ADMIN_PASSWORD` (gates `/admin`), and `CURATE_KEY`
 (enables the `/curate` removal link). Custom domain `wholesale.yakirabella.com`. The admin's
 **Save & rebuild** regenerates the catalog on demand; a nightly Cron Job can also
 run `build-catalog.mjs` to refresh availability.

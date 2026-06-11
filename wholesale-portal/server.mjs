@@ -119,14 +119,16 @@ function runStep(scriptArgs, log) {
 }
 
 let rebuilding = false;
-// Refresh Airtable (when creds present) then rebuild the catalog. Shared by the
-// admin "Save & rebuild" and the curate/remove page.
+// Refresh the pre-order snapshot from pd (when the DB is reachable) then rebuild
+// the catalog. Shared by the admin "Save & rebuild" and the curate/remove page.
+// (`skipAirtable` is kept as the flag name for back-compat with the admin/curate UI.)
 async function doRebuild(log, { skipAirtable = false, allowDrafts = false } = {}) {
-  if (process.env.AIRTABLE_API_KEY && !skipAirtable) {
+  const hasDb = process.env.REPORTING_DATABASE_URL || process.env.PD_DATABASE_URL;
+  if (hasDb && !skipAirtable) {
     const code = await runStep(["build/airtable-preorder.mjs"], log);
-    if (code !== 0) log.text += `\n! Airtable fetch exited ${code} — building with the existing snapshot.\n`;
-  } else if (!process.env.AIRTABLE_API_KEY) {
-    log.text += "i AIRTABLE_API_KEY not set — skipping Airtable refresh (in-stock only).\n";
+    if (code !== 0) log.text += `\n! pd pre-order fetch exited ${code} — building with the existing snapshot.\n`;
+  } else if (!hasDb) {
+    log.text += "i REPORTING_DATABASE_URL not set — skipping pd pre-order refresh (in-stock only).\n";
   }
   const args = ["build/build-catalog.mjs"];
   if (allowDrafts) args.push("--allow-drafts");
