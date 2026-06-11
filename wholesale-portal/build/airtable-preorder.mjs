@@ -101,6 +101,19 @@ export function sizesFromScale(scale) {
   return [...DEFAULT_SCALE];
 }
 
+// pg hands back a Date for a `date` column; render it as a plain YYYY-MM-DD
+// (no timezone shift). Accepts a Date, a string, or null.
+function isoDate(v) {
+  if (!v) return null;
+  if (v instanceof Date) {
+    const y = v.getFullYear();
+    const m = String(v.getMonth() + 1).padStart(2, "0");
+    const d = String(v.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  }
+  return String(v).slice(0, 10) || null;
+}
+
 // Sort a raw list of variant sizes into a sensible order (XS, S, M, L, XL...).
 function orderSizes(sizes) {
   const clean = [...new Set((sizes || []).map((s) => String(s || "").trim().toUpperCase()).filter(Boolean))];
@@ -191,6 +204,7 @@ async function fetchAll(pool) {
             s.class,
             c.shopify_gid,
             c.shopify_handle,
+            c.wholesale_eta,
             (SELECT array_agg(v.size) FROM pd.variant v WHERE v.colorway_id = c.id) AS variant_sizes
        FROM pd.colorway c
        JOIN pd.style s ON s.id = c.style_id
@@ -218,9 +232,9 @@ async function fetchAll(pool) {
       sizes: orderSizes(r.variant_sizes),
       shopify_gid: r.shopify_gid || null,
       handle: r.shopify_handle || null,
-      // pd has no reliable per-colorway delivery date yet (TrueETA didn't migrate);
-      // leave it null so the build shows "Delivery TBD" rather than a wrong date.
-      eta: null,
+      // Expected arrival from pd (backfilled from Airtable's ETA). The build turns
+      // this into a ship window: Start = eta-7d, Cancel = eta+7d. Null → "Delivery TBD".
+      eta: isoDate(r.wholesale_eta),
       image: null
     };
   });

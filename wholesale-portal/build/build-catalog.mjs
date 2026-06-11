@@ -360,7 +360,12 @@ async function main() {
       tier: "full",
       preorder: true,
       status: r.status || "PREORDER",
-      est_delivery: addDays(r.eta, PREORDER_BUFFER_DAYS), // ETA + buffer (null if no ETA)
+      // Ship window centered on the ETA: Start = ETA-7d, Cancel = ETA+7d (14-day
+      // window). est_delivery stays the cancel date so existing delivery sort/filter
+      // keeps working; the card shows the full Start–Cancel window.
+      ship_start: addDays(r.eta, -PREORDER_BUFFER_DAYS),
+      ship_cancel: addDays(r.eta, PREORDER_BUFFER_DAYS),
+      est_delivery: addDays(r.eta, PREORDER_BUFFER_DAYS), // = cancel date (null if no ETA)
       image: r.image || null,
       retail_price: msrp,
       compare_at: msrp,
