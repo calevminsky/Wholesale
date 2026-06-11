@@ -551,6 +551,10 @@
     $("#fColor").addEventListener("change", (e) => { filters.color = e.target.value; render(); });
     $("#fDeliv").addEventListener("change", (e) => { filters.deliv = e.target.value; render(); });
     $("#sort").addEventListener("change", (e) => { filters.sort = e.target.value; render(); });
+    $("#filtersToggle").addEventListener("click", (e) => {
+      const open = document.body.classList.toggle("filters-open");
+      e.currentTarget.setAttribute("aria-expanded", open ? "true" : "false");
+    });
     $("#classSeg").addEventListener("click", (e) => {
       const b = e.target.closest(".tiertab"); if (!b) return;
       filters.klass = b.dataset.v; $$("#classSeg .tiertab").forEach((x) => x.classList.toggle("on", x === b)); render();

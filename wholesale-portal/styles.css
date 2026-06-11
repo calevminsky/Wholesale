@@ -57,6 +57,10 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
 .seg button.on{background:var(--ink);color:#fff}
 .count{font-size:12px;color:var(--muted)}
 .toolbar .actions{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+/* on desktop the toggle is hidden and .filtermore is transparent to layout,
+   so its children flow as direct flex items of .row exactly as before */
+.filtersToggle{display:none}
+.filtermore{display:contents}
 .btn.dl{background:var(--accent-soft);border-color:#e3cabf;color:var(--accent);font-weight:700}
 .btn.dl:hover{border-color:var(--accent)}
 
@@ -183,8 +187,34 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
 .toast.show{opacity:1;transform:translateX(-50%)}
 
 .banner{background:var(--accent-soft);border:1px solid #e3cabf;color:var(--accent);border-radius:10px;padding:10px 14px;font-size:12.5px;margin:14px 0 0}
-@media(max-width:640px){
-  .headrow{align-items:flex-start}
+@media(max-width:760px){
+  /* tighter header so the catalog isn't pushed below the fold */
+  header.top{padding-top:14px}
+  .headrow{align-items:flex-start;gap:12px;padding-bottom:12px}
+  .brand h1{font-size:21px}
+  .brand h1 .sub{margin-bottom:5px}
+  .acct{margin-top:4px}
+  .cartmini{gap:14px}
+  .cartmini .stat .n{font-size:18px}
+  .cartmini .btn.primary{padding:8px 13px}
+
+  /* compact sticky toolbar */
+  .toolbar{padding:9px 0}
+  .toolbar .row{gap:8px;margin-top:9px}
+  .tierbar{gap:6px}
+  .tiertab{flex:1;justify-content:center;padding:9px 10px;font-size:13px;gap:6px}
+  .toolbar label.search{min-width:0;flex:1}
+
+  /* secondary filters collapse behind the Filters button */
+  .filtersToggle{display:inline-flex;flex:none}
+  .filtersToggle[aria-expanded=true]{background:var(--ink);border-color:var(--ink);color:#fff}
+  .filtermore{display:none;width:100%;flex-direction:column;align-items:stretch;gap:8px;margin-top:2px}
+  body.filters-open .filtermore{display:flex}
+  .filtermore select,.filtermore .seg{width:100%}
+  .filtermore .seg button{flex:1;text-align:center}
+  .filtermore .actions{justify-content:space-between;flex-wrap:wrap}
+  .filtermore .actions .btn.dl{flex:1}
+
   .cartbar .inner{flex-wrap:wrap;gap:12px}
 }
 

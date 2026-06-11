@@ -37,28 +37,31 @@
     </div>
     <div class="row">
       <label class="search"><input id="q" type="search" placeholder="Search style or color…" autocomplete="off"></label>
-      <select id="fType"><option value="">Any type</option></select>
-      <select id="fColor"><option value="">Any color</option></select>
-      <select id="fDeliv"><option value="">Any delivery</option></select>
-      <select id="sort">
-        <option value="title_asc">Title A→Z</option>
-        <option value="price_desc">Price high→low</option>
-        <option value="price_asc">Price low→high</option>
-        <option value="deliv_asc">Delivery soonest</option>
-        <option value="deliv_desc">Delivery latest</option>
-      </select>
-      <div class="seg" id="viewSeg" title="Combine colors of the same style into one card">
-        <button data-v="style">By style</button>
-        <button data-v="color" class="on">By color</button>
-      </div>
-      <div class="seg" id="densitySeg">
-        <button data-v="comfortable" class="on">Comfy</button>
-        <button data-v="compact">Compact</button>
-      </div>
-      <div class="actions">
-        <span class="count" id="count">0 styles</span>
-        <button class="btn sm dl" id="pdfBtn" title="Download the line sheet as a PDF catalog (with photos)">⬇ PDF</button>
-        <button class="btn sm dl" id="xlsxBtn" title="Download the line sheet as an Excel order form (with photos)">⬇ Excel</button>
+      <button class="btn sm filtersToggle" id="filtersToggle" aria-expanded="false" aria-controls="filterMore">Filters</button>
+      <div class="filtermore" id="filterMore">
+        <select id="fType"><option value="">Any type</option></select>
+        <select id="fColor"><option value="">Any color</option></select>
+        <select id="fDeliv"><option value="">Any delivery</option></select>
+        <select id="sort">
+          <option value="title_asc">Title A→Z</option>
+          <option value="price_desc">Price high→low</option>
+          <option value="price_asc">Price low→high</option>
+          <option value="deliv_asc">Delivery soonest</option>
+          <option value="deliv_desc">Delivery latest</option>
+        </select>
+        <div class="seg" id="viewSeg" title="Combine colors of the same style into one card">
+          <button data-v="style">By style</button>
+          <button data-v="color" class="on">By color</button>
+        </div>
+        <div class="seg" id="densitySeg">
+          <button data-v="comfortable" class="on">Comfy</button>
+          <button data-v="compact">Compact</button>
+        </div>
+        <div class="actions">
+          <span class="count" id="count">0 styles</span>
+          <button class="btn sm dl" id="pdfBtn" title="Download the line sheet as a PDF catalog (with photos)">⬇ PDF</button>
+          <button class="btn sm dl" id="xlsxBtn" title="Download the line sheet as an Excel order form (with photos)">⬇ Excel</button>
+        </div>
       </div>
     </div>
   </div>
