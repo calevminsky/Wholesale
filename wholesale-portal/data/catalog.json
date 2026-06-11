@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T18:39:32.278Z",
+  "generated_at": "2026-06-11T19:05:46.558Z",
   "offer": "F26",
   "currency": "USD",
   "size_order": [
@@ -1108,7 +1108,7 @@
       "compare_at": 98,
       "wholesale_price": 49,
       "list_wholesale": 49,
-      "total_available": 77,
+      "total_available": 76,
       "sizes": [
         {
           "size": "XS",
@@ -1123,7 +1123,7 @@
         {
           "size": "M",
           "sku": "S5-DK-400-BK000-48L-M",
-          "available": 19
+          "available": 18
         },
         {
           "size": "L",
@@ -2357,7 +2357,7 @@
       "compare_at": 148,
       "wholesale_price": 80,
       "list_wholesale": 74,
-      "total_available": 35,
+      "total_available": 34,
       "sizes": [
         {
           "size": "XXS",
@@ -2377,7 +2377,7 @@
         {
           "size": "M",
           "sku": "S6-DW-093-GR000-50S-M",
-          "available": 5
+          "available": 4
         },
         {
           "size": "L",
@@ -2965,6 +2965,53 @@
           "size": "XL",
           "sku": "S6-TK-085-DB000-00L-XL",
           "available": 7
+        }
+      ]
+    },
+    {
+      "product_id": "149",
+      "gid": "airtable:149",
+      "handle": "brandy-dress-navy",
+      "title": "Brandy Dress (Navy)",
+      "color": "Navy",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/149.jpg",
+      "retail_price": 128,
+      "compare_at": 128,
+      "wholesale_price": 64,
+      "list_wholesale": 64,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
         }
       ]
     },
@@ -5102,12 +5149,12 @@
       "compare_at": 58,
       "wholesale_price": 29,
       "list_wholesale": 29,
-      "total_available": 180,
+      "total_available": 179,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-TW-460-BL000-00L-XS",
-          "available": 56
+          "available": 55
         },
         {
           "size": "S",
@@ -7696,6 +7743,100 @@
       "compare_at": 88,
       "wholesale_price": 44,
       "list_wholesale": 44,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "877",
+      "gid": "airtable:877",
+      "handle": "jana-top-blue-grey",
+      "title": "Jana Top (Blue Grey)",
+      "color": "Blue Grey",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": null,
+      "retail_price": 68,
+      "compare_at": 68,
+      "wholesale_price": 34,
+      "list_wholesale": 34,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
+      "product_id": "954",
+      "gid": "airtable:954",
+      "handle": "jana-top-brown",
+      "title": "Jana Top (Brown)",
+      "color": "Brown",
+      "type": "Top",
+      "class": null,
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/954.jpg",
+      "retail_price": 68,
+      "compare_at": 68,
+      "wholesale_price": 34,
+      "list_wholesale": 34,
       "total_available": null,
       "sizes": [
         {
@@ -15697,12 +15838,12 @@
       "compare_at": 68,
       "wholesale_price": 34,
       "list_wholesale": 34,
-      "total_available": 107,
+      "total_available": 106,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-TK-149-BL000-00L-XS",
-          "available": 35
+          "available": 34
         },
         {
           "size": "S",
@@ -16187,100 +16328,6 @@
       ]
     },
     {
-      "product_id": "877",
-      "gid": "airtable:877",
-      "handle": "printed-sweater-blue-grey",
-      "title": "Printed Sweater (Blue Grey)",
-      "color": "Blue Grey",
-      "type": "Top",
-      "class": null,
-      "style_name": null,
-      "tier": "full",
-      "preorder": true,
-      "status": "PREORDER",
-      "est_delivery": null,
-      "image": "data/preorder-img/877.jpg",
-      "retail_price": 68,
-      "compare_at": 68,
-      "wholesale_price": 34,
-      "list_wholesale": 34,
-      "total_available": null,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "S",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "M",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "L",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "XL",
-          "sku": null,
-          "available": null
-        }
-      ]
-    },
-    {
-      "product_id": "954",
-      "gid": "airtable:954",
-      "handle": "printed-sweater-brown",
-      "title": "Printed Sweater (Brown)",
-      "color": "Brown",
-      "type": "Top",
-      "class": null,
-      "style_name": null,
-      "tier": "full",
-      "preorder": true,
-      "status": "PREORDER",
-      "est_delivery": null,
-      "image": "data/preorder-img/954.jpg",
-      "retail_price": 68,
-      "compare_at": 68,
-      "wholesale_price": 34,
-      "list_wholesale": 34,
-      "total_available": null,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "S",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "M",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "L",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "XL",
-          "sku": null,
-          "available": null
-        }
-      ]
-    },
-    {
       "product_id": "1072",
       "gid": "airtable:1072",
       "handle": "priya-top-beige",
@@ -16555,53 +16602,6 @@
           "size": "XL",
           "sku": "S4-TK-122-GR000-00L-XL",
           "available": 9
-        }
-      ]
-    },
-    {
-      "product_id": "149",
-      "gid": "airtable:149",
-      "handle": "pv-1087-navy",
-      "title": "PV-1087 (Navy)",
-      "color": "Navy",
-      "type": "Dress",
-      "class": "Fashion",
-      "style_name": null,
-      "tier": "full",
-      "preorder": true,
-      "status": "PREORDER",
-      "est_delivery": null,
-      "image": "data/preorder-img/149.jpg",
-      "retail_price": 128,
-      "compare_at": 128,
-      "wholesale_price": 64,
-      "list_wholesale": 64,
-      "total_available": null,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "S",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "M",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "L",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "XL",
-          "sku": null,
-          "available": null
         }
       ]
     },

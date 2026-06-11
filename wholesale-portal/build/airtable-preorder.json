@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-11T18:39:31.722Z",
+  "fetched_at": "2026-06-11T19:05:45.322Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -362,6 +362,27 @@
       "handle": null,
       "ship_cancel": "2026-08-29",
       "image": "data/preorder-img/22.jpg"
+    },
+    {
+      "airtable_id": "149",
+      "name": "Brandy Dress (Navy)",
+      "color": "Navy",
+      "msrp": 128,
+      "status": null,
+      "type": "Dress",
+      "class": "Fashion",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": null,
+      "image": "data/preorder-img/149.jpg"
     },
     {
       "airtable_id": "87",
@@ -1663,6 +1684,42 @@
       "handle": null,
       "ship_cancel": "2026-07-10",
       "image": "data/preorder-img/170.jpg"
+    },
+    {
+      "airtable_id": "877",
+      "name": "Jana Top (Blue Grey)",
+      "color": "Blue Grey",
+      "msrp": 68,
+      "status": null,
+      "type": "Top",
+      "class": null,
+      "size_scale": null,
+      "sizes": null,
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": null,
+      "image": null
+    },
+    {
+      "airtable_id": "954",
+      "name": "Jana Top (Brown)",
+      "color": "Brown",
+      "msrp": 68,
+      "status": null,
+      "type": "Top",
+      "class": null,
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": null,
+      "image": "data/preorder-img/954.jpg"
     },
     {
       "airtable_id": "702",
@@ -3030,42 +3087,6 @@
       "image": "data/preorder-img/528.jpg"
     },
     {
-      "airtable_id": "877",
-      "name": "Printed Sweater (Blue Grey)",
-      "color": "Blue Grey",
-      "msrp": 68,
-      "status": null,
-      "type": "Top",
-      "class": null,
-      "size_scale": null,
-      "sizes": null,
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/877.jpg"
-    },
-    {
-      "airtable_id": "954",
-      "name": "Printed Sweater (Brown)",
-      "color": "Brown",
-      "msrp": 68,
-      "status": null,
-      "type": "Top",
-      "class": null,
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/954.jpg"
-    },
-    {
       "airtable_id": "1072",
       "name": "Priya Top (Beige)",
       "color": "Beige",
@@ -3148,27 +3169,6 @@
       "handle": null,
       "ship_cancel": "2026-07-29",
       "image": "data/preorder-img/875.jpg"
-    },
-    {
-      "airtable_id": "149",
-      "name": "PV-1087 (Navy)",
-      "color": "Navy",
-      "msrp": 128,
-      "status": null,
-      "type": "Dress",
-      "class": "Fashion",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/149.jpg"
     },
     {
       "airtable_id": "609",
