@@ -6,7 +6,6 @@ import XLSX from "xlsx";
 import path from "path";
 import crypto from "crypto";
 import ExcelJS from "exceljs";
-import sgMail from "@sendgrid/mail";
 import archiver from "archiver";
 import fs from "fs";
 import { fileURLToPath } from "url";
@@ -33,38 +32,44 @@ app.use(express.static("public"));
 const SHOP = process.env.SHOPIFY_SHOP; // must be *.myshopify.com
 const VERSION = process.env.SHOPIFY_API_VERSION || "2025-07";
 
-// ----------------- Email (SendGrid) -----------------
-const SENDGRID_API_KEY = process.env.SENDGRID_API_KEY || "";
+// ----------------- Email (Mailgun, native fetch) -----------------
+const MAILGUN_API_KEY = process.env.MAILGUN_API_KEY || "";
+const MAILGUN_DOMAIN = process.env.MAILGUN_DOMAIN || "";
 const EMAIL_TO = process.env.EMAIL_TO || "calev@yakirabella.com";
 const EMAIL_FROM = process.env.EMAIL_FROM || "";
 
-function sendgridReady() {
-  return Boolean(SENDGRID_API_KEY && EMAIL_FROM && EMAIL_TO);
+function mailgunReady() {
+  return Boolean(MAILGUN_API_KEY && MAILGUN_DOMAIN && EMAIL_FROM && EMAIL_TO);
 }
 
-async function sendEmailWithAttachments({ subject, text, attachments }) {
-  if (!sendgridReady()) {
-    console.warn("SendGrid not configured (SENDGRID_API_KEY / EMAIL_FROM / EMAIL_TO). Skipping email.");
-    return { skipped: true, reason: "SendGrid env vars missing" };
+async function sendEmailWithAttachments({ subject, text, html, attachments }) {
+  if (!mailgunReady()) {
+    console.warn("Mailgun not configured (MAILGUN_API_KEY / MAILGUN_DOMAIN / EMAIL_FROM / EMAIL_TO). Skipping email.");
+    return { skipped: true, reason: "Mailgun env vars missing" };
   }
 
-  sgMail.setApiKey(SENDGRID_API_KEY);
+  const form = new FormData();
+  form.append("from", EMAIL_FROM);
+  (Array.isArray(EMAIL_TO) ? EMAIL_TO : [EMAIL_TO]).forEach(t => form.append("to", t));
+  form.append("subject", subject);
+  form.append("text", text);
+  if (html) form.append("html", html);
+  for (const a of attachments || []) {
+    const buf = Buffer.from(a.contentBase64, "base64");
+    form.append("attachment", new Blob([buf], { type: a.type }), a.filename);
+  }
 
-  const msg = {
-    to: EMAIL_TO,
-    from: EMAIL_FROM,
-    subject,
-    text,
-    attachments: (attachments || []).map(a => ({
-      content: a.contentBase64,
-      filename: a.filename,
-      type: a.type,
-      disposition: "attachment"
-    }))
-  };
-
-  const resp = await sgMail.send(msg);
-  return { ok: true, resp: Array.isArray(resp) ? resp[0]?.statusCode : "sent" };
+  const auth = Buffer.from(`api:${MAILGUN_API_KEY}`).toString("base64");
+  const res = await fetch(`https://api.mailgun.net/v3/${MAILGUN_DOMAIN}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Basic ${auth}` },
+    body: form
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Mailgun ${res.status}: ${detail.slice(0, 200)}`);
+  }
+  return { ok: true, resp: "sent" };
 }
 
 function baseNameNoExt(filename) {
@@ -2291,7 +2296,7 @@ app.post("/api/import", upload.single("file"), async (req, res) => {
       emailStatus = await sendEmailWithAttachments({ subject, text, attachments });
     } catch (e) {
       emailStatus = { error: String(e?.message || e) };
-      console.error("SendGrid email failed:", e);
+      console.error("Mailgun email failed:", e);
     }
 
     res.json({
@@ -2474,7 +2479,7 @@ app.post("/api/transfer", upload.single("file"), async (req, res) => {
       emailStatus = await sendEmailWithAttachments({ subject, text, attachments });
     } catch (e) {
       emailStatus = { error: String(e?.message || e) };
-      console.error("SendGrid email failed:", e);
+      console.error("Mailgun email failed:", e);
     }
 
     res.json({
