@@ -32,18 +32,8 @@
     if (!p.preorder) { const d = new Date(); d.setHours(0, 0, 0, 0); d.setDate(d.getDate() + (Number(CATALOG?.delivery_default_days) || 14)); return d; }
     return null; // pre-stock with no ETA
   }
-  const parseISO = (s) => { if (!s) return null; const d = new Date(String(s).slice(0, 10) + "T00:00:00"); return isNaN(d) ? null : d; };
   const deliveryTime = (p) => { const d = deliveryDate(p); return d ? d.getTime() : Infinity; };
-  // Pre-orders show their ship window (Start–Cancel, a 14-day band centered on the
-  // ETA); everything else shows a single est. delivery date.
-  const deliveryLabel = (p) => {
-    if (p.preorder && p.ship_start && p.ship_cancel) {
-      const a = parseISO(p.ship_start), b = parseISO(p.ship_cancel);
-      if (a && b) return "Ships " + fmtShort(a) + " – " + fmtShort(b);
-    }
-    const d = deliveryDate(p);
-    return d ? "Est. delivery " + fmtShort(d) : "Delivery TBD";
-  };
+  const deliveryLabel = (p) => { const d = deliveryDate(p); return d ? "Est. delivery " + fmtShort(d) : "Delivery TBD"; };
   const deliveryHTML = (p) => `<div class="deliv ${deliveryDate(p) ? "" : "tbd"}">${deliveryLabel(p)}</div>`;
 
   // ---------- account (display-only this pass) ----------

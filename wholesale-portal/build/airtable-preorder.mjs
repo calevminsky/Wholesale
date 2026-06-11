@@ -161,7 +161,8 @@ export function preorderRecordsToRows(records) {
       msrp,
       handle: r.handle || slugify(name),
       image: r.image || null,
-      eta: r.eta || null,
+      ship_start: r.ship_start || null,
+      ship_cancel: r.ship_cancel || null,
       // Prefer real variant sizes captured from pd; fall back to the size-scale string.
       sizes: Array.isArray(r.sizes) && r.sizes.length ? r.sizes : sizesFromScale(r.size_scale)
     });
@@ -204,7 +205,8 @@ async function fetchAll(pool) {
             s.class,
             c.shopify_gid,
             c.shopify_handle,
-            c.wholesale_eta,
+            c.wholesale_start,
+            c.wholesale_cancel,
             (SELECT array_agg(v.size) FROM pd.variant v WHERE v.colorway_id = c.id) AS variant_sizes
        FROM pd.colorway c
        JOIN pd.style s ON s.id = c.style_id
@@ -232,9 +234,11 @@ async function fetchAll(pool) {
       sizes: orderSizes(r.variant_sizes),
       shopify_gid: r.shopify_gid || null,
       handle: r.shopify_handle || null,
-      // Expected arrival from pd (backfilled from Airtable's ETA). The build turns
-      // this into a ship window: Start = eta-7d, Cancel = eta+7d. Null → "Delivery TBD".
-      eta: isoDate(r.wholesale_eta),
+      // PO delivery window from pd (the dates we demand vendor delivery). The build
+      // derives the customer delivery date from the cancel date (cancel + 7d).
+      // Null → "Delivery TBD".
+      ship_start: isoDate(r.wholesale_start),
+      ship_cancel: isoDate(r.wholesale_cancel),
       image: null
     };
   });

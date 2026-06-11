@@ -82,6 +82,8 @@ const SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "OS"];
 
 // In-stock styles quote a flat lead time; pre-order styles quote ETA + this.
 const DEFAULT_LEAD_DAYS = 14;
+// Days after the PO cancel (delivery-demanded-by) date that we promise wholesale
+// customers delivery — enough cushion to have the goods in hand and ship them out.
 const PREORDER_BUFFER_DAYS = 7;
 
 // "2026-07-06" + n days -> "2026-07-13" (date-only, UTC-safe).
@@ -360,12 +362,7 @@ async function main() {
       tier: "full",
       preorder: true,
       status: r.status || "PREORDER",
-      // Ship window centered on the ETA: Start = ETA-7d, Cancel = ETA+7d (14-day
-      // window). est_delivery stays the cancel date so existing delivery sort/filter
-      // keeps working; the card shows the full Start–Cancel window.
-      ship_start: addDays(r.eta, -PREORDER_BUFFER_DAYS),
-      ship_cancel: addDays(r.eta, PREORDER_BUFFER_DAYS),
-      est_delivery: addDays(r.eta, PREORDER_BUFFER_DAYS), // = cancel date (null if no ETA)
+      est_delivery: addDays(r.ship_cancel, PREORDER_BUFFER_DAYS), // customer delivery = PO cancel + 7d (null if no window)
       image: r.image || null,
       retail_price: msrp,
       compare_at: msrp,
