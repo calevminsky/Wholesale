@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-11T20:56:57.293Z",
+  "fetched_at": "2026-06-11T21:25:25.936Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -259,27 +259,6 @@
       "image": "data/preorder-img/470.jpg"
     },
     {
-      "airtable_id": "1003",
-      "name": "Audrey Dress Long Sleeve (Black Flower)",
-      "color": "Black Flower",
-      "msrp": 168,
-      "status": null,
-      "type": "Dress",
-      "class": "Banger",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/1003.jpg"
-    },
-    {
       "airtable_id": "730",
       "name": "Audrey Dress Long Sleeve (Purple Ground)",
       "color": "Purple Ground",
@@ -301,8 +280,29 @@
       "image": "data/preorder-img/730.jpg"
     },
     {
+      "airtable_id": "1003",
+      "name": "Audrey Dress Long Sleeve 55\" (Black Flower)",
+      "color": "Black Flower",
+      "msrp": 168,
+      "status": null,
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": null,
+      "image": "data/preorder-img/1003.jpg"
+    },
+    {
       "airtable_id": "919",
-      "name": "Audrey Dress Long Sleeve (Purple Khaki)",
+      "name": "Audrey Dress Long Sleeve 55\" (Purple Khaki)",
       "color": "Purple Khaki",
       "msrp": 148,
       "status": null,
@@ -486,7 +486,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-09-10",
       "image": "data/preorder-img/661.jpg"
     },
     {

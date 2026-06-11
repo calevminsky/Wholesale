@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T20:56:57.703Z",
+  "generated_at": "2026-06-11T21:25:26.993Z",
   "offer": "F26",
   "currency": "USD",
   "size_order": [
@@ -1866,53 +1866,6 @@
       ]
     },
     {
-      "product_id": "1003",
-      "gid": "airtable:1003",
-      "handle": "audrey-dress-long-sleeve-black-flower",
-      "title": "Audrey Dress Long Sleeve (Black Flower)",
-      "color": "Black Flower",
-      "type": "Dress",
-      "class": "Banger",
-      "style_name": null,
-      "tier": "full",
-      "preorder": true,
-      "status": "PREORDER",
-      "est_delivery": null,
-      "image": "data/preorder-img/1003.jpg",
-      "retail_price": 168,
-      "compare_at": 168,
-      "wholesale_price": 84,
-      "list_wholesale": 84,
-      "total_available": null,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "S",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "M",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "L",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "XL",
-          "sku": null,
-          "available": null
-        }
-      ]
-    },
-    {
       "product_id": "7261008920673",
       "gid": "gid://shopify/Product/7261008920673",
       "handle": "audrey-dress-long-sleeve-black",
@@ -2023,12 +1976,12 @@
       "compare_at": 148,
       "wholesale_price": 74,
       "list_wholesale": 74,
-      "total_available": 30,
+      "total_available": 29,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-DW-306-GR538-50L-XS",
-          "available": 18
+          "available": 17
         },
         {
           "size": "S",
@@ -2100,10 +2053,57 @@
       ]
     },
     {
+      "product_id": "1003",
+      "gid": "airtable:1003",
+      "handle": "audrey-dress-long-sleeve-55-black-flower",
+      "title": "Audrey Dress Long Sleeve 55\" (Black Flower)",
+      "color": "Black Flower",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": null,
+      "tier": "full",
+      "preorder": true,
+      "status": "PREORDER",
+      "est_delivery": null,
+      "image": "data/preorder-img/1003.jpg",
+      "retail_price": 168,
+      "compare_at": 168,
+      "wholesale_price": 84,
+      "list_wholesale": 84,
+      "total_available": null,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "S",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "M",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "L",
+          "sku": null,
+          "available": null
+        },
+        {
+          "size": "XL",
+          "sku": null,
+          "available": null
+        }
+      ]
+    },
+    {
       "product_id": "919",
       "gid": "airtable:919",
-      "handle": "audrey-dress-long-sleeve-purple-khaki",
-      "title": "Audrey Dress Long Sleeve (Purple Khaki)",
+      "handle": "audrey-dress-long-sleeve-55-purple-khaki",
+      "title": "Audrey Dress Long Sleeve 55\" (Purple Khaki)",
       "color": "Purple Khaki",
       "type": "Dress",
       "class": "Banger",
@@ -2457,7 +2457,7 @@
       "compare_at": 168,
       "wholesale_price": 50,
       "list_wholesale": 84,
-      "total_available": 45,
+      "total_available": 44,
       "sizes": [
         {
           "size": "XXS",
@@ -2467,7 +2467,7 @@
         {
           "size": "XS",
           "sku": "S6-DW-093-BL996-50Q-XS",
-          "available": 24
+          "available": 23
         },
         {
           "size": "S",
@@ -3213,7 +3213,7 @@
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
-      "est_delivery": null,
+      "est_delivery": "2026-09-17",
       "image": "data/preorder-img/661.jpg",
       "retail_price": 128,
       "compare_at": 128,
@@ -17770,7 +17770,7 @@
       "compare_at": 64,
       "wholesale_price": 32,
       "list_wholesale": 32,
-      "total_available": 131,
+      "total_available": 130,
       "sizes": [
         {
           "size": "XS",
@@ -17795,7 +17795,7 @@
         {
           "size": "XL",
           "sku": "S4-SK-057-BK000-27N-XL",
-          "available": 25
+          "available": 24
         }
       ]
     },
@@ -17815,7 +17815,7 @@
       "compare_at": 64,
       "wholesale_price": 32,
       "list_wholesale": 32,
-      "total_available": 153,
+      "total_available": 152,
       "sizes": [
         {
           "size": "XXS",
@@ -17835,7 +17835,7 @@
         {
           "size": "M",
           "sku": "S4-SK-326-BK000-29N-M",
-          "available": 39
+          "available": 38
         },
         {
           "size": "L",
@@ -18730,7 +18730,7 @@
       "compare_at": 118,
       "wholesale_price": 59,
       "list_wholesale": 59,
-      "total_available": 141,
+      "total_available": 140,
       "sizes": [
         {
           "size": "XS",
@@ -18740,7 +18740,7 @@
         {
           "size": "S",
           "sku": "S6-SW-382-BL000-36N-S",
-          "available": 31
+          "available": 30
         },
         {
           "size": "M",
@@ -18775,7 +18775,7 @@
       "compare_at": 118,
       "wholesale_price": 59,
       "list_wholesale": 59,
-      "total_available": 64,
+      "total_available": 62,
       "sizes": [
         {
           "size": "XS",
@@ -18785,7 +18785,7 @@
         {
           "size": "S",
           "sku": "S6-SW-382-DB000-36N-S",
-          "available": 17
+          "available": 15
         },
         {
           "size": "M",
@@ -18912,7 +18912,7 @@
       "compare_at": 88,
       "wholesale_price": 44,
       "list_wholesale": 44,
-      "total_available": 86,
+      "total_available": 87,
       "sizes": [
         {
           "size": "XS",
@@ -18922,7 +18922,7 @@
         {
           "size": "S",
           "sku": "S5-SW-364-BL000-29N-S",
-          "available": 24
+          "available": 25
         },
         {
           "size": "M",
