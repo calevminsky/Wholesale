@@ -132,6 +132,8 @@ app.post("/api/off-pricing", adminAuth, (req, res) => {
   try {
     const cfg = { default: req.body?.default || {}, overrides: req.body?.overrides || {} };
     saveOffPricing(cfg);
+    persistFileToGit("wholesale-portal/build/off-pricing.json", JSON.stringify(loadOffPricing(), null, 2))
+      .catch((e) => console.warn("off-pricing git persist failed:", e.message));
     res.json({ ok: true, saved: loadOffPricing() });
   } catch (e) {
     res.status(400).json({ ok: false, error: String(e.message || e) });
@@ -185,6 +187,26 @@ app.post("/api/rebuild", adminAuth, async (req, res) => {
 // catalog, so the result survives redeploys — unlike /api/rebuild which writes
 // to this container's ephemeral disk). Needs GITHUB_DISPATCH_TOKEN on the server.
 const GH_REPO = process.env.GITHUB_REPO || "calevminsky/wholesale";
+
+// Persist a file to git via the Contents API so it survives Render redeploys.
+// Fire-and-forget — callers don't await; failures are logged but don't block the response.
+async function persistFileToGit(repoPath, content) {
+  const token = process.env.GITHUB_DISPATCH_TOKEN;
+  if (!token) return;
+  const apiUrl = `https://api.github.com/repos/${GH_REPO}/contents/${repoPath}`;
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    Accept: "application/vnd.github+json",
+    "Content-Type": "application/json",
+    "User-Agent": "yb-wholesale-portal"
+  };
+  const getRes = await fetch(apiUrl, { headers });
+  const sha = getRes.ok ? (await getRes.json()).sha : undefined;
+  const body = { message: `Admin: update ${repoPath.split("/").pop()}`, content: Buffer.from(content).toString("base64") };
+  if (sha) body.sha = sha;
+  const putRes = await fetch(apiUrl, { method: "PUT", headers, body: JSON.stringify(body) });
+  if (!putRes.ok) throw new Error(`GitHub Contents API ${putRes.status}`);
+}
 app.post("/api/resync", adminAuth, async (_req, res) => {
   const token = process.env.GITHUB_DISPATCH_TOKEN || "";
   if (!token) return res.status(400).json({ ok: false, error: "GITHUB_DISPATCH_TOKEN is not set on the server." });
@@ -250,6 +272,8 @@ app.post("/api/eta-overrides", adminAuth, (req, res) => {
     saveEtaOverrides(clean);
     _etaOverrides = clean;
     _etaMtime = Date.now();
+    persistFileToGit("wholesale-portal/build/eta-overrides.json", JSON.stringify(clean, null, 2))
+      .catch((e) => console.warn("eta-overrides git persist failed:", e.message));
     res.json({ ok: true, saved: clean });
   } catch (e) {
     res.status(500).json({ ok: false, error: String(e.message || e) });
