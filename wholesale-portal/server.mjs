@@ -20,7 +20,31 @@ import { lineSheetPdf } from "./build/linesheet-pdf.mjs";
 import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
 import { logVisit, listVisits } from "./build/visits-store.mjs";
 import { saveOrder, listOrders, getOrderCsv } from "./build/orders-store.mjs";
-import sgMail from "@sendgrid/mail";
+// Mailgun — called via the REST API directly (no extra package needed in Node 18+).
+async function sendMail({ from, to, replyTo, subject, text, attachments = [] }) {
+  const key = process.env.MAILGUN_API_KEY;
+  const domain = process.env.MAILGUN_DOMAIN;
+  if (!key || !domain) throw new Error("MAILGUN_API_KEY or MAILGUN_DOMAIN not set");
+  const form = new FormData();
+  form.append("from", from);
+  (Array.isArray(to) ? to : [to]).forEach((t) => form.append("to", t));
+  if (replyTo) form.append("h:Reply-To", replyTo);
+  form.append("subject", subject);
+  form.append("text", text);
+  for (const a of attachments) {
+    form.append("attachment", new Blob([a.content], { type: a.type }), a.filename);
+  }
+  const auth = Buffer.from(`api:${key}`).toString("base64");
+  const res = await fetch(`https://api.mailgun.net/v3/${domain}/messages`, {
+    method: "POST",
+    headers: { Authorization: `Basic ${auth}` },
+    body: form
+  });
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    throw new Error(`Mailgun ${res.status}: ${detail.slice(0, 200)}`);
+  }
+}
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const PORT = process.env.PORT || 10000;
@@ -355,24 +379,23 @@ app.post("/api/orders", async (req, res) => {
     saveOrder({ ref: base, accountName: account.name, buyerEmail: email, units, subtotal, order })
       .catch((e) => console.warn("saveOrder failed:", e.message));
 
-    if (!process.env.SENDGRID_API_KEY || !ORDER_FROM) {
-      return res.status(503).json({ ok: false, error: "Order email isn't configured on the server (SENDGRID_API_KEY / ORDER_FROM)." });
+    if (!process.env.MAILGUN_API_KEY || !process.env.MAILGUN_DOMAIN || !ORDER_FROM) {
+      return res.status(503).json({ ok: false, error: "Order email isn't configured on the server (MAILGUN_API_KEY / MAILGUN_DOMAIN / ORDER_FROM)." });
     }
-    sgMail.setApiKey(process.env.SENDGRID_API_KEY);
     const attachments = [
-      { content: Buffer.from(csv).toString("base64"), filename: `${base}.csv`, type: "text/csv", disposition: "attachment" },
-      { content: Buffer.from(json).toString("base64"), filename: `${base}.json`, type: "application/json", disposition: "attachment" }
+      { content: Buffer.from(csv), filename: `${base}.csv`, type: "text/csv" },
+      { content: Buffer.from(json), filename: `${base}.json`, type: "application/json" }
     ];
-    await sgMail.send({
+    await sendMail({
       to: ORDER_TEAM,
       from: ORDER_FROM,
-      ...(email ? { replyTo: email } : {}),
+      replyTo: email || undefined,
       subject: `New wholesale order — ${account.name} — ${units} units / $${subtotal}`,
       text: `A new wholesale order came in through the portal.\n\n${summary}\n\nThe attached CSV uploads straight into the wholesale importer.`,
       attachments
     });
     if (sendReceipt && email) {
-      await sgMail.send({
+      sendMail({
         to: email,
         from: ORDER_FROM,
         subject: `Your Yakira Bella wholesale order (${account.name})`,
@@ -382,8 +405,7 @@ app.post("/api/orders", async (req, res) => {
     }
     res.json({ ok: true, ref: base, units, subtotal, styles: order.items.length, account: account.name });
   } catch (e) {
-    const detail = e?.response?.body?.errors?.[0]?.message || e.message || String(e);
-    res.status(500).json({ ok: false, error: detail });
+    res.status(500).json({ ok: false, error: e.message || String(e) });
   }
 });
 

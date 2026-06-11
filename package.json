@@ -7,7 +7,6 @@
     "start": "node --env-file-if-exists=.env server.js"
   },
   "dependencies": {
-    "@sendgrid/mail": "^8.1.4",
     "@sparticuz/chromium": "^127.0.0",
     "archiver": "^7.0.1",
     "csv-parse": "^5.5.6",
