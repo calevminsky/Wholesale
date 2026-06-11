@@ -43,7 +43,7 @@ jobs:
         run: |
           git config user.name "yb-resync-bot"
           git config user.email "noreply@yakirabella.com"
-          git add wholesale-portal/build/airtable-preorder.json wholesale-portal/data
+          git add wholesale-portal/build/airtable-preorder.json wholesale-portal/build/handles.cache.json wholesale-portal/data
           if git diff --cached --quiet; then
             echo "No changes — catalog already up to date."
           else
