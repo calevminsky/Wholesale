@@ -286,6 +286,12 @@ async function main() {
   // Manual removals (build/hidden.json) apply to in-stock styles too, not just
   // pre-orders — this is what the curate/remove page writes to.
   const hidden = loadHidden();
+  // pd image fallback: Shopify products may have no image yet; if pd has one for that
+  // colorway (matched by shopify_gid), use it instead of leaving the card imageless.
+  const snapshotRecords = loadPreorderSnapshot().records;
+  const pdImageByGid = new Map(
+    snapshotRecords.filter((r) => r.shopify_gid && r.image).map((r) => [r.shopify_gid, r.image])
+  );
   const products = [];
   const dropped = { draft: [], no_handle: [], no_variants: [], no_price: [], hidden: [] };
   for (const r of headerRes.rows) {
@@ -320,7 +326,7 @@ async function main() {
       style_name: r.style_name || null,
       tier,
       status,
-      image: r.product_image || null,
+      image: r.product_image || pdImageByGid.get(gid) || null,
       retail_price: r.retail_price != null ? Number(r.retail_price) : null,
       compare_at: r.compare_at != null ? Number(r.compare_at) : null,
       wholesale_price: wholesale,
@@ -335,7 +341,7 @@ async function main() {
   // anything already coming from Shopify is never doubled. Priced with the SAME
   // full-tier engine (50% of MSRP); no live availability ("book now").
   const existingTitles = new Set(products.map((p) => normTitle(p.title)));
-  const preRows = preorderRecordsToRows(loadPreorderSnapshot().records);
+  const preRows = preorderRecordsToRows(snapshotRecords);
   const pricedPre = applyPricing(
     preRows.map((r) => ({ product_id: r.airtable_id, compare_at_price: r.msrp, current_price: r.msrp, unit_cost: 0 })),
     tiers.full

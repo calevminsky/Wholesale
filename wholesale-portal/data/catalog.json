@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T19:14:11.651Z",
+  "generated_at": "2026-06-11T20:27:44.965Z",
   "offer": "F26",
   "currency": "USD",
   "size_order": [
@@ -558,7 +558,7 @@
       "compare_at": 118,
       "wholesale_price": 59,
       "list_wholesale": 59,
-      "total_available": 66,
+      "total_available": 65,
       "sizes": [
         {
           "size": "XS",
@@ -578,7 +578,7 @@
         {
           "size": "L",
           "sku": "S6-DK-623-BL1128-53L-L",
-          "available": 4
+          "available": 3
         },
         {
           "size": "XL",
@@ -9294,7 +9294,7 @@
       "style_name": "Lennon Dress",
       "tier": "full",
       "status": "ACTIVE",
-      "image": null,
+      "image": "data/preorder-img/740.jpg",
       "retail_price": 118,
       "compare_at": null,
       "wholesale_price": 59,
@@ -10459,12 +10459,12 @@
       "compare_at": 88,
       "wholesale_price": 40,
       "list_wholesale": 44,
-      "total_available": 101,
+      "total_available": 100,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-539-PK917-36N-XS",
-          "available": 37
+          "available": 36
         },
         {
           "size": "S",
@@ -10504,7 +10504,7 @@
       "compare_at": 88,
       "wholesale_price": 88,
       "list_wholesale": 44,
-      "total_available": 80,
+      "total_available": 81,
       "sizes": [
         {
           "size": "XS",
@@ -10519,7 +10519,7 @@
         {
           "size": "M",
           "sku": "S6-SW-539-RD885-36N-M",
-          "available": 13
+          "available": 14
         },
         {
           "size": "L",
@@ -11325,7 +11325,7 @@
       "compare_at": 68,
       "wholesale_price": 30,
       "list_wholesale": 34,
-      "total_available": 65,
+      "total_available": 64,
       "sizes": [
         {
           "size": "XS",
@@ -11350,7 +11350,7 @@
         {
           "size": "XL",
           "sku": "S6-SK-610-RD000-36N-XL",
-          "available": 2
+          "available": 1
         }
       ]
     },
@@ -11415,7 +11415,7 @@
       "compare_at": 58,
       "wholesale_price": 30,
       "list_wholesale": 29,
-      "total_available": 53,
+      "total_available": 52,
       "sizes": [
         {
           "size": "XS",
@@ -11440,7 +11440,7 @@
         {
           "size": "XL",
           "sku": "S6-TK-609-RD000-00S-XL",
-          "available": 6
+          "available": 5
         }
       ]
     },
@@ -12703,12 +12703,12 @@
       "compare_at": 98,
       "wholesale_price": 49,
       "list_wholesale": 49,
-      "total_available": 824,
+      "total_available": 823,
       "sizes": [
         {
           "size": "XS",
           "sku": "F4-DK-375-BK000-50L-XS",
-          "available": 272
+          "available": 271
         },
         {
           "size": "S",
@@ -13110,12 +13110,12 @@
       "compare_at": 78,
       "wholesale_price": 39,
       "list_wholesale": 39,
-      "total_available": 223,
+      "total_available": 222,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-552-LG000-00L-XS",
-          "available": 59
+          "available": 58
         },
         {
           "size": "S",
@@ -17308,7 +17308,7 @@
       "compare_at": 118,
       "wholesale_price": 59,
       "list_wholesale": 59,
-      "total_available": 97,
+      "total_available": 96,
       "sizes": [
         {
           "size": "XS",
@@ -17318,7 +17318,7 @@
         {
           "size": "S",
           "sku": "S6-DK-761-WH1130-53L-S",
-          "available": 30
+          "available": 29
         },
         {
           "size": "M",
@@ -17632,7 +17632,7 @@
       "compare_at": 78,
       "wholesale_price": 39,
       "list_wholesale": 39,
-      "total_available": 113,
+      "total_available": 112,
       "sizes": [
         {
           "size": "XS",
@@ -17642,7 +17642,7 @@
         {
           "size": "S",
           "sku": "S6-SW-696-BL000-39N-S",
-          "available": 33
+          "available": 32
         },
         {
           "size": "M",
@@ -17817,7 +17817,7 @@
       "compare_at": 64,
       "wholesale_price": 32,
       "list_wholesale": 32,
-      "total_available": 133,
+      "total_available": 131,
       "sizes": [
         {
           "size": "XS",
@@ -17827,7 +17827,7 @@
         {
           "size": "S",
           "sku": "S4-SK-057-BK000-27N-S",
-          "available": 58
+          "available": 57
         },
         {
           "size": "M",
@@ -17837,7 +17837,7 @@
         {
           "size": "L",
           "sku": "S4-SK-057-BK000-27N-L",
-          "available": 13
+          "available": 12
         },
         {
           "size": "XL",
@@ -17862,7 +17862,7 @@
       "compare_at": 64,
       "wholesale_price": 32,
       "list_wholesale": 32,
-      "total_available": 154,
+      "total_available": 153,
       "sizes": [
         {
           "size": "XXS",
@@ -17872,7 +17872,7 @@
         {
           "size": "XS",
           "sku": "S4-SK-326-BK000-29N-XS",
-          "available": 21
+          "available": 20
         },
         {
           "size": "S",
@@ -18224,7 +18224,7 @@
       "style_name": "Tate Top",
       "tier": "full",
       "status": "ACTIVE",
-      "image": null,
+      "image": "data/preorder-img/569.jpg",
       "retail_price": 88,
       "compare_at": null,
       "wholesale_price": 44,
@@ -18590,7 +18590,7 @@
       "style_name": "Valentina Dress",
       "tier": "full",
       "status": "ACTIVE",
-      "image": null,
+      "image": "data/preorder-img/795.jpg",
       "retail_price": 128,
       "compare_at": null,
       "wholesale_price": 64,

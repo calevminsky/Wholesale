@@ -254,7 +254,9 @@ async function fetchAll(pool) {
 // Best-effort: a missing/failed image just leaves the record without one.
 async function downloadImages(pool, records) {
   fs.mkdirSync(IMG_DIR, { recursive: true });
-  const jobs = records.filter((r) => String(r.name || "").trim() && !r.shopify_gid);
+  // Download images for all named colorways, including those with a shopify_gid.
+  // Shopify-matched products may have no image on Shopify; pd is the fallback source.
+  const jobs = records.filter((r) => String(r.name || "").trim());
   let ok = 0;
   const QUEUE = [...jobs];
   async function worker() {
