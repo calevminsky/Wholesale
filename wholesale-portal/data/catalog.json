@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-11T20:32:36.810Z",
+  "generated_at": "2026-06-11T20:56:57.703Z",
   "offer": "F26",
   "currency": "USD",
   "size_order": [
@@ -37,8 +37,8 @@
   "counts": {
     "full": 156,
     "off": 113,
-    "preorder": 152,
-    "total": 421
+    "preorder": 151,
+    "total": 420
   },
   "products": [
     {
@@ -8516,7 +8516,7 @@
       "compare_at": 98,
       "wholesale_price": 30,
       "list_wholesale": 49,
-      "total_available": 47,
+      "total_available": 46,
       "sizes": [
         {
           "size": "XS",
@@ -8526,7 +8526,7 @@
         {
           "size": "S",
           "sku": "F5-SW-546-BR694-36N-S",
-          "available": 12
+          "available": 11
         },
         {
           "size": "M",
@@ -9254,7 +9254,7 @@
       "compare_at": 88,
       "wholesale_price": 40,
       "list_wholesale": 44,
-      "total_available": 74,
+      "total_available": 73,
       "sizes": [
         {
           "size": "XS",
@@ -9269,7 +9269,7 @@
         {
           "size": "M",
           "sku": "F5-SW-449-BL837-36N-M",
-          "available": 8
+          "available": 7
         },
         {
           "size": "L",
@@ -9843,53 +9843,6 @@
           "size": "L",
           "sku": "S5-02-T133",
           "available": 57
-        }
-      ]
-    },
-    {
-      "product_id": "872",
-      "gid": "airtable:872",
-      "handle": "liora-dress-pink",
-      "title": "Liora Dress (Pink)",
-      "color": "Pink",
-      "type": "Dress",
-      "class": "Banger",
-      "style_name": null,
-      "tier": "full",
-      "preorder": true,
-      "status": "PREORDER",
-      "est_delivery": "2026-06-15",
-      "image": "data/preorder-img/872.jpg",
-      "retail_price": null,
-      "compare_at": null,
-      "wholesale_price": null,
-      "list_wholesale": null,
-      "total_available": null,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "S",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "M",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "L",
-          "sku": null,
-          "available": null
-        },
-        {
-          "size": "XL",
-          "sku": null,
-          "available": null
         }
       ]
     },
@@ -11632,20 +11585,20 @@
       "product_id": "1066",
       "gid": "airtable:1066",
       "handle": "marianne-top-brown-plaid",
-      "title": "Marianne top (Brown Plaid)",
+      "title": "Marianne Top (Brown Plaid)",
       "color": "Brown Plaid",
       "type": "Top",
-      "class": null,
+      "class": "Fashion",
       "style_name": null,
       "tier": "full",
       "preorder": true,
       "status": "PREORDER",
       "est_delivery": "2026-07-06",
       "image": "data/preorder-img/1066.jpg",
-      "retail_price": null,
-      "compare_at": null,
-      "wholesale_price": null,
-      "list_wholesale": null,
+      "retail_price": 58,
+      "compare_at": 58,
+      "wholesale_price": 29,
+      "list_wholesale": 29,
       "total_available": null,
       "sizes": [
         {
@@ -12478,7 +12431,7 @@
       "compare_at": 58,
       "wholesale_price": 29,
       "list_wholesale": 29,
-      "total_available": 47,
+      "total_available": 46,
       "sizes": [
         {
           "size": "XS",
@@ -12503,7 +12456,7 @@
         {
           "size": "XL",
           "sku": "S6-TK-713-BL000-00L-XL",
-          "available": 6
+          "available": 5
         }
       ]
     },
@@ -12568,7 +12521,7 @@
       "compare_at": 88,
       "wholesale_price": 44,
       "list_wholesale": 44,
-      "total_available": 111,
+      "total_available": 112,
       "sizes": [
         {
           "size": "XS",
@@ -12578,7 +12531,7 @@
         {
           "size": "S",
           "sku": "S6-DK-658-PK000-42L-S",
-          "available": 36
+          "available": 37
         },
         {
           "size": "M",
@@ -12795,7 +12748,7 @@
       "compare_at": 98,
       "wholesale_price": 49,
       "list_wholesale": 49,
-      "total_available": 176,
+      "total_available": 175,
       "sizes": [
         {
           "size": "XS",
@@ -12810,7 +12763,7 @@
         {
           "size": "M",
           "sku": "S6-DK-375-KH000-50L-M",
-          "available": 36
+          "available": 35
         },
         {
           "size": "L",

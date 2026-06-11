@@ -1,10 +1,10 @@
 {
-  "fetched_at": "2026-06-11T20:34:54.685Z",
+  "fetched_at": "2026-06-11T20:56:57.293Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
   ],
-  "count": 176,
+  "count": 175,
   "records": [
     {
       "airtable_id": "1191",
@@ -2100,27 +2100,6 @@
       "image": "data/preorder-img/1254.jpg"
     },
     {
-      "airtable_id": "872",
-      "name": "Liora Dress (Pink)",
-      "color": "Pink",
-      "msrp": 0,
-      "status": null,
-      "type": "Dress",
-      "class": "Banger",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": "2026-06-08",
-      "image": "data/preorder-img/872.jpg"
-    },
-    {
       "airtable_id": "375",
       "name": "Lisa Skirt (Beige Pattern)",
       "color": "Beige Pattern",
@@ -2395,12 +2374,12 @@
     },
     {
       "airtable_id": "1066",
-      "name": "Marianne top (Brown Plaid)",
+      "name": "Marianne Top (Brown Plaid)",
       "color": "Brown Plaid",
-      "msrp": 0,
+      "msrp": 58,
       "status": null,
       "type": "Top",
-      "class": null,
+      "class": "Fashion",
       "size_scale": null,
       "sizes": [
         "XS",
