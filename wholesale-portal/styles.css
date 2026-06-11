@@ -75,6 +75,9 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
 .badge{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:999px;background:var(--card);border:1px solid var(--line);color:var(--muted)}
 .badge.full{background:var(--full-soft);border-color:#cadace;color:var(--full)}
 .badge.off{background:var(--off-soft);border-color:#e7c9aa;color:var(--off)}
+.deliv{font-size:11px;font-weight:600;color:var(--full);background:var(--full-soft);border:1px solid #cadace;border-radius:7px;padding:4px 8px;display:inline-block;margin:2px 0}
+.deliv.tbd{color:var(--muted);background:var(--paper);border-color:var(--line)}
+.compact .deliv{font-size:10px;padding:3px 7px}
 .card .body{padding:11px 12px 12px;display:flex;flex-direction:column;gap:7px;flex:1}
 .card .title{font-size:13.5px;font-weight:600;line-height:1.25}
 .card .meta{font-size:11.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap;align-items:center}
