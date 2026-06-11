@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "wholesale-portal",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["wholesale-portal/server.mjs"],
+      "port": 8089
+    }
+  ]
+}

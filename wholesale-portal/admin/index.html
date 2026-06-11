@@ -45,6 +45,9 @@ tr:hover td{background:var(--paper)}
 .tablewrap{max-height:60vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
 .muted{color:var(--muted)}
 .pill{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--off-soft);color:var(--off)}
+input[type=date]{width:148px}
+input[type=date].set{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.tbd{color:var(--muted);font-style:italic}
 </style>
 </head>
 <body>
@@ -85,6 +88,23 @@ tr:hover td{background:var(--paper)}
       <table>
         <thead><tr><th>Company</th><th>Email</th><th class="num">Visits</th><th>First seen</th><th>Last seen</th></tr></thead>
         <tbody id="leadRows"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="panel">
+    <h2>Pre-order delivery dates</h2>
+    <p class="hint">Override the delivery ETA for any pre-order style. Leave blank to use the date from the PO. Changes take effect immediately — no rebuild needed.</p>
+    <div class="toolbar2">
+      <input id="etaSearch" type="search" placeholder="Search style or color…" autocomplete="off">
+      <span class="muted" id="etaOvrCount"></span>
+      <button class="btn primary" id="saveEta">Save dates</button>
+      <span class="status" id="etaStatus"></span>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th>Style</th><th>From PO</th><th>Override date</th></tr></thead>
+        <tbody id="etaRows"></tbody>
       </table>
     </div>
   </div>

@@ -13,6 +13,7 @@ import fs from "node:fs";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { loadOffPricing, saveOffPricing, OFF_MODES } from "./build/off-pricing.mjs";
+import { loadEtaOverrides, saveEtaOverrides, ETA_OVERRIDES_PATH } from "./build/eta-overrides.mjs";
 import { getHiddenHandles, listHidden, addHidden, removeHidden } from "./build/hidden-store.mjs";
 import { lineSheetBuffer } from "./build/linesheet-xlsx.mjs";
 import { lineSheetPdf } from "./build/linesheet-pdf.mjs";
@@ -51,6 +52,37 @@ async function hiddenSet(force = false) {
     catch (e) { console.error("hidden refresh failed:", e.message); } // keep last good set
   }
   return _hidden;
+}
+
+// ---- ETA overrides (serve-time, no rebuild needed) ----
+let _etaOverrides = null, _etaMtime = 0;
+function etaOverridesMap() {
+  try {
+    if (!fs.existsSync(ETA_OVERRIDES_PATH)) return (_etaOverrides = {});
+    const st = fs.statSync(ETA_OVERRIDES_PATH);
+    if (!_etaOverrides || st.mtimeMs !== _etaMtime) {
+      _etaOverrides = loadEtaOverrides();
+      _etaMtime = st.mtimeMs;
+    }
+  } catch { _etaOverrides = _etaOverrides || {}; }
+  return _etaOverrides;
+}
+
+// Shared helper: apply hidden-product filter + ETA overrides, used by all three
+// buyer-facing catalog/linesheet endpoints so they all stay consistent.
+async function catalogForBuyers() {
+  const cat = readCatalog();
+  const hide = await hiddenSet();
+  const etas = etaOverridesMap();
+  let products = cat.products || [];
+  if (hide.size) products = products.filter((p) => !hide.has(p.handle));
+  if (Object.keys(etas).length) {
+    products = products.map((p) => {
+      const ov = etas[p.gid];
+      return ov !== undefined ? { ...p, est_delivery: ov || null } : p;
+    });
+  }
+  return { ...cat, products };
 }
 
 // ---- admin auth (Basic; open when ADMIN_PASSWORD unset) ----
@@ -202,12 +234,32 @@ app.post("/api/remove", curateAuth, async (req, res) => {
   }
 });
 
-// ---- catalog (filtered by the durable removal list, applied at serve time) ----
+// ---- ETA override API (admin only) ----
+app.get("/api/eta-overrides", adminAuth, (_req, res) => {
+  res.json({ overrides: etaOverridesMap() });
+});
+
+app.post("/api/eta-overrides", adminAuth, (req, res) => {
+  try {
+    const raw = req.body?.overrides || {};
+    const clean = {};
+    for (const [gid, date] of Object.entries(raw)) {
+      if (date && /^\d{4}-\d{2}-\d{2}$/.test(String(date))) clean[gid] = date;
+      // empty/null = cleared, omit from saved map
+    }
+    saveEtaOverrides(clean);
+    _etaOverrides = clean;
+    _etaMtime = Date.now();
+    res.json({ ok: true, saved: clean });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
+// ---- catalog (hidden filter + ETA overrides applied at serve time) ----
 app.get("/data/catalog.json", async (_req, res) => {
   try {
-    const cat = readCatalog();
-    const hide = await hiddenSet();
-    res.json(hide.size ? { ...cat, products: (cat.products || []).filter((p) => !hide.has(p.handle)) } : cat);
+    res.json(await catalogForBuyers());
   } catch (e) {
     res.status(500).json({ error: String(e.message || e) });
   }
@@ -294,10 +346,8 @@ app.post("/api/orders", async (req, res) => {
 // ---- line sheet as Excel (same filtered set buyers see) ----
 app.get("/api/linesheet.xlsx", async (_req, res) => {
   try {
-    const cat = readCatalog();
-    const hide = await hiddenSet();
-    const filtered = hide.size ? { ...cat, products: (cat.products || []).filter((p) => !hide.has(p.handle)) } : cat;
-    const buf = await lineSheetBuffer(filtered, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
+    const cat = await catalogForBuyers();
+    const buf = await lineSheetBuffer(cat, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
     const date = new Date().toISOString().slice(0, 10);
     res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-line-sheet-${date}.xlsx"`);
@@ -307,12 +357,10 @@ app.get("/api/linesheet.xlsx", async (_req, res) => {
   }
 });
 
-app.get("/api/linesheet.pdf", async (req, res) => {
+app.get("/api/linesheet.pdf", async (_req, res) => {
   try {
-    const cat = readCatalog();
-    const hide = await hiddenSet();
-    const filtered = hide.size ? { ...cat, products: (cat.products || []).filter((p) => !hide.has(p.handle)) } : cat;
-    const pdf = await lineSheetPdf(filtered, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
+    const cat = await catalogForBuyers();
+    const pdf = await lineSheetPdf(cat, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
     const date = new Date().toISOString().slice(0, 10);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-line-sheet-${date}.pdf"`);

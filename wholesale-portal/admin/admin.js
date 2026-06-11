@@ -21,11 +21,65 @@
     }
   }
 
+  // ---- ETA overrides ----
+  let PREORDERS = [], etaOverrides = {};
+
+  function fmtEta(iso) { if (!iso) return ""; const [y, m, d] = iso.split("-"); return `${["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]} ${+d}, ${y}`; }
+
+  function renderEtaRows() {
+    const q = ($("#etaSearch").value || "").toLowerCase();
+    const list = PREORDERS.filter((p) => !q || (p.title || "").toLowerCase().includes(q) || (p.color || "").toLowerCase().includes(q));
+    const n = Object.keys(etaOverrides).length;
+    $("#etaOvrCount").textContent = n ? `${n} override${n === 1 ? "" : "s"} set` : "no overrides";
+    $("#etaRows").innerHTML = list.map((p) => {
+      const pdEta = p.est_delivery_pd || null; // original from catalog (before override)
+      const ov = etaOverrides[p.gid] || "";
+      return `<tr data-gid="${p.gid}">
+        <td>${p.image ? `<img class="thumb" src="${esc(p.image)}">` : `<div class="thumb"></div>`}</td>
+        <td><div class="tname">${esc(p.title)}</div><div class="tcolor">${esc(p.color || "")}</div></td>
+        <td class="computed">${pdEta ? fmtEta(pdEta) : `<span class="tbd">TBD</span>`}</td>
+        <td><input type="date" class="eta-inp ${ov ? "set" : ""}" data-gid="${p.gid}" value="${ov}"></td>
+      </tr>`;
+    }).join("");
+    $("#etaRows").querySelectorAll(".eta-inp").forEach((inp) => inp.addEventListener("change", onEtaChange));
+  }
+
+  function onEtaChange(e) {
+    const gid = e.target.dataset.gid;
+    const v = e.target.value;
+    if (v) etaOverrides[gid] = v; else delete etaOverrides[gid];
+    e.target.classList.toggle("set", !!v);
+    const n = Object.keys(etaOverrides).length;
+    $("#etaOvrCount").textContent = n ? `${n} override${n === 1 ? "" : "s"} set` : "no overrides";
+  }
+
+  async function saveEta() {
+    const btn = $("#saveEta"), st = $("#etaStatus");
+    btn.disabled = true; st.textContent = "Saving…"; st.className = "status";
+    try {
+      const res = await fetch("/api/eta-overrides", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ overrides: etaOverrides }) });
+      const j = await res.json();
+      if (!res.ok || !j.ok) { st.textContent = "Save failed: " + (j.error || res.status); st.className = "status err"; }
+      else { st.textContent = "Saved — buyers see the new dates immediately."; st.className = "status ok"; etaOverrides = j.saved; renderEtaRows(); }
+    } catch (e) { st.textContent = "Error: " + e.message; st.className = "status err"; }
+    finally { btn.disabled = false; }
+  }
+
   async function boot() {
-    const [cfg, catalog] = await Promise.all([
+    const [cfg, catalog, etaCfg] = await Promise.all([
       fetch("/api/off-pricing").then((r) => r.json()),
-      fetch("/data/catalog.json", { cache: "no-store" }).then((r) => r.json())
+      fetch("/data/catalog.json", { cache: "no-store" }).then((r) => r.json()),
+      fetch("/api/eta-overrides").then((r) => r.json()).catch(() => ({ overrides: {} }))
     ]);
+    etaOverrides = etaCfg.overrides || {};
+    // Tag each pre-order with its pd-derived ETA (before any override is applied)
+    // so the "From PO" column always shows the source date.
+    PREORDERS = (catalog.products || []).filter((p) => p.preorder).sort((a, b) => (a.title || "").localeCompare(b.title || ""));
+    // The catalog served to the admin already has overrides baked in, so recover
+    // the original pd ETA from the saved overrides map: if overridden, the "real"
+    // pd date is unknown from catalog alone — mark it as unknown.
+    PREORDERS = PREORDERS.map((p) => ({ ...p, est_delivery_pd: etaOverrides[p.gid] ? null : p.est_delivery }));
+    renderEtaRows();
     MODES = cfg.modes || [];
     rule = cfg.default || rule;
     overrides = cfg.overrides || {};
@@ -149,6 +203,8 @@
     $("#clearOvr").addEventListener("click", () => { if (Object.keys(overrides).length && confirm("Remove all per-style overrides?")) { overrides = {}; renderRows(); } });
     $("#refreshLeads").addEventListener("click", loadLeads);
     let lt; $("#leadSearch").addEventListener("input", () => { clearTimeout(lt); lt = setTimeout(renderLeads, 120); });
+    $("#saveEta").addEventListener("click", saveEta);
+    let et; $("#etaSearch").addEventListener("input", () => { clearTimeout(et); et = setTimeout(renderEtaRows, 120); });
   }
 
   boot().catch((e) => setStatus("Failed to load: " + e.message, "err"));
