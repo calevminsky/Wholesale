@@ -249,8 +249,10 @@ async function fetchAll(pool) {
   });
 }
 
-// Download each style's image from pd.asset (the stored bytes, not the expiring
-// source_url) into IMG_DIR; set record.image to the committed local path.
+// Download each style's image from pd.asset into IMG_DIR; set record.image to the
+// committed local path. Supports two storage patterns:
+//   1. bytes stored in Postgres (old) — used directly
+//   2. bytes null, source_url set (new R2 storage) — fetched via HTTP
 // Best-effort: a missing/failed image just leaves the record without one.
 async function downloadImages(pool, records) {
   fs.mkdirSync(IMG_DIR, { recursive: true });
@@ -264,14 +266,23 @@ async function downloadImages(pool, records) {
       const r = QUEUE.shift();
       try {
         const { rows } = await pool.query(
-          `SELECT bytes FROM pd.asset
-            WHERE colorway_id = $1 AND kind = 'image' AND bytes IS NOT NULL
-            ORDER BY id LIMIT 1`,
+          `SELECT bytes, source_url FROM pd.asset
+            WHERE colorway_id = $1 AND kind = 'image'
+            ORDER BY (bytes IS NOT NULL) DESC, id DESC LIMIT 1`,
           [Number(r.airtable_id)]
         );
-        const buf = rows[0]?.bytes;
-        if (!buf || !buf.length) continue; // no image stored → leave r.image unset
-        const file = await compressToJpeg(buf, r.airtable_id); // -> "<id>.jpg"
+        if (!rows.length) continue;
+        let buf = rows[0].bytes;
+        if (!buf || !buf.length) {
+          // Fall back to source_url (R2 or other CDN)
+          const url = rows[0].source_url;
+          if (!url) continue;
+          const resp = await fetch(url);
+          if (!resp.ok) continue;
+          buf = Buffer.from(await resp.arrayBuffer());
+        }
+        if (!buf || !buf.length) continue;
+        const file = await compressToJpeg(buf, r.airtable_id);
         r.image = `${IMG_PUBLIC}/${file}`;
         ok++;
       } catch { /* leave r.image unset */ }
