@@ -52,7 +52,7 @@
   let CATALOG = null;
   let PRODUCTS = [];
   const byGid = new Map();
-  const filters = { q: "", type: "", color: "", deliv: "", klass: "noncore", sort: "title_asc", view: "color", density: "comfortable" };
+  const filters = { q: "", type: "", color: "", deliv: "", klass: "", sort: "title_asc", view: "color", density: "comfortable" };
   const isCore = (p) => (p.class || "").toLowerCase() === "core";
   let cart = {};                 // gid -> { [size]: qty }
   const selectedVariant = {};    // groupKey -> gid currently shown in a grouped card
@@ -228,6 +228,11 @@
       deliv_asc: (a, b) => keyer.deliv(a) - keyer.deliv(b),
       deliv_desc: (a, b) => keyer.deliv(b) - keyer.deliv(a)
     }[filters.sort];
+    // When showing All, always show non-core before core regardless of sort key.
+    if (!filters.klass) {
+      const coreKey = (x) => ((x.class !== undefined ? x.class : x.variants?.[0]?.class) || "").toLowerCase() === "core" ? 1 : 0;
+      return arr.slice().sort((a, b) => coreKey(a) - coreKey(b) || dir(a, b));
+    }
     return arr.slice().sort(dir);
   }
 

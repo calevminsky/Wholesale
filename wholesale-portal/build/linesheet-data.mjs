@@ -21,7 +21,11 @@ export function lineSheetRows(catalog, { defaultLeadDays = 14 } = {}) {
   };
   return (catalog.products || [])
     .filter((p) => p.tier !== "off")
-    .sort((a, b) => (a.type || "").localeCompare(b.type || "") || (a.title || "").localeCompare(b.title || ""))
+    .sort((a, b) => {
+      const coreA = (a.class || "").toLowerCase() === "core" ? 1 : 0;
+      const coreB = (b.class || "").toLowerCase() === "core" ? 1 : 0;
+      return coreA - coreB || (a.title || "").localeCompare(b.title || "");
+    })
     .map((p) => ({
       style: p.title || "",
       color: p.color || "",

@@ -105,7 +105,7 @@ export async function lineSheetPdf(catalog, opts = {}) {
       page.drawText("Price TBD", { x: cx, y: ty, size: 9, font: bold, color: OFF });
     }
     ty -= 11;
-    page.drawText(trunc((r.preorder ? "Pre-order · " : "") + "Est. " + r.delivery, font, 6.5, cellW), { x: cx, y: ty, size: 6.5, font, color: GRAY });
+    page.drawText(trunc("Est. " + r.delivery, font, 6.5, cellW), { x: cx, y: ty, size: 6.5, font, color: GRAY });
 
     col++;
     if (col >= COLS) { col = 0; topY -= (cellH + ROWGAP); }
