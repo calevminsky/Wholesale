@@ -171,14 +171,14 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
 /* entry gate */
 .overlay.gate{display:none;align-items:center;justify-content:center;background:rgba(33,28,23,.55);backdrop-filter:blur(7px);padding:20px}
 .overlay.gate.show{display:flex}
-.gatesheet{max-width:430px;width:100%;border-radius:18px;overflow:hidden;box-shadow:0 24px 70px rgba(33,28,23,.34)}
-.gatebody{background:var(--card);padding:30px 30px 28px}
-.gatebrand{font-size:11px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-.gatebody h2{font-family:Fraunces,Georgia,serif;font-weight:600;font-size:26px;margin:8px 0 8px}
-.gatebody>p{color:var(--muted);font-size:14px;line-height:1.5;margin:0 0 18px}
-.gatebody .field{margin-top:12px}
-.gatebody .field input{width:100%}
-.gatebody .btn.primary{width:100%;margin-top:18px;padding:12px;font-size:14px}
+.gatesheet{max-width:420px;width:100%;border-radius:22px;overflow:hidden;box-shadow:0 28px 80px rgba(33,28,23,.30)}
+.gatebody{background:var(--card);padding:36px 34px 32px}
+.gatelogo{font-family:Fraunces,Georgia,serif;font-size:15px;font-weight:500;color:var(--accent);letter-spacing:.01em;margin-bottom:16px}
+.gatebody h2{font-family:Fraunces,Georgia,serif;font-weight:500;font-size:27px;line-height:1.25;margin:0 0 10px;color:var(--ink)}
+.gatebody>p{color:var(--muted);font-size:14px;line-height:1.65;margin:0 0 22px}
+.gatebody .field{margin-top:10px}
+.gatebody .field input{width:100%;font-size:15px}
+.gatebody .btn.primary{width:100%;margin-top:20px;padding:14px;font-size:15px}
 .gateerr{color:var(--accent);font-size:12.5px;font-weight:600;min-height:16px;margin-top:8px}
 .acct a{color:var(--accent);cursor:pointer;text-decoration:underline;font-weight:600}
 
