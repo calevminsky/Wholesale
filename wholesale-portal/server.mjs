@@ -18,10 +18,11 @@ import { getHiddenHandles, listHidden, addHidden, removeHidden } from "./build/h
 import { lineSheetBuffer } from "./build/linesheet-xlsx.mjs";
 import { lineSheetPdf } from "./build/linesheet-pdf.mjs";
 import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
+import { buyerReceiptHtml, teamNotificationHtml } from "./build/email-templates.mjs";
 import { logVisit, listVisits } from "./build/visits-store.mjs";
 import { saveOrder, listOrders, getOrderCsv } from "./build/orders-store.mjs";
 // Mailgun — called via the REST API directly (no extra package needed in Node 18+).
-async function sendMail({ from, to, replyTo, subject, text, attachments = [] }) {
+async function sendMail({ from, to, replyTo, subject, text, html, attachments = [] }) {
   const key = process.env.MAILGUN_API_KEY;
   const domain = process.env.MAILGUN_DOMAIN;
   if (!key || !domain) throw new Error("MAILGUN_API_KEY or MAILGUN_DOMAIN not set");
@@ -31,6 +32,7 @@ async function sendMail({ from, to, replyTo, subject, text, attachments = [] }) 
   if (replyTo) form.append("h:Reply-To", replyTo);
   form.append("subject", subject);
   form.append("text", text);
+  if (html) form.append("html", html);
   for (const a of attachments) {
     form.append("attachment", new Blob([a.content], { type: a.type }), a.filename);
   }
@@ -391,15 +393,17 @@ app.post("/api/orders", async (req, res) => {
       from: ORDER_FROM,
       replyTo: email || undefined,
       subject: `New wholesale order — ${account.name} — ${units} units / $${subtotal}`,
-      text: `A new wholesale order came in through the portal.\n\n${summary}\n\nThe attached CSV uploads straight into the wholesale importer.`,
+      text: `New wholesale order from ${account.name}. ${units} units · $${subtotal}. CSV attached.`,
+      html: teamNotificationHtml({ order, units, subtotal, account, buyerEmail: email, ref: base }),
       attachments
     });
     if (sendReceipt && email) {
       sendMail({
         to: email,
         from: ORDER_FROM,
-        subject: `Your Yakira Bella wholesale order (${account.name})`,
+        subject: `Your Yakira Bella wholesale order — ${account.name}`,
         text: `Thanks! We received your order and will confirm shortly.\n\n${summary}`,
+        html: buyerReceiptHtml({ order, units, subtotal, account, ref: base }),
         attachments: [attachments[0]]
       }).catch((e) => console.warn("buyer receipt failed:", e.message));
     }
