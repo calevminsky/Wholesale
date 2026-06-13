@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-12T12:53:03.242Z",
+  "fetched_at": "2026-06-13T11:53:04.170Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -87,7 +87,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/1148.jpg"
     },
     {
@@ -280,48 +280,6 @@
       "image": "data/preorder-img/730.jpg"
     },
     {
-      "airtable_id": "1003",
-      "name": "Audrey Dress Long Sleeve 55\" (Black Flower)",
-      "color": "Black Flower",
-      "msrp": 168,
-      "status": null,
-      "type": "Dress",
-      "class": "Banger",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/1003.jpg"
-    },
-    {
-      "airtable_id": "919",
-      "name": "Audrey Dress Long Sleeve 55\" (Purple Khaki)",
-      "color": "Purple Khaki",
-      "msrp": 168,
-      "status": null,
-      "type": "Dress",
-      "class": "Banger",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": "2026-08-29",
-      "image": "data/preorder-img/919.jpg"
-    },
-    {
       "airtable_id": "247",
       "name": "Audrey Dress Short Sleeve (Black Ground)",
       "color": "Black Ground",
@@ -381,7 +339,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-09-10",
       "image": "data/preorder-img/149.jpg"
     },
     {
@@ -1718,7 +1676,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/954.jpg"
     },
     {
@@ -1739,7 +1697,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/702.jpg"
     },
     {
@@ -1974,6 +1932,48 @@
       "image": "data/preorder-img/443.jpg"
     },
     {
+      "airtable_id": "1003",
+      "name": "Layla Dress (Black Flower)",
+      "color": "Black Flower",
+      "msrp": 168,
+      "status": null,
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": "2026-09-10",
+      "image": "data/preorder-img/1003.jpg"
+    },
+    {
+      "airtable_id": "919",
+      "name": "Layla Dress (Purple Khaki)",
+      "color": "Purple Khaki",
+      "msrp": 168,
+      "status": null,
+      "type": "Dress",
+      "class": "Banger",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": "2026-08-29",
+      "image": "data/preorder-img/919.jpg"
+    },
+    {
       "airtable_id": "740",
       "name": "Lennon Dress (Pink)",
       "color": "Pink",
@@ -2033,7 +2033,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-09-07",
+      "ship_cancel": "2026-09-10",
       "image": "data/preorder-img/226.jpg"
     },
     {
@@ -2054,7 +2054,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-09-07",
+      "ship_cancel": "2026-09-10",
       "image": "data/preorder-img/1098.jpg"
     },
     {
@@ -2411,7 +2411,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/642.jpg"
     },
     {
@@ -2852,13 +2852,13 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/870.jpg"
     },
     {
       "airtable_id": "1245",
-      "name": "Natalia Skirt (Burgudy Multi)",
-      "color": "Burgudy Multi",
+      "name": "Natalia Skirt (Burgudy Teal)",
+      "color": "Burgudy Teal",
       "msrp": 88,
       "status": null,
       "type": "Skirt",
@@ -2873,7 +2873,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-07-27",
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/1245.jpg"
     },
     {
@@ -2899,8 +2899,8 @@
     },
     {
       "airtable_id": "576",
-      "name": "Natalia Skirt (Teal Burgundy)",
-      "color": "Teal Burgundy",
+      "name": "Natalia Skirt (Teal Ground)",
+      "color": "Teal Ground",
       "msrp": 88,
       "status": null,
       "type": "Skirt",
@@ -2915,7 +2915,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/576.jpg"
     },
     {
@@ -3554,7 +3554,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-09-08",
+      "ship_cancel": "2026-09-10",
       "image": "data/preorder-img/593.jpg"
     },
     {
@@ -3617,7 +3617,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-08-30",
       "image": "data/preorder-img/869.jpg"
     },
     {
