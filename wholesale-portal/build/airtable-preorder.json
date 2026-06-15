@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-14T11:55:34.290Z",
+  "fetched_at": "2026-06-15T15:44:49.358Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -1970,7 +1970,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-08-29",
+      "ship_cancel": "2026-09-10",
       "image": "data/preorder-img/919.jpg"
     },
     {
@@ -2940,27 +2940,6 @@
       "image": "data/preorder-img/518.jpg"
     },
     {
-      "airtable_id": "842",
-      "name": "Nora Skirt 23\" (Brown Flower)",
-      "color": "Brown Flower",
-      "msrp": 88,
-      "status": null,
-      "type": "Skirt",
-      "class": "Fashion",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": "2026-08-15",
-      "image": "data/preorder-img/842.jpg"
-    },
-    {
       "airtable_id": "224",
       "name": "Paolina Dress (Black)",
       "color": "Black",
@@ -3304,6 +3283,27 @@
       "handle": null,
       "ship_cancel": "2026-07-22",
       "image": "data/preorder-img/537.jpg"
+    },
+    {
+      "airtable_id": "842",
+      "name": "Sara Skirt 23\" (Brown Flower)",
+      "color": "Brown Flower",
+      "msrp": 88,
+      "status": null,
+      "type": "Skirt",
+      "class": "Fashion",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": "2026-08-15",
+      "image": "data/preorder-img/842.jpg"
     },
     {
       "airtable_id": "268",
