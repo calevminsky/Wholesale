@@ -8,7 +8,11 @@ function getPool() {
   if (!pool) {
     const cs = process.env.REPORTING_DATABASE_URL;
     if (!cs) throw new Error("REPORTING_DATABASE_URL is not set");
-    pool = new pg.Pool({ connectionString: cs });
+    // Match hidden-store/auth-store: enable SSL unless the URL opts out, so this
+    // connects against an SSL-requiring DB (otherwise every setting silently
+    // falls back to defaults — per-account pricing + offering curation break).
+    const ssl = cs.includes("sslmode=disable") ? false : { rejectUnauthorized: false };
+    pool = new pg.Pool({ connectionString: cs, ssl });
   }
   return pool;
 }

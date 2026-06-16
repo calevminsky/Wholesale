@@ -22,6 +22,16 @@ import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
 import { buyerReceiptHtml, teamNotificationHtml } from "./build/email-templates.mjs";
 import { logVisit, listVisits } from "./build/visits-store.mjs";
 import { saveOrder, listOrders, getOrderCsv } from "./build/orders-store.mjs";
+import { readFullOffering, buildSeasonCatalog, buildSeasonOrder, postDraftToImporter } from "./build/season.mjs";
+import {
+  getFullOfferingConfig, setFullOfferingConfig,
+  getAccountsPricing, setAccountsPricing, resolveAccountPricing,
+  VALID_FULL_LEVELS
+} from "./build/offering-store.mjs";
+import {
+  hashPassword, verifyPassword, signSession, verifySession, sessionConfigured, SESSION_COOKIE,
+  getUserForAuth, listUsers, upsertUser, deleteUser, updateLastLogin
+} from "./build/auth-store.mjs";
 // Mailgun — called via the REST API directly (no extra package needed in Node 18+).
 async function sendMail({ from, to, replyTo, subject, text, html, attachments = [] }) {
   const key = process.env.MAILGUN_API_KEY;
@@ -120,6 +130,11 @@ function adminAuth(req, res, next) {
 // ---- admin page ----
 app.get("/admin", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "index.html")));
 app.get("/admin/admin.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "admin.js")));
+app.get("/admin/season", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "season.html")));
+app.get("/admin/season.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "season.js")));
+
+// ---- in-season portal page (login-gated client-side; APIs enforce the session) ----
+app.get(["/season", "/season/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
 
 // ---- account resolution (buyer portal) ----
 // Returns ONLY the public-facing fields for a known token (name, slug,
@@ -400,6 +415,236 @@ app.post("/api/orders", async (req, res) => {
   } catch (e) {
     res.status(500).json({ ok: false, error: e.message || String(e) });
   }
+});
+
+// ============================================================================
+// In-season ("current season") offerings — Full Price tab. Separate, additive
+// surface: none of the F26 routes above are touched. Catalog source is
+// data/full-offering.json (build-full-offering.mjs); pricing is per-account.
+// ============================================================================
+
+// ---- session cookie helpers (manual parse; no cookie-parser dep) ----
+function readCookie(req, name) {
+  const raw = req.headers.cookie || "";
+  for (const part of raw.split(/;\s*/)) {
+    const eq = part.indexOf("=");
+    if (eq > -1 && part.slice(0, eq) === name) return decodeURIComponent(part.slice(eq + 1));
+  }
+  return null;
+}
+function setSessionCookie(res, token) {
+  const secure = process.env.NODE_ENV === "production";
+  const attrs = [`${SESSION_COOKIE}=${encodeURIComponent(token)}`, "Path=/", "HttpOnly", "SameSite=Lax", `Max-Age=${60 * 60 * 24 * 30}`];
+  if (secure) attrs.push("Secure");
+  res.append("Set-Cookie", attrs.join("; "));
+}
+function clearSessionCookie(res) {
+  res.append("Set-Cookie", `${SESSION_COOKIE}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
+}
+
+// Resolve the logged-in account (+ pricing/entitlements) from the session cookie.
+// Returns null when there's no valid session.
+async function seasonAccountFromReq(req) {
+  const session = verifySession(readCookie(req, SESSION_COOKIE));
+  if (!session?.email) return null;
+  const user = await getUserForAuth(session.email).catch(() => null);
+  if (!user) return null; // user removed since the session was issued
+  const account = {
+    name: user.account_name || user.email,
+    slug: slugify(user.account_name || user.email),
+    customer_id: user.customer_id ?? null
+  };
+  const map = await getAccountsPricing().catch(() => ({}));
+  const pricing = resolveAccountPricing(map, account.customer_id);
+  return { account, pricing, email: user.email };
+}
+
+// Require a valid session; 401 otherwise. Attaches req.season = {account,pricing,email}.
+async function requireSeasonSession(req, res, next) {
+  try {
+    const ctx = await seasonAccountFromReq(req);
+    if (!ctx) return res.status(401).json({ ok: false, error: "Not signed in." });
+    req.season = ctx;
+    next();
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+}
+
+// ---- login / logout / me ----
+app.post("/api/season/login", async (req, res) => {
+  try {
+    if (!sessionConfigured()) return res.status(503).json({ ok: false, error: "Login isn't configured on the server (SESSION_SECRET)." });
+    const email = String(req.body?.email || "").trim().toLowerCase();
+    const password = String(req.body?.password || "");
+    if (!email || !password) return res.status(400).json({ ok: false, error: "Email and password are required." });
+    const user = await getUserForAuth(email);
+    // Same generic message whether the email is unknown or the password is wrong.
+    if (!user || !verifyPassword(password, user.password_hash)) {
+      return res.status(401).json({ ok: false, error: "Incorrect email or password." });
+    }
+    setSessionCookie(res, signSession({ email: user.email, customer_id: user.customer_id }));
+    updateLastLogin(user.email);
+    res.json({ ok: true, account: { name: user.account_name || user.email, customer_id: user.customer_id ?? null } });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
+app.post("/api/season/logout", (_req, res) => {
+  clearSessionCookie(res);
+  res.json({ ok: true });
+});
+
+app.get("/api/season/me", async (req, res) => {
+  const ctx = await seasonAccountFromReq(req).catch(() => null);
+  if (!ctx) return res.json({ account: null });
+  res.json({
+    account: { name: ctx.account.name, customer_id: ctx.account.customer_id, email: ctx.email },
+    entitlements: { full: ctx.pricing.full_enabled },
+    pricing: { full_level: ctx.pricing.full_level }
+  });
+});
+
+// Buyer-facing per-account catalog for a tab. v1: offering=full only. Login required.
+app.get("/api/season/catalog", requireSeasonSession, async (req, res) => {
+  try {
+    const offering = String(req.query.offering || "full");
+    if (offering !== "full") return res.status(404).json({ error: "Unknown offering." });
+    const { account, pricing } = req.season;
+    if (!pricing.full_enabled) return res.status(403).json({ error: "This account isn't enabled for the Full Price offering." });
+    const master = readFullOffering();
+    if (master.missing) {
+      return res.status(503).json({ error: "The Full Price offering hasn't been built yet (run build-full-offering)." });
+    }
+    const { removes } = await getFullOfferingConfig().catch(() => ({ removes: [] }));
+    const hidden = await hiddenSet();
+    const products = buildSeasonCatalog({ master, removes, hidden, level: pricing.full_level });
+    res.json({
+      offering: "full",
+      offer: "INSEASON",
+      currency: master.currency || "USD",
+      size_order: master.size_order,
+      delivery_default_days: master.delivery_default_days || 14,
+      generated_at: master.generated_at || null,
+      account: { name: account.name, slug: account.slug, customer_id: account.customer_id },
+      entitlements: { full: pricing.full_enabled },
+      pricing: { full_level: pricing.full_level },
+      counts: { products: products.length },
+      products
+    });
+  } catch (e) {
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
+// Submit an in-season order -> create a DRAFT in the importer (allocation runs
+// there). Login required; server-authoritative pricing.
+app.post("/api/season/orders", requireSeasonSession, async (req, res) => {
+  try {
+    const { offering, lines, notes, shipping } = req.body || {};
+    if (offering && offering !== "full") return res.status(400).json({ ok: false, error: "Unknown offering." });
+    const { account, pricing, email } = req.season;
+    if (!pricing.full_enabled) return res.status(403).json({ ok: false, error: "This account isn't enabled for the Full Price offering." });
+    const master = readFullOffering();
+    if (master.missing) return res.status(503).json({ ok: false, error: "Offering not built yet." });
+
+    const { order, units, subtotal } = buildSeasonOrder({ account, lines, notes, shipping, level: pricing.full_level, master });
+    if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
+
+    const result = await postDraftToImporter(order);
+    if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
+
+    // Log to the portal's own order table too (best-effort, mirrors /api/orders).
+    saveOrder({ ref: `${account.slug}-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail: email, units, subtotal, order })
+      .catch((e) => console.warn("season saveOrder failed:", e.message));
+
+    res.json({
+      ok: true,
+      draft_id: result.order?.id ?? null,
+      units, subtotal, styles: order.items.length,
+      account: account.name, level: pricing.full_level
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
+// ---- admin: offering curation (adds/removes) ----
+app.get("/api/offering/full", adminAuth, async (_req, res) => {
+  try { res.json(await getFullOfferingConfig()); }
+  catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+app.post("/api/offering/full", adminAuth, async (req, res) => {
+  try {
+    const saved = await setFullOfferingConfig({ adds: req.body?.adds, removes: req.body?.removes });
+    res.json({ ok: true, saved });
+  } catch (e) { res.status(400).json({ ok: false, error: String(e.message || e) }); }
+});
+
+// Admin: the full discovered universe (unpriced, removes NOT applied) so the
+// curation UI can show every product with an in/out toggle.
+app.get("/api/offering/full/master", adminAuth, async (_req, res) => {
+  try {
+    const master = readFullOffering();
+    const cfg = await getFullOfferingConfig().catch(() => ({ adds: [], removes: [] }));
+    const products = (master.products || []).map((p) => ({
+      handle: p.handle, title: p.title, color: p.color, image: p.image,
+      msrp: p.msrp, total_available: p.total_available
+    }));
+    res.json({ generated_at: master.generated_at || null, missing: !!master.missing, products, ...cfg });
+  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+
+// ---- admin: per-account pricing/entitlements ----
+app.get("/api/accounts-pricing", adminAuth, async (_req, res) => {
+  try { res.json({ accounts: await getAccountsPricing(), valid_levels: VALID_FULL_LEVELS }); }
+  catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+app.post("/api/accounts-pricing", adminAuth, async (req, res) => {
+  try {
+    const saved = await setAccountsPricing(req.body?.accounts || {});
+    res.json({ ok: true, saved });
+  } catch (e) { res.status(400).json({ ok: false, error: String(e.message || e) }); }
+});
+
+// ---- admin: known accounts (id + name) to map users/pricing against ----
+// Sourced from build/accounts.json (built from the importer's customers table).
+// Returns no tokens or emails — just the pickable {customer_id, name} pairs.
+app.get("/api/accounts-list", adminAuth, (_req, res) => {
+  try {
+    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "build", "accounts.json"), "utf8"));
+    const seen = new Map();
+    for (const a of Object.values(data.accounts || {})) {
+      if (a?.customer_id != null && !seen.has(a.customer_id)) seen.set(a.customer_id, a.name);
+    }
+    const accounts = [...seen.entries()].map(([customer_id, name]) => ({ customer_id, name }))
+      .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    res.json({ accounts });
+  } catch (e) {
+    res.json({ accounts: [], error: String(e.message || e) });
+  }
+});
+
+// ---- admin: login allowlist (in-season portal users) ----
+app.get("/api/season-users", adminAuth, async (_req, res) => {
+  try { res.json({ users: await listUsers(), session_configured: sessionConfigured() }); }
+  catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+app.post("/api/season-users", adminAuth, async (req, res) => {
+  try {
+    const saved = await upsertUser({
+      email: req.body?.email,
+      customer_id: req.body?.customer_id != null && req.body.customer_id !== "" ? parseInt(req.body.customer_id, 10) : null,
+      account_name: req.body?.account_name,
+      password: req.body?.password || null
+    });
+    res.json({ ok: true, saved });
+  } catch (e) { res.status(400).json({ ok: false, error: String(e.message || e) }); }
+});
+app.delete("/api/season-users/:email", adminAuth, async (req, res) => {
+  try { await deleteUser(req.params.email); res.json({ ok: true }); }
+  catch (e) { res.status(500).json({ ok: false, error: String(e.message || e) }); }
 });
 
 // ---- line sheet as Excel (same filtered set buyers see) ----

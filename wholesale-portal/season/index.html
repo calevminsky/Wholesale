@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yakira Bella — Wholesale (In-Season)</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../styles.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap headrow">
+    <div class="brand">
+      <h1><span class="sub">Yakira Bella · Wholesale</span><span id="offerName">In-Season</span></h1>
+      <div class="acct" id="acctLine"></div>
+    </div>
+    <div class="cartmini">
+      <div class="stat"><div class="n" id="miniStyles">0</div><div class="l">Styles</div></div>
+      <div class="stat"><div class="n" id="miniUnits">0</div><div class="l">Units</div></div>
+      <div class="stat"><div class="n" id="miniSubtotal">$0</div><div class="l">Subtotal</div></div>
+      <button class="btn primary" id="reviewBtn" disabled>Review &amp; Submit</button>
+    </div>
+  </div>
+</header>
+
+<div class="toolbar">
+  <div class="wrap">
+    <div class="tierbar" id="tabBar">
+      <!-- offering tabs injected from entitlements -->
+    </div>
+    <div class="row">
+      <label class="search"><input id="q" type="search" placeholder="Search style or color…" autocomplete="off"></label>
+      <select id="sort">
+        <option value="title_asc">Title A→Z</option>
+        <option value="price_desc">Price high→low</option>
+        <option value="price_asc">Price low→high</option>
+      </select>
+      <div class="seg" id="densitySeg">
+        <button data-v="comfortable" class="on">Comfy</button>
+        <button data-v="compact">Compact</button>
+      </div>
+      <span class="count" id="count">0 styles</span>
+    </div>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="banner" id="noticeBanner" style="display:none"></div>
+  <div class="grid" id="grid"></div>
+  <div class="empty" id="empty" style="display:none"><div class="big">No styles match</div><div>Try clearing your search.</div></div>
+</div>
+
+<!-- sticky cart footer -->
+<div class="cartbar" id="cartbar">
+  <div class="wrap inner">
+    <div class="totals">
+      <div class="stat"><div class="n" id="barStyles">0</div><div class="l">Styles</div></div>
+      <div class="stat"><div class="n" id="barUnits">0</div><div class="l">Units</div></div>
+      <div class="stat"><div class="n" id="barSubtotal">$0</div><div class="l">Subtotal</div></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="btn ghost sm" id="clearCart">Clear cart</button>
+    <button class="btn primary" id="reviewBtn2">Review &amp; Submit</button>
+  </div>
+</div>
+
+<!-- review overlay -->
+<div class="overlay" id="reviewOverlay">
+  <div class="sheet">
+    <header>
+      <h2>Review order</h2>
+      <button class="close" id="closeReview">&times;</button>
+    </header>
+    <div class="content" id="reviewContent"></div>
+    <footer>
+      <div class="note-info" id="reviewFootInfo"></div>
+      <div class="spacer" style="flex:1"></div>
+      <button class="btn ghost" id="backToBrowse">Keep shopping</button>
+      <button class="btn primary" id="submitBtn">Submit order</button>
+    </footer>
+  </div>
+</div>
+
+<!-- login gate -->
+<div class="overlay gate" id="loginOverlay">
+  <div class="sheet gatesheet">
+    <div class="gatebody">
+      <div class="gatelogo">Yakira Bella</div>
+      <h2>Wholesale sign in</h2>
+      <p>Sign in with the email and password we set up for your account.</p>
+      <form id="loginForm">
+        <div class="field"><input id="loginEmail" type="email" autocomplete="username" inputmode="email" placeholder="Email address"></div>
+        <div class="field"><input id="loginPassword" type="password" autocomplete="current-password" placeholder="Password"></div>
+        <div class="gateerr" id="loginErr"></div>
+        <button class="btn primary" id="loginGo" type="submit">Sign in</button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>
