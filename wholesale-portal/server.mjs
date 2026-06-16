@@ -130,8 +130,19 @@ function adminAuth(req, res, next) {
 // ---- admin page ----
 app.get("/admin", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "index.html")));
 app.get("/admin/admin.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "admin.js")));
-app.get("/admin/season", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "season.html")));
-app.get("/admin/season.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "season.js")));
+// In-season admins: Full Price (/admin/FP) live; Off Price (/admin/OP) reserved.
+app.get("/admin/FP", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "FP.html")));
+app.get("/admin/FP.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "FP.js")));
+app.get("/admin/OP", adminAuth, (_req, res) => res.send(
+  `<!doctype html><meta charset=utf-8><title>Off Price admin</title>` +
+  `<body style="font-family:Inter,system-ui,sans-serif;background:#FAF7F2;color:#211C17;max-width:640px;margin:60px auto;padding:0 22px">` +
+  `<p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8A8178;font-weight:600">Yakira Bella · Wholesale Admin</p>` +
+  `<h1 style="font-family:Fraunces,Georgia,serif;font-weight:500">Off Price — coming soon</h1>` +
+  `<p style="color:#8A8178;line-height:1.6">The Off Price offering isn't built yet. When it is, this is where you'll curate its products and set per-account prices.</p>` +
+  `<p><a href="/admin/FP" style="color:#7C3A2E;font-weight:600">→ Full Price admin</a> &nbsp;·&nbsp; <a href="/admin" style="color:#7C3A2E;font-weight:600">F26 pre-season</a></p>`
+));
+// Back-compat: the old /admin/season path now points at Full Price.
+app.get("/admin/season", adminAuth, (_req, res) => res.redirect("/admin/FP"));
 
 // ---- in-season portal page (login-gated client-side; APIs enforce the session) ----
 app.get(["/season", "/season/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
