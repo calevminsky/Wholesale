@@ -902,10 +902,35 @@
           nameCell.appendChild(chipWrap);
         }
 
+        const curPrice = Number(liveItem.unit_price ?? liveItem.unitPrice ?? it.unit_price ?? it.unitPrice ?? 0);
+        const priceCell = el("td", { style: { whiteSpace: "nowrap", paddingRight: "12px", verticalAlign: "middle" } });
+        if (isReadOnly) {
+          priceCell.appendChild(document.createTextNode(`$${curPrice.toFixed(2)}`));
+        } else {
+          const priceWrap = el("div", { style: { display: "flex", alignItems: "center", gap: "2px" } });
+          priceWrap.appendChild(el("span", { style: { color: "#888", fontSize: "13px" } }, "$"));
+          const priceInp = el("input", {
+            type: "number", min: "0", step: "0.01",
+            value: curPrice > 0 ? String(curPrice) : "",
+            style: {
+              width: "64px", textAlign: "right",
+              border: "1px solid #d0d0d0",
+              borderRadius: "3px", padding: "2px 4px",
+              fontSize: "13px"
+            }
+          });
+          priceInp.addEventListener("input", () => {
+            liveItem.unit_price = Math.max(0, parseFloat(priceInp.value) || 0);
+          });
+          priceInp.addEventListener("blur", () => {
+            saveCurrent({ items: state.current.items });
+          });
+          priceWrap.appendChild(priceInp);
+          priceCell.appendChild(priceWrap);
+        }
         const tds = [
           nameCell,
-          el("td", { style: { whiteSpace: "nowrap", paddingRight: "12px", verticalAlign: "middle" } },
-            `$${Number(it.unit_price ?? it.unitPrice ?? 0).toFixed(2)}`)
+          priceCell
         ];
 
         for (const s of SIZES) {
