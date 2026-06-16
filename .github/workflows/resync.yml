@@ -29,7 +29,7 @@ jobs:
         with:
           node-version: "20"
       - run: npm ci
-      - name: Pull pd pre-orders + rebuild catalog
+      - name: Pull pd pre-orders + rebuild catalog + in-season offering
         working-directory: wholesale-portal
         env:
           REPORTING_DATABASE_URL: ${{ secrets.REPORTING_DATABASE_URL }}
@@ -39,6 +39,10 @@ jobs:
         run: |
           node build/airtable-preorder.mjs
           node build/build-catalog.mjs
+          # In-season Full Price offering: discover active + online-published
+          # Shopify products and enrich from inventory -> data/full-offering.json.
+          # Non-fatal so a hiccup here never blocks the F26 catalog publish.
+          node build/build-full-offering.mjs || echo "! build-full-offering failed — keeping the existing full-offering.json"
       - name: Commit & push if changed
         run: |
           git config user.name "yb-resync-bot"
@@ -47,7 +51,7 @@ jobs:
           if git diff --cached --quiet; then
             echo "No changes — catalog already up to date."
           else
-            git commit -m "Auto-resync catalog (products/images/prices/ETAs/inventory)"
+            git commit -m "Auto-resync catalog + in-season offering (products/images/prices/ETAs/inventory)"
             git push
           fi
       - name: Trigger Render redeploy
