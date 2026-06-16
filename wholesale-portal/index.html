@@ -39,7 +39,11 @@
       <label class="search"><input id="q" type="search" placeholder="Search style or color…" autocomplete="off"></label>
       <button class="btn sm filtersToggle" id="filtersToggle" aria-expanded="false" aria-controls="filterMore">Filters</button>
       <div class="filtermore" id="filterMore">
-        <select id="fType"><option value="">Any type</option></select>
+        <div class="seg typeseg" id="typeSeg" title="Show or hide product types">
+          <button data-v="Dress" class="on">Dresses</button>
+          <button data-v="Skirt" class="on">Skirts</button>
+          <button data-v="Top" class="on">Tops</button>
+        </div>
         <select id="fColor"><option value="">Any color</option></select>
         <select id="fDeliv"><option value="">Any delivery</option></select>
         <select id="sort">

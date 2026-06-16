@@ -52,14 +52,50 @@
   let CATALOG = null;
   let PRODUCTS = [];
   const byGid = new Map();
-  const filters = { q: "", type: "", color: "", deliv: "", klass: "", sort: "title_asc", view: "color", density: "comfortable" };
+  // Product-type toggles (multi-select). All on by default; unchecking hides that type.
+  // Type ordering (Dresses → Skirts → Tops) is ALWAYS the primary grouping; the
+  // sort control only orders styles *within* each type.
+  const TYPE_ORDER = ["Dress", "Skirt", "Top"];
+  const TYPE_LABEL = { Dress: "Dresses", Skirt: "Skirts", Top: "Tops" };
+  const typeRank = (t) => { const i = TYPE_ORDER.indexOf(t); return i === -1 ? TYPE_ORDER.length : i; };
+  const filters = { q: "", types: new Set(TYPE_ORDER), color: "", deliv: "", klass: "", sort: "title_asc", view: "color", density: "comfortable" };
   const isCore = (p) => (p.class || "").toLowerCase() === "core";
+  // gid -> all color variants of the same style (so "by color" cards can show siblings)
+  const siblingsByGid = new Map();
   let cart = {};                 // gid -> { [size]: qty }
   const selectedVariant = {};    // groupKey -> gid currently shown in a grouped card
 
   const cartKey = () => `yb_portal_cart_${token || "guest"}`;
   function loadCart() { try { cart = JSON.parse(localStorage.getItem(cartKey())) || {}; } catch { cart = {}; } }
   function saveCart() { try { localStorage.setItem(cartKey(), JSON.stringify(cart)); } catch {} }
+
+  // Remember the buyer's browsing setup (view / sort / type toggles / filters)
+  // across visits. The transient search box is intentionally not persisted.
+  const prefsKey = () => `yb_portal_prefs_${token || "guest"}`;
+  function loadPrefs() { try { return JSON.parse(localStorage.getItem(prefsKey())); } catch { return null; } }
+  function savePrefs() {
+    try {
+      localStorage.setItem(prefsKey(), JSON.stringify({
+        view: filters.view, sort: filters.sort, density: filters.density,
+        klass: filters.klass, color: filters.color, deliv: filters.deliv,
+        types: [...filters.types]
+      }));
+    } catch {}
+  }
+  // Apply saved prefs onto `filters`, validating against the current catalog's
+  // controls (a saved color/date/sort that no longer exists is ignored).
+  function applyPrefs() {
+    const p = loadPrefs();
+    if (!p) return;
+    const hasOpt = (sel, val) => !val || [...($(sel)?.options || [])].some((o) => o.value === val);
+    if (p.view === "style" || p.view === "color") filters.view = p.view;
+    if (p.density === "compact" || p.density === "comfortable") filters.density = p.density;
+    if (["", "core", "noncore"].includes(p.klass)) filters.klass = p.klass;
+    if (typeof p.sort === "string" && hasOpt("#sort", p.sort)) filters.sort = p.sort;
+    if (typeof p.color === "string" && hasOpt("#fColor", p.color)) filters.color = p.color;
+    if (typeof p.deliv === "string" && hasOpt("#fDeliv", p.deliv)) filters.deliv = p.deliv;
+    if (Array.isArray(p.types)) filters.types = new Set(p.types.filter((t) => TYPE_ORDER.includes(t)));
+  }
 
   // ---------- derived ----------
   function lineUnits(gid) { const s = cart[gid] || {}; return Object.values(s).reduce((a, b) => a + (Number(b) || 0), 0); }
@@ -86,9 +122,11 @@
     // Off-price is removed from the line sheet for now — only full-price styles show.
     PRODUCTS = (CATALOG.products || []).filter((p) => p.tier !== "off");
     PRODUCTS.forEach((p) => byGid.set(p.gid, p));
+    buildSiblings();
     if (CATALOG.offer) $("#offerName").textContent = `${CATALOG.offer} Collection`;
 
     buildFilterOptions();
+    applyPrefs();
     loadCart();
     wireEvents();
     render();
@@ -159,9 +197,23 @@
     toast(`Welcome, ${company}!`);
   }
 
+  // Group every product with its same-style color variants so a "by color" card
+  // can surface the other available colors.
+  function buildSiblings() {
+    const map = new Map();
+    for (const p of PRODUCTS) {
+      const key = baseTitle(p.title) + "|" + p.tier;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key).push(p);
+    }
+    for (const vs of map.values()) {
+      vs.sort((a, b) => (a.color || "").localeCompare(b.color || ""));
+      for (const v of vs) siblingsByGid.set(v.gid, vs);
+    }
+  }
+
   function buildFilterOptions() {
     const uniq = (key) => [...new Set(PRODUCTS.map((p) => p[key]).filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b)));
-    fillSelect("#fType", uniq("type"));
     fillSelect("#fColor", uniq("color"));
     // Delivery cutoffs ("By <date>") from the distinct delivery dates in the catalog.
     const dates = [...new Set(PRODUCTS.map((p) => isoLocal(deliveryDate(p))).filter(Boolean))].sort();
@@ -179,7 +231,8 @@
 
   // ---------- filtering / sorting ----------
   function matchesBase(p) { // everything except tier (used for tier counts)
-    if (filters.type && p.type !== filters.type) return false;
+    // Type toggles only gate the known toggle types; products of any other type pass through.
+    if (TYPE_ORDER.includes(p.type) && !filters.types.has(p.type)) return false;
     if (filters.color && p.color !== filters.color) return false;
     if (filters.deliv) { // "on or before" the chosen cutoff
       const cutoff = new Date(filters.deliv + "T00:00:00").getTime();
@@ -228,12 +281,14 @@
       deliv_asc: (a, b) => keyer.deliv(a) - keyer.deliv(b),
       deliv_desc: (a, b) => keyer.deliv(b) - keyer.deliv(a)
     }[filters.sort];
-    // When showing All, always show non-core before core regardless of sort key.
-    if (!filters.klass) {
-      const coreKey = (x) => ((x.class !== undefined ? x.class : x.variants?.[0]?.class) || "").toLowerCase() === "core" ? 1 : 0;
-      return arr.slice().sort((a, b) => coreKey(a) - coreKey(b) || dir(a, b));
-    }
-    return arr.slice().sort(dir);
+    // Type is ALWAYS the primary grouping (Dresses → Skirts → Tops). Within a type,
+    // on the All tab show non-core before core, then apply the chosen sort.
+    const coreKey = (x) => ((x.class !== undefined ? x.class : x.variants?.[0]?.class) || "").toLowerCase() === "core" ? 1 : 0;
+    return arr.slice().sort((a, b) =>
+      typeRank(keyer.type(a)) - typeRank(keyer.type(b))
+      || (!filters.klass ? coreKey(a) - coreKey(b) : 0)
+      || dir(a, b)
+    );
   }
 
   // ---------- Core / Non-Core counts ----------
@@ -245,6 +300,21 @@
     $("#cAll").textContent = count(base);
   }
 
+  // Walk a type-ordered list and drop a full-width section header before the
+  // first item of each type (Dresses / Skirts / Tops).
+  function withTypeHeaders(arr, typeOf, cardFn) {
+    let out = "", last = null;
+    for (const x of arr) {
+      const t = typeOf(x) || "";
+      if (t !== last) {
+        out += `<div class="typehead">${esc(TYPE_LABEL[t] || t || "Other")}</div>`;
+        last = t;
+      }
+      out += cardFn(x);
+    }
+    return out;
+  }
+
   // ---------- render ----------
   function render() {
     setClassCounts();
@@ -254,13 +324,13 @@
 
     let html, n;
     if (filters.view === "style") {
-      const groups = sortItems(groupsOf(matched), { title: (g) => g.base, price: (g) => g.minPrice, avail: (g) => g.totalAvail, deliv: (g) => g.minDeliv });
+      const groups = sortItems(groupsOf(matched), { title: (g) => g.base, price: (g) => g.minPrice, avail: (g) => g.totalAvail, deliv: (g) => g.minDeliv, type: (g) => g.type });
       n = groups.length;
-      html = groups.map(groupCardHTML).join("");
+      html = withTypeHeaders(groups, (g) => g.type, groupCardHTML);
     } else {
-      const items = sortItems(matched, { title: (p) => p.title || "", price: (p) => p.wholesale_price, avail: (p) => p.total_available || 0, deliv: deliveryTime });
+      const items = sortItems(matched, { title: (p) => p.title || "", price: (p) => p.wholesale_price, avail: (p) => p.total_available || 0, deliv: deliveryTime, type: (p) => p.type });
       n = items.length;
-      html = items.map(flatCardHTML).join("");
+      html = withTypeHeaders(items, (p) => p.type, flatCardHTML);
     }
     $("#count").textContent = `${n} ${filters.view === "style" ? "style" : "option"}${n === 1 ? "" : "s"}`;
     if (!n) { grid.innerHTML = ""; empty.style.display = "block"; return; }
@@ -309,19 +379,43 @@
   // Tier badges removed (line sheet is full-price only for now).
   function badgeHTML() { return ""; }
 
-  // flat (by color) card
+  // flat (by color) card — seeded to its own color but the sibling swatches let
+  // the buyer switch the shown color in place. Each color's size inputs carry
+  // their own gid, so quantities always land on the selected color.
   function flatCardHTML(p) {
-    const has = lineUnits(p.gid) > 0;
-    const img = p.image ? `<img src="${esc(p.image)}" alt="${esc(p.title)}" loading="lazy">` : "";
-    return `<div class="card ${has ? "has-qty" : ""}" data-gid="${p.gid}">
+    const sibs = siblingsByGid.get(p.gid) || [p];
+    const fkey = "flat:" + p.gid;
+    let sel = selectedVariant[fkey];
+    if (!sel || !sibs.some((v) => v.gid === sel)) sel = p.gid;
+    selectedVariant[fkey] = sel;
+    const selP = byGid.get(sel);
+    const anyHas = sibs.some((v) => lineUnits(v.gid) > 0);
+
+    // Round color swatches (only when the style has more than one color).
+    const swatches = sibs.length > 1 ? sibs.map((v) => {
+      const on = v.gid === sel, filled = lineUnits(v.gid) > 0;
+      const sw = v.image ? `<img src="${esc(v.image)}" alt="">` : `<span class="noimg"></span>`;
+      return `<button class="swatch ${on ? "on" : ""} ${filled ? "filled" : ""}" data-gid="${v.gid}" data-img="${esc(v.image || "")}" title="${esc(v.color || "")}">${sw}</button>`;
+    }).join("") : "";
+
+    const variants = sibs.map((v) => {
+      const has = lineUnits(v.gid) > 0;
+      return `<div class="variant" data-vgid="${v.gid}" ${v.gid === sel ? "" : "hidden"}>
+        <div class="meta">${v.type ? esc(v.type) : ""}${v.type && v.color ? '<span class="dot"></span>' : ""}${v.color ? esc(v.color) : ""}</div>
+        <div class="price">${priceHTML(v)}</div>
+        ${deliveryHTML(v)}
+        <div class="sizerun">${sizeRunHTML(v)}</div>
+        <div class="linesub" data-sub="${v.gid}">${has ? lineSubLabel(v.gid) : ""}</div>
+      </div>`;
+    }).join("");
+
+    const img = selP.image ? `<img class="mainimg" src="${esc(selP.image)}" alt="${esc(baseTitle(p.title))}" loading="lazy">` : `<img class="mainimg">`;
+    return `<div class="card ${anyHas ? "has-qty" : ""}" data-gid="${p.gid}" data-group="${esc(fkey)}">
       <div class="imgwrap">${badgeHTML(p)}${img}</div>
       <div class="body">
-        <div class="title">${esc(p.title)}</div>
-        <div class="meta">${p.type ? esc(p.type) : ""}${p.type && p.color ? '<span class="dot"></span>' : ""}${p.color ? esc(p.color) : ""}</div>
-        <div class="price">${priceHTML(p)}</div>
-        ${deliveryHTML(p)}
-        <div class="sizerun">${sizeRunHTML(p)}</div>
-        <div class="linesub" data-sub="${p.gid}">${has ? lineSubLabel(p.gid) : ""}</div>
+        <div class="title">${esc(baseTitle(p.title))}</div>
+        ${sibs.length > 1 ? `<div class="flatcolors" title="${sibs.length} colors in this style">${swatches}</div>` : ""}
+        <div class="variants">${variants}</div>
       </div>
     </div>`;
   }
@@ -374,14 +468,16 @@
       inp.addEventListener("input", onQtyInput);
       inp.addEventListener("focus", () => inp.select());
     });
-    $$(".colorchips .chip", grid).forEach((chip) => chip.addEventListener("click", onChipClick));
+    // Color switching: pill chips in by-style view, round swatches in by-color view.
+    $$(".colorchips .chip, .flatcolors .swatch", grid).forEach((c) => c.addEventListener("click", onChipClick));
   }
 
   function onChipClick(e) {
     const chip = e.currentTarget;
     const card = chip.closest(".card");
     const gid = chip.dataset.gid;
-    $$(".chip", card).forEach((c) => c.classList.toggle("on", c === chip));
+    const peerSel = chip.classList.contains("swatch") ? ".swatch" : ".chip";
+    $$(peerSel, card).forEach((c) => c.classList.toggle("on", c === chip));
     $$(".variant", card).forEach((v) => { v.hidden = v.dataset.vgid !== gid; });
     const main = card.querySelector(".mainimg");
     if (main && chip.dataset.img) main.src = chip.dataset.img;
@@ -401,8 +497,8 @@
     const card = inp.closest(".card");
     const sub = card.querySelector(`[data-sub="${CSS.escape(gid)}"]`);
     if (sub) sub.innerHTML = lineSubLabel(gid);
-    // chip "has units" dot (grouped view)
-    const chip = card.querySelector(`.chip[data-gid="${CSS.escape(gid)}"]`);
+    // "has units" dot on the color control (pill chip or round swatch)
+    const chip = card.querySelector(`.chip[data-gid="${CSS.escape(gid)}"], .swatch[data-gid="${CSS.escape(gid)}"]`);
     if (chip) chip.classList.toggle("filled", lineUnits(gid) > 0);
     // card highlight: any variant with units
     const anyHas = $$(".sizecell input", card).some((i) => Number(i.value) > 0) ||
@@ -552,28 +648,34 @@
   function wireEvents() {
     let qt;
     $("#q").addEventListener("input", (e) => { clearTimeout(qt); qt = setTimeout(() => { filters.q = e.target.value.trim(); render(); }, 140); });
-    $("#fType").addEventListener("change", (e) => { filters.type = e.target.value; render(); });
-    $("#fColor").addEventListener("change", (e) => { filters.color = e.target.value; render(); });
-    $("#fDeliv").addEventListener("change", (e) => { filters.deliv = e.target.value; render(); });
-    $("#sort").addEventListener("change", (e) => { filters.sort = e.target.value; render(); });
+    $("#typeSeg").addEventListener("click", (e) => {
+      const b = e.target.closest("button"); if (!b) return;
+      const t = b.dataset.v;
+      if (filters.types.has(t)) filters.types.delete(t); else filters.types.add(t);
+      b.classList.toggle("on", filters.types.has(t));
+      render(); savePrefs();
+    });
+    $("#fColor").addEventListener("change", (e) => { filters.color = e.target.value; render(); savePrefs(); });
+    $("#fDeliv").addEventListener("change", (e) => { filters.deliv = e.target.value; render(); savePrefs(); });
+    $("#sort").addEventListener("change", (e) => { filters.sort = e.target.value; render(); savePrefs(); });
     $("#filtersToggle").addEventListener("click", (e) => {
       const open = document.body.classList.toggle("filters-open");
       e.currentTarget.setAttribute("aria-expanded", open ? "true" : "false");
     });
     $("#classSeg").addEventListener("click", (e) => {
       const b = e.target.closest(".tiertab"); if (!b) return;
-      filters.klass = b.dataset.v; $$("#classSeg .tiertab").forEach((x) => x.classList.toggle("on", x === b)); render();
+      filters.klass = b.dataset.v; $$("#classSeg .tiertab").forEach((x) => x.classList.toggle("on", x === b)); render(); savePrefs();
     });
     $("#viewSeg").addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;
       filters.view = b.dataset.v; $$("#viewSeg button").forEach((x) => x.classList.toggle("on", x === b));
       // By color is incompatible with the color filter dropdown only cosmetically; keep both.
       $("#fColor").style.display = filters.view === "style" ? "none" : "";
-      render();
+      render(); savePrefs();
     });
     $("#densitySeg").addEventListener("click", (e) => {
       const b = e.target.closest("button"); if (!b) return;
-      filters.density = b.dataset.v; $$("#densitySeg button").forEach((x) => x.classList.toggle("on", x === b)); render();
+      filters.density = b.dataset.v; $$("#densitySeg button").forEach((x) => x.classList.toggle("on", x === b)); render(); savePrefs();
     });
     $("#pdfBtn").addEventListener("click", downloadPdf);
     $("#xlsxBtn").addEventListener("click", () => { window.location.href = "api/linesheet.xlsx"; });
@@ -591,9 +693,14 @@
     $("#gateGo").addEventListener("click", gateSubmit);
     $("#gateCompany").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#gateEmail").focus(); });
     $("#gateEmail").addEventListener("keydown", (e) => { if (e.key === "Enter") gateSubmit(); });
-    // reflect the default filters in the controls (default: Non-Core, By color)
+    // reflect the (possibly restored) filters in every control
     $$("#classSeg .tiertab").forEach((x) => x.classList.toggle("on", x.dataset.v === filters.klass));
     $$("#viewSeg button").forEach((x) => x.classList.toggle("on", x.dataset.v === filters.view));
+    $$("#densitySeg button").forEach((x) => x.classList.toggle("on", x.dataset.v === filters.density));
+    $$("#typeSeg button").forEach((x) => x.classList.toggle("on", filters.types.has(x.dataset.v)));
+    $("#sort").value = filters.sort;
+    $("#fColor").value = filters.color;
+    $("#fDeliv").value = filters.deliv;
     $("#fColor").style.display = filters.view === "style" ? "none" : "";
   }
 

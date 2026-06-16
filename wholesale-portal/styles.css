@@ -101,6 +101,23 @@ header.top{padding:20px 0 0;border-bottom:1px solid var(--line);background:var(-
 .compact .chip .cn{display:none}
 .compact .chip{padding:3px}
 
+/* other available colors (by-color view) — clickable round swatches */
+.flatcolors{display:flex;gap:5px;flex-wrap:wrap;align-items:center;margin:2px 0 6px}
+.flatcolors .swatch{position:relative;width:20px;height:20px;padding:0;border-radius:50%;overflow:hidden;border:1px solid var(--line);background:var(--paper);display:block;flex:none;opacity:.75;cursor:pointer;transition:.12s}
+.flatcolors .swatch img,.flatcolors .swatch .noimg{width:100%;height:100%;object-fit:cover;display:block;background:var(--paper)}
+.flatcolors .swatch:hover{opacity:1;border-color:var(--ink)}
+.flatcolors .swatch.on{border-color:var(--accent);box-shadow:0 0 0 1.5px var(--accent);opacity:1}
+.flatcolors .swatch.filled::after{content:"";position:absolute;top:-2px;right:-2px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--card)}
+.compact .flatcolors .swatch{width:16px;height:16px}
+
+/* product-type toggle pills (multi-select) — struck through when hidden */
+.typeseg button:not(.on){color:var(--muted);text-decoration:line-through;opacity:.55}
+
+/* type section headers (Dresses / Skirts / Tops) — span the full grid row */
+.typehead{grid-column:1/-1;font-family:"Fraunces",Georgia,serif;font-weight:600;font-size:20px;color:var(--ink);margin:14px 2px 2px;padding-bottom:7px;border-bottom:1px solid var(--line)}
+.typehead:first-child{margin-top:2px}
+.compact .typehead{font-size:17px;margin:10px 2px 2px}
+
 /* size run */
 .sizerun{display:flex;gap:5px;flex-wrap:wrap;margin-top:2px}
 .sizecell{display:flex;flex-direction:column;align-items:center;gap:2px;width:42px}
