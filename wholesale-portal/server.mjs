@@ -32,6 +32,7 @@ import {
   hashPassword, verifyPassword, signSession, verifySession, sessionConfigured, SESSION_COOKIE,
   getUserForAuth, listUsers, upsertUser, deleteUser, updateLastLogin
 } from "./build/auth-store.mjs";
+import { listCustomers } from "./build/customers-store.mjs";
 // Mailgun — called via the REST API directly (no extra package needed in Node 18+).
 async function sendMail({ from, to, replyTo, subject, text, html, attachments = [] }) {
   const key = process.env.MAILGUN_API_KEY;
@@ -620,20 +621,26 @@ app.post("/api/accounts-pricing", adminAuth, async (req, res) => {
 });
 
 // ---- admin: known accounts (id + name) to map users/pricing against ----
-// Sourced from build/accounts.json (built from the importer's customers table).
-// Returns no tokens or emails — just the pickable {customer_id, name} pairs.
-app.get("/api/accounts-list", adminAuth, (_req, res) => {
+// Pulled LIVE from the importer's `customers` table so the admin sees every
+// current account. Falls back to the build/accounts.json snapshot only if the
+// DB is unreachable. Returns no tokens or emails.
+app.get("/api/accounts-list", adminAuth, async (_req, res) => {
   try {
-    const data = JSON.parse(fs.readFileSync(path.join(__dirname, "build", "accounts.json"), "utf8"));
-    const seen = new Map();
-    for (const a of Object.values(data.accounts || {})) {
-      if (a?.customer_id != null && !seen.has(a.customer_id)) seen.set(a.customer_id, a.name);
-    }
-    const accounts = [...seen.entries()].map(([customer_id, name]) => ({ customer_id, name }))
-      .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+    const accounts = await listCustomers();
     res.json({ accounts });
   } catch (e) {
-    res.json({ accounts: [], error: String(e.message || e) });
+    try {
+      const data = JSON.parse(fs.readFileSync(path.join(__dirname, "build", "accounts.json"), "utf8"));
+      const seen = new Map();
+      for (const a of Object.values(data.accounts || {})) {
+        if (a?.customer_id != null && !seen.has(a.customer_id)) seen.set(a.customer_id, a.name);
+      }
+      const accounts = [...seen.entries()].map(([customer_id, name]) => ({ customer_id, name }))
+        .sort((a, b) => String(a.name).localeCompare(String(b.name)));
+      res.json({ accounts, fallback: true, error: String(e.message || e) });
+    } catch (e2) {
+      res.json({ accounts: [], error: String(e.message || e) });
+    }
   }
 });
 
