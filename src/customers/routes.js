@@ -141,5 +141,46 @@ export function createCustomersRouter({ shopifyGraphQL } = {}) {
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 
+  // ---------- contacts (nested under a customer) ----------
+
+  r.get("/api/customers/:id/contacts", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const contacts = await db.listContacts(id);
+      res.json({ contacts });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  r.post("/api/customers/:id/contacts", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const customer = await db.getCustomer(id);
+      if (!customer) return res.status(404).json({ error: "Customer not found" });
+      const contact = await db.createContact(id, req.body || {});
+      res.json({ contact });
+    } catch (e) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  r.put("/api/contacts/:contactId", async (req, res) => {
+    const cid = parseId(req.params.contactId);
+    if (cid === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const contact = await db.updateContact(cid, req.body || {});
+      if (!contact) return res.status(404).json({ error: "Not found" });
+      res.json({ contact });
+    } catch (e) { res.status(400).json({ error: String(e?.message || e) }); }
+  });
+
+  r.delete("/api/contacts/:contactId", async (req, res) => {
+    const cid = parseId(req.params.contactId);
+    if (cid === null) return res.status(404).json({ error: "Not found" });
+    try {
+      const ok = await db.archiveContact(cid);
+      res.json({ ok });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
   return r;
 }
