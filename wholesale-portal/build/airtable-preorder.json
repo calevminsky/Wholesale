@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-15T15:44:49.358Z",
+  "fetched_at": "2026-06-16T15:02:49.392Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -2726,7 +2726,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-08-01",
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/11.jpg"
     },
     {
@@ -3062,7 +3062,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-07-29",
+      "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/1072.jpg"
     },
     {
@@ -3304,6 +3304,48 @@
       "handle": null,
       "ship_cancel": "2026-08-15",
       "image": "data/preorder-img/842.jpg"
+    },
+    {
+      "airtable_id": "55",
+      "name": "Sicilia Dress (Heather Grey)",
+      "color": "Heather Grey",
+      "msrp": 108,
+      "status": null,
+      "type": "Dress",
+      "class": "Fashion",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": "2026-08-15",
+      "image": "data/preorder-img/55.jpg"
+    },
+    {
+      "airtable_id": "966",
+      "name": "Sicilia Dress (Rose Pink)",
+      "color": "Rose Pink",
+      "msrp": 108,
+      "status": null,
+      "type": "Dress",
+      "class": "Fashion",
+      "size_scale": "XS-XL",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": null,
+      "image": "data/preorder-img/966.jpg"
     },
     {
       "airtable_id": "268",
@@ -3556,48 +3598,6 @@
       "handle": null,
       "ship_cancel": "2026-09-10",
       "image": "data/preorder-img/593.jpg"
-    },
-    {
-      "airtable_id": "55",
-      "name": "YB-1024 (Heather Grey)",
-      "color": "Heather Grey",
-      "msrp": 108,
-      "status": null,
-      "type": "Dress",
-      "class": "Fashion",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/55.jpg"
-    },
-    {
-      "airtable_id": "966",
-      "name": "YB-1024 (Rose Pink)",
-      "color": "Rose Pink",
-      "msrp": 108,
-      "status": null,
-      "type": "Dress",
-      "class": "Fashion",
-      "size_scale": "XS-XL",
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/966.jpg"
     },
     {
       "airtable_id": "869",
