@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-18T12:50:40.590Z",
+  "fetched_at": "2026-06-19T13:33:24.170Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -759,7 +759,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-08-12",
+      "ship_cancel": "2026-08-15",
       "image": "data/preorder-img/52.jpg"
     },
     {
@@ -780,7 +780,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-08-13",
+      "ship_cancel": "2026-08-15",
       "image": "data/preorder-img/1204.jpg"
     },
     {
@@ -1419,7 +1419,7 @@
       "msrp": 68,
       "status": null,
       "type": "Skirt",
-      "class": null,
+      "class": "Fashion",
       "size_scale": null,
       "sizes": [
         "XS",
@@ -1440,7 +1440,7 @@
       "msrp": 68,
       "status": null,
       "type": "Skirt",
-      "class": null,
+      "class": "Fashion",
       "size_scale": null,
       "sizes": [
         "XS",
@@ -1461,7 +1461,7 @@
       "msrp": 68,
       "status": null,
       "type": "Skirt",
-      "class": null,
+      "class": "Fashion",
       "size_scale": null,
       "sizes": [
         "XS",
@@ -1482,7 +1482,7 @@
       "msrp": 68,
       "status": null,
       "type": "Skirt",
-      "class": null,
+      "class": "Fashion",
       "size_scale": "XS-XL",
       "sizes": [
         "XS",
@@ -1503,7 +1503,7 @@
       "msrp": 68,
       "status": null,
       "type": "Top",
-      "class": null,
+      "class": "Fashion",
       "size_scale": null,
       "sizes": [
         "XS",
@@ -1524,7 +1524,7 @@
       "msrp": 68,
       "status": null,
       "type": "Top",
-      "class": null,
+      "class": "Fashion",
       "size_scale": null,
       "sizes": [
         "XS",
@@ -1545,7 +1545,7 @@
       "msrp": 68,
       "status": null,
       "type": "Top",
-      "class": null,
+      "class": "Fashion",
       "size_scale": null,
       "sizes": [
         "XS",
@@ -1566,7 +1566,7 @@
       "msrp": 68,
       "status": null,
       "type": "Top",
-      "class": null,
+      "class": "Fashion",
       "size_scale": "XS-XL",
       "sizes": [
         "XS",
@@ -1773,14 +1773,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7593291841633",
+      "handle": "kate-top-black",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/953.jpg"
     },
@@ -1794,14 +1796,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7593291939937",
+      "handle": "kate-top-brown",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/961.jpg"
     },
@@ -1815,14 +1819,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7593291808865",
+      "handle": "kate-top-light-mocha",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/491.jpg"
     },
@@ -1836,14 +1842,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7593291612257",
+      "handle": "kate-top-navy",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/364.jpg"
     },
@@ -2004,14 +2012,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7593296429153",
+      "handle": "lenny-dress-burgundy",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/557.jpg"
     },
@@ -2857,8 +2867,8 @@
     },
     {
       "airtable_id": "1245",
-      "name": "Natalia Skirt (Burgudy Teal)",
-      "color": "Burgudy Teal",
+      "name": "Natalia Skirt (Burgundy Teal)",
+      "color": "Burgundy Teal",
       "msrp": 88,
       "status": null,
       "type": "Skirt",
