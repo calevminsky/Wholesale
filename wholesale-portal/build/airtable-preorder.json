@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-22T15:22:27.029Z",
+  "fetched_at": "2026-06-23T12:31:05.456Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -109,7 +109,7 @@
       "shopify_gid": null,
       "handle": null,
       "ship_cancel": "2026-07-29",
-      "image": "data/preorder-img/1095.jpg"
+      "image": null
     },
     {
       "airtable_id": "361",
@@ -1139,6 +1139,27 @@
       "handle": null,
       "ship_cancel": "2026-07-30",
       "image": "data/preorder-img/753.jpg"
+    },
+    {
+      "airtable_id": "593",
+      "name": "Gabi Dress (Khaki)",
+      "color": "Khaki",
+      "msrp": 118,
+      "status": null,
+      "type": "Dress",
+      "class": "Fashion",
+      "size_scale": "XS-XL",
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": "2026-09-10",
+      "image": "data/preorder-img/593.jpg"
     },
     {
       "airtable_id": "1100",
@@ -2713,8 +2734,8 @@
         "L",
         "XL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7310978056289",
+      "handle": "mina-skirt-plum-1",
       "ship_cancel": "2026-08-10",
       "image": "data/preorder-img/1154.jpg"
     },
@@ -3587,27 +3608,6 @@
       "handle": null,
       "ship_cancel": "2026-08-15",
       "image": "data/preorder-img/473.jpg"
-    },
-    {
-      "airtable_id": "593",
-      "name": "YB-1023 (Khaki)",
-      "color": "Khaki",
-      "msrp": 118,
-      "status": null,
-      "type": "Dress",
-      "class": "Fashion",
-      "size_scale": "XS-XL",
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": "2026-09-10",
-      "image": "data/preorder-img/593.jpg"
     },
     {
       "airtable_id": "869",
