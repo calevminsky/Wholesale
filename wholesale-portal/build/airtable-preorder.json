@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-23T12:31:05.456Z",
+  "fetched_at": "2026-06-24T12:17:43.213Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -22,8 +22,8 @@
         "L",
         "XL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7598831829089",
+      "handle": "aimee-skirt-black-pattern",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/1191.jpg"
     },
@@ -43,8 +43,8 @@
         "L",
         "XL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7598819704929",
+      "handle": "aimee-skirt-dark-brown",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/103.jpg"
     },
@@ -109,7 +109,7 @@
       "shopify_gid": null,
       "handle": null,
       "ship_cancel": "2026-07-29",
-      "image": null
+      "image": "data/preorder-img/1095.jpg"
     },
     {
       "airtable_id": "361",
@@ -673,8 +673,8 @@
         "L",
         "XL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7598735130721",
+      "handle": "christa-skirt-black-ground",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/586.jpg"
     },
@@ -694,8 +694,8 @@
         "L",
         "XL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7598738341985",
+      "handle": "christa-skirt-brown",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/670.jpg"
     },
@@ -715,8 +715,8 @@
         "L",
         "XL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7598734475361",
+      "handle": "christa-skirt-burgundy-ground",
       "ship_cancel": "2026-06-29",
       "image": "data/preorder-img/286.jpg"
     },
@@ -1673,10 +1673,16 @@
       "type": "Top",
       "class": "Fashion",
       "size_scale": null,
-      "sizes": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-09-20",
       "image": "data/preorder-img/877.jpg"
     },
     {
