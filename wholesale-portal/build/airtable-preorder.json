@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-25T12:15:31.859Z",
+  "fetched_at": "2026-06-26T12:09:23.084Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -146,11 +146,13 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
       "shopify_gid": null,
       "handle": null,
@@ -587,14 +589,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7604775682145",
+      "handle": "carine-dress-grey",
       "ship_cancel": "2026-07-09",
       "image": "data/preorder-img/229.jpg"
     },
@@ -2397,7 +2401,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": "2026-06-29",
+      "ship_cancel": "2026-07-30",
       "image": "data/preorder-img/182.jpg"
     },
     {
