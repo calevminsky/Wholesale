@@ -18,7 +18,7 @@ const state = {
   products: [],        // current offering's products
   cart: {},            // handle -> { size_qty: {SIZE:qty}, product }
   q: "",
-  sort: "title_asc",
+  sort: "featured",
   density: "comfortable",
   shipping: "all"
 };
@@ -160,7 +160,7 @@ function visibleProducts() {
     price_desc: (a, b) => b.wholesale_price - a.wholesale_price,
     price_asc: (a, b) => a.wholesale_price - b.wholesale_price
   }[state.sort];
-  list.sort(by);
+  if (by) list.sort(by); // "featured" keeps the server (admin) order
   return list;
 }
 

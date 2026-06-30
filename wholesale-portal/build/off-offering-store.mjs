@@ -5,6 +5,9 @@
 //     removes:   [handle...]      // styles taken OUT of the frozen snapshot
 //     overrides: { "<gid>": dollars } // exact wholesale price, overriding the
 //                                     // baked off_price for that style
+//     order:     [handle...]      // admin's custom display order (the "featured"
+//                                 // order buyers see); handles not listed fall
+//                                 // to the end in snapshot (title) order
 //   }
 //
 // The product universe is the committed snapshot data/off-offering.json (the
@@ -28,7 +31,7 @@ function normOverrides(o) {
 
 export async function getOffConfig() {
   const c = (await getAdminSetting(KEY)) || {};
-  return { removes: dedupe(c.removes), overrides: normOverrides(c.overrides) };
+  return { removes: dedupe(c.removes), overrides: normOverrides(c.overrides), order: dedupe(c.order) };
 }
 
 // Partial update: a field left undefined keeps its current value.
@@ -36,7 +39,8 @@ export async function setOffConfig(patch = {}) {
   const cur = await getOffConfig();
   const next = {
     removes: patch.removes !== undefined ? dedupe(patch.removes) : cur.removes,
-    overrides: patch.overrides !== undefined ? normOverrides(patch.overrides) : cur.overrides
+    overrides: patch.overrides !== undefined ? normOverrides(patch.overrides) : cur.overrides,
+    order: patch.order !== undefined ? dedupe(patch.order) : cur.order
   };
   await setAdminSetting(KEY, next);
   return next;

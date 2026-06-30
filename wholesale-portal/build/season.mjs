@@ -139,10 +139,22 @@ function offPriceFor(p, overrides = {}) {
   return Number.isFinite(Number(p.off_price)) ? Math.round(Number(p.off_price)) : null;
 }
 
-// Buyer-facing Off Price catalog: all snapshot styles minus removes/hidden.
-export function buildOffCatalog({ master, removes = [], hidden = new Set(), overrides = {} }) {
+// Order a product list by the admin's custom sequence; unlisted handles keep
+// their incoming (snapshot/title) order at the end.
+export function applyOrder(list, order = []) {
+  if (!order.length) return list;
+  const idx = new Map(order.map((h, i) => [h, i]));
+  return list
+    .map((p, i) => ({ p, k: idx.has(p.handle) ? idx.get(p.handle) : order.length + i }))
+    .sort((a, b) => a.k - b.k)
+    .map((x) => x.p);
+}
+
+// Buyer-facing Off Price catalog: all snapshot styles minus removes/hidden,
+// in the admin's custom display order.
+export function buildOffCatalog({ master, removes = [], hidden = new Set(), overrides = {}, order = [] }) {
   const removeSet = new Set(removes);
-  const base = (master.products || []).filter((p) => !removeSet.has(p.handle) && !hidden.has(p.handle));
+  const base = applyOrder((master.products || []).filter((p) => !removeSet.has(p.handle) && !hidden.has(p.handle)), order);
   return base
     .map((p) => ({
       product_id: p.product_id,

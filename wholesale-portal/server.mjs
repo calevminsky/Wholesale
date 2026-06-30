@@ -22,7 +22,7 @@ import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
 import { buyerReceiptHtml, teamNotificationHtml } from "./build/email-templates.mjs";
 import { logVisit, listVisits } from "./build/visits-store.mjs";
 import { saveOrder, listOrders, getOrderCsv } from "./build/orders-store.mjs";
-import { readFullOffering, buildSeasonCatalog, buildSeasonOrder, postDraftToImporter, readOffOffering, buildOffCatalog, buildOffOrder } from "./build/season.mjs";
+import { readFullOffering, buildSeasonCatalog, buildSeasonOrder, postDraftToImporter, readOffOffering, buildOffCatalog, buildOffOrder, applyOrder } from "./build/season.mjs";
 import {
   getFullOfferingConfig, setFullOfferingConfig,
   getAccountsPricing, setAccountsPricing, resolveAccountPricing,
@@ -530,9 +530,9 @@ app.get("/api/season/catalog", requireSeasonSession, async (req, res) => {
       if (master.missing) {
         return res.status(503).json({ error: "The Off Price offering hasn't been built yet (run build-off-offering)." });
       }
-      const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
+      const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
       const hidden = await hiddenSet();
-      const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides });
+      const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides, order: cfg.order });
       return res.json({
         offering: "off",
         offer: "INSEASON",
@@ -629,9 +629,9 @@ app.get("/api/offprice/catalog", async (_req, res) => {
   try {
     const master = readOffOffering();
     if (master.missing) return res.status(503).json({ error: "The Off Price offering hasn't been built yet." });
-    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
+    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
     const hidden = await hiddenSet();
-    const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides });
+    const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides, order: cfg.order });
     res.json({
       offering: "off", offer: "INSEASON", currency: master.currency || "USD",
       size_order: master.size_order, delivery_default_days: master.delivery_default_days || 14,
@@ -648,7 +648,7 @@ app.post("/api/offprice/orders", async (req, res) => {
     const account = { name: co, slug: slugify(co), customer_id: null };
     const master = readOffOffering();
     if (master.missing) return res.status(503).json({ ok: false, error: "Off Price offering not built yet." });
-    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
+    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
     const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, master, removes: cfg.removes, overrides: cfg.overrides });
     if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
     const result = await postDraftToImporter(order);
@@ -694,19 +694,20 @@ app.get("/api/offering/off", adminAuth, async (_req, res) => {
 });
 app.post("/api/offering/off", adminAuth, async (req, res) => {
   try {
-    const saved = await setOffConfig({ removes: req.body?.removes, overrides: req.body?.overrides });
+    const saved = await setOffConfig({ removes: req.body?.removes, overrides: req.body?.overrides, order: req.body?.order });
     res.json({ ok: true, saved });
   } catch (e) { res.status(400).json({ ok: false, error: String(e.message || e) }); }
 });
 
-// Admin: the full Off Price snapshot with each style's effective price (override
-// else baked off_price) and whether it's currently in the offering.
+// Admin: the full Off Price snapshot (in the saved display order) with each
+// style's effective price and whether it's currently in the offering.
 app.get("/api/offering/off/master", adminAuth, async (_req, res) => {
   try {
     const master = readOffOffering();
-    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
+    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
     const removeSet = new Set(cfg.removes);
-    const products = (master.products || []).map((p) => ({
+    const ordered = applyOrder(master.products || [], cfg.order);
+    const products = ordered.map((p) => ({
       handle: p.handle, title: p.title, color: p.color, image: p.image, gid: p.gid, type: p.type,
       msrp: p.msrp, compare_at: p.compare_at, current_price: p.current_price,
       total_available: p.total_available,
@@ -714,7 +715,7 @@ app.get("/api/offering/off/master", adminAuth, async (_req, res) => {
       override: cfg.overrides[p.gid] ?? null,
       in_offering: !removeSet.has(p.handle)
     }));
-    res.json({ generated_at: master.generated_at || null, missing: !!master.missing, rule: master.rule || null, products, removes: cfg.removes });
+    res.json({ generated_at: master.generated_at || null, missing: !!master.missing, rule: master.rule || null, products, removes: cfg.removes, order: cfg.order });
   } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
