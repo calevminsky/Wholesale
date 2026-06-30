@@ -1,0 +1,5 @@
+
+/* ---- estimated delivery ---- */
+.deliv{font-size:11px;font-weight:600;color:var(--full);background:var(--full-soft);border:1px solid #cadace;border-radius:7px;padding:4px 8px;display:inline-block;margin:2px 0}
+.deliv.tbd{color:var(--muted);background:var(--paper);border-color:var(--line)}
+.compact .deliv{font-size:10px;padding:3px 7px}
