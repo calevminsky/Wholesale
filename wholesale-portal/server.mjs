@@ -620,6 +620,47 @@ app.post("/api/season/orders", requireSeasonSession, async (req, res) => {
   }
 });
 
+// ============================================================================
+// Off Price — PUBLIC (no login). Pricing is one global rule for everyone, so
+// there's nothing per-account to gate: buyers just enter company + email (like
+// the F26 portal) and browse/order. Orders still route to the importer as drafts.
+// ============================================================================
+app.get("/api/offprice/catalog", async (_req, res) => {
+  try {
+    const master = readOffOffering();
+    if (master.missing) return res.status(503).json({ error: "The Off Price offering hasn't been built yet." });
+    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
+    const hidden = await hiddenSet();
+    const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides });
+    res.json({
+      offering: "off", offer: "INSEASON", currency: master.currency || "USD",
+      size_order: master.size_order, delivery_default_days: master.delivery_default_days || 14,
+      generated_at: master.generated_at || null, counts: { products: products.length }, products
+    });
+  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+
+app.post("/api/offprice/orders", async (req, res) => {
+  try {
+    const { company, email, lines, notes, shipping } = req.body || {};
+    const co = String(company || "").trim();
+    if (!co) return res.status(400).json({ ok: false, error: "Please enter your company name." });
+    const account = { name: co, slug: slugify(co), customer_id: null };
+    const master = readOffOffering();
+    if (master.missing) return res.status(503).json({ ok: false, error: "Off Price offering not built yet." });
+    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
+    const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, master, removes: cfg.removes, overrides: cfg.overrides });
+    if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
+    const result = await postDraftToImporter(order);
+    if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
+    const buyerEmail = String(email || "").trim();
+    saveOrder({ ref: `${account.slug}-off-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail, units, subtotal, order })
+      .catch((e) => console.warn("offprice saveOrder failed:", e.message));
+    if (buyerEmail) logVisit(co, buyerEmail).catch(() => {}); // lead capture, same as the gate
+    res.json({ ok: true, draft_id: result.order?.id ?? null, units, subtotal, styles: order.items.length, account: account.name });
+  } catch (e) { res.status(500).json({ ok: false, error: String(e.message || e) }); }
+});
+
 // ---- admin: offering curation (adds/removes) ----
 app.get("/api/offering/full", adminAuth, async (_req, res) => {
   try { res.json(await getFullOfferingConfig()); }

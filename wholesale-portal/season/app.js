@@ -10,6 +10,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 
 const state = {
   account: null,
+  guest: null,          // { company, email } when entered via the no-login gate
   entitlements: { full: false },
   level: 50,
   offering: "full",
@@ -39,17 +40,46 @@ async function api(path, opts = {}) {
 // ---------- auth ----------
 async function boot() {
   const { json } = await api("/api/season/me");
-  if (!json.account) return showLogin();
-  applyMe(json);
-  await loadOffering(state.offering);
+  if (json.account) { applyMe(json); await loadOffering(state.offering); return; }
+  // Not signed in → default to the no-login Off Price gate (company + email).
+  showGate();
 }
 
+function showGate() {
+  $("#loginOverlay").classList.remove("show");
+  $("#gateOverlay").classList.add("show");
+  $("#gateCompany").focus();
+}
 function showLogin() {
+  $("#gateOverlay").classList.remove("show");
   $("#loginOverlay").classList.add("show");
   $("#loginEmail").focus();
 }
 
+// Enter Off Price as a guest (no account): just company + email.
+$("#gateForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const company = $("#gateCompany").value.trim();
+  const email = $("#gateEmail").value.trim();
+  $("#gateErr").textContent = "";
+  if (!company) { $("#gateErr").textContent = "Enter your company or store name."; return; }
+  if (!email || !/.+@.+\..+/.test(email)) { $("#gateErr").textContent = "Enter a valid email."; return; }
+  state.guest = { company, email };
+  state.account = { name: company };
+  state.entitlements = { full: false, off: true };
+  state.offering = "off";
+  api("/api/visit", { method: "POST", body: JSON.stringify({ company, email }) }).catch(() => {}); // lead capture
+  $("#gateOverlay").classList.remove("show");
+  $("#acctLine").innerHTML = `Browsing as <b>${esc(company)}</b> · <a id="switchLink">Sign in for Full Price</a>`;
+  $("#switchLink").onclick = showLogin;
+  renderTabs();
+  await loadOffering("off");
+});
+$("#toSignIn").onclick = showLogin;
+$("#toGuest").onclick = showGate;
+
 function applyMe(me) {
+  state.guest = null; // a real session supersedes any guest entry
   state.account = me.account;
   state.entitlements = me.entitlements || { full: false };
   state.level = me.pricing?.full_level || 50;
@@ -94,7 +124,12 @@ function renderTabs() {
 
 // ---------- catalog ----------
 async function loadOffering(offering) {
-  const { ok, status, json } = await api(`/api/season/catalog?offering=${encodeURIComponent(offering)}`);
+  // Guests use the public Off Price endpoint (no session); signed-in accounts
+  // use the per-account season catalog.
+  const url = state.guest && offering === "off"
+    ? "/api/offprice/catalog"
+    : `/api/season/catalog?offering=${encodeURIComponent(offering)}`;
+  const { ok, status, json } = await api(url);
   if (!ok) {
     state.products = [];
     render();
@@ -279,7 +314,10 @@ async function submitOrder() {
   if (!lines.length) return;
   const notes = $("#orderNotes")?.value || "";
   $("#submitBtn").disabled = true;
-  const { ok, json } = await api("/api/season/orders", { method: "POST", body: JSON.stringify({ offering: state.offering, lines, notes, shipping: state.shipping }) });
+  const req = state.guest && state.offering === "off"
+    ? api("/api/offprice/orders", { method: "POST", body: JSON.stringify({ company: state.guest.company, email: state.guest.email, lines, notes, shipping: state.shipping }) })
+    : api("/api/season/orders", { method: "POST", body: JSON.stringify({ offering: state.offering, lines, notes, shipping: state.shipping }) });
+  const { ok, json } = await req;
   $("#submitBtn").disabled = false;
   if (!ok) { toast(json.error || "Order failed — please try again."); return; }
   state.cart = {};

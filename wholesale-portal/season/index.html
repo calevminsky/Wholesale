@@ -85,7 +85,25 @@
   </div>
 </div>
 
-<!-- login gate -->
+<!-- entry gate: company + email (Off Price — no sign-in needed) -->
+<div class="overlay gate" id="gateOverlay">
+  <div class="sheet gatesheet">
+    <div class="gatebody">
+      <div class="gatelogo">Yakira Bella</div>
+      <h2>Wholesale — Off Price</h2>
+      <p>Enter your company and email to browse and order.</p>
+      <form id="gateForm">
+        <div class="field"><input id="gateCompany" type="text" autocomplete="organization" placeholder="Company / store name"></div>
+        <div class="field"><input id="gateEmail" type="email" autocomplete="email" inputmode="email" placeholder="Email address"></div>
+        <div class="gateerr" id="gateErr"></div>
+        <button class="btn primary" id="gateGo" type="submit">Enter</button>
+      </form>
+      <p style="margin-top:16px;font-size:13px;color:var(--muted)">Have a Full Price account? <a id="toSignIn" style="color:var(--accent);font-weight:600;cursor:pointer">Sign in</a></p>
+    </div>
+  </div>
+</div>
+
+<!-- login gate (Full Price accounts) -->
 <div class="overlay gate" id="loginOverlay">
   <div class="sheet gatesheet">
     <div class="gatebody">
@@ -98,6 +116,7 @@
         <div class="gateerr" id="loginErr"></div>
         <button class="btn primary" id="loginGo" type="submit">Sign in</button>
       </form>
+      <p style="margin-top:16px;font-size:13px;color:var(--muted)"><a id="toGuest" style="color:var(--accent);font-weight:600;cursor:pointer">← Browse Off Price with company + email</a></p>
     </div>
   </div>
 </div>
