@@ -1,0 +1,874 @@
+{
+  "source": "f26-offprice-pricing.html",
+  "rule": {
+    "Top": 5,
+    "Skirt": 10,
+    "Dress": 15
+  },
+  "generated_note": "Tops $5 / Skirts $10 / Dresses $15",
+  "total_selected": 103,
+  "resolved": 69,
+  "items": [
+    {
+      "id": "7492606001249",
+      "gid": "gid://shopify/Product/7492606001249",
+      "title": "Alice Dress Short Sleeve (Ivory Khaki)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "alice-dress-short-sleeve-53-ivory-khaki"
+    },
+    {
+      "id": "7481436504161",
+      "gid": "gid://shopify/Product/7481436504161",
+      "title": "Audrey Dress Long Sleeve (Blue Pattern)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "audrey-dress-long-sleeve-light-blue-pattern"
+    },
+    {
+      "id": "7481448693857",
+      "gid": "gid://shopify/Product/7481448693857",
+      "title": "Audrey Dress Short Sleeve (Kelly Green)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "audrey-dress-short-sleeve-kelly-green"
+    },
+    {
+      "id": "7441401151585",
+      "gid": "gid://shopify/Product/7441401151585",
+      "title": "Audrey Dress Short Sleeve (Peach Flower)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "audrey-dress-short-sleeve-peach-flower"
+    },
+    {
+      "id": "7492199809121",
+      "gid": "gid://shopify/Product/7492199809121",
+      "title": "Audrey Dress Short Sleeve (Royal Blue Pattern)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "audrey-dress-short-sleeve-royal-blue-pattern"
+    },
+    {
+      "id": "7195689975905",
+      "gid": "gid://shopify/Product/7195689975905",
+      "title": "Callie Skirt (Brown)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "callie-skirt-brown"
+    },
+    {
+      "id": "7492665573473",
+      "gid": "gid://shopify/Product/7492665573473",
+      "title": "Dahlia Cardigan (Light Pink)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "dahlia-cardigan-light-pink"
+    },
+    {
+      "id": "7492665540705",
+      "gid": "gid://shopify/Product/7492665540705",
+      "title": "Dahlia Cardigan (White)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "dahlia-cardigan-white"
+    },
+    {
+      "id": "7309774946401",
+      "gid": "gid://shopify/Product/7309774946401",
+      "title": "Dakota Skirt (Ivory/Peach)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "dakota-skirt-ivory-peach"
+    },
+    {
+      "id": "7295827443809",
+      "gid": "gid://shopify/Product/7295827443809",
+      "title": "Dakota Skirt (Light Purple)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "dakota-skirt-light-purple"
+    },
+    {
+      "id": "7355221868641",
+      "gid": "gid://shopify/Product/7355221868641",
+      "title": "Dakota Skirt (Pink Ground)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "dakota-skirt-pink-ground"
+    },
+    {
+      "id": "7113845997665",
+      "gid": "gid://shopify/Product/7113845997665",
+      "title": "Elite Full Zip (Black)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "elite-full-zip-black-1"
+    },
+    {
+      "id": "7348282949729",
+      "gid": "gid://shopify/Product/7348282949729",
+      "title": "Ellery Top (Ivory)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "ellery-top-ivory"
+    },
+    {
+      "id": "7110998425697",
+      "gid": "gid://shopify/Product/7110998425697",
+      "title": "Endure Half Zip (Black)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "endure-half-zip-black"
+    },
+    {
+      "id": "7110996787297",
+      "gid": "gid://shopify/Product/7110996787297",
+      "title": "Endure Half Zip (Pink)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "endure-half-zip-pink"
+    },
+    {
+      "id": "7110999179361",
+      "gid": "gid://shopify/Product/7110999179361",
+      "title": "Endure Half Zip (White)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "endure-half-zip-white"
+    },
+    {
+      "id": "7111006290017",
+      "gid": "gid://shopify/Product/7111006290017",
+      "title": "Excel Half Zip (Black)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "elite-full-zip-black"
+    },
+    {
+      "id": "7111010353249",
+      "gid": "gid://shopify/Product/7111010353249",
+      "title": "Excel Half Zip (Lavender)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "excel-half-zip-lavender"
+    },
+    {
+      "id": "7111011074145",
+      "gid": "gid://shopify/Product/7111011074145",
+      "title": "Excel Half Zip (Pink)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "excel-half-zip-pink"
+    },
+    {
+      "id": "7114890215521",
+      "gid": "gid://shopify/Product/7114890215521",
+      "title": "Excel Half Zip (White)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "excel-half-zip-white"
+    },
+    {
+      "id": "7517697933409",
+      "gid": "gid://shopify/Product/7517697933409",
+      "title": "Gabrielle Cardigan (Blue Pattern)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "gabrielle-cardigan-blue-pattern"
+    },
+    {
+      "id": "7517721559137",
+      "gid": "gid://shopify/Product/7517721559137",
+      "title": "Gabrielle Cardigan (Light Blue Ground)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "gabrielle-cardigan-blue-pattern-copy"
+    },
+    {
+      "id": "7517725786209",
+      "gid": "gid://shopify/Product/7517725786209",
+      "title": "Gabrielle Cardigan (Light Pink)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "gabrielle-cardigan-light-pink"
+    },
+    {
+      "id": "7516569632865",
+      "gid": "gid://shopify/Product/7516569632865",
+      "title": "Gabrielle Cardigan (White/Blue)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "gabrielle-cardigan-white-blue"
+    },
+    {
+      "id": "7492661968993",
+      "gid": "gid://shopify/Product/7492661968993",
+      "title": "Gianna Dress (Blue Stripe)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "gianna-dress-blue-stripe"
+    },
+    {
+      "id": "7121865637985",
+      "gid": "gid://shopify/Product/7121865637985",
+      "title": "Jess Top (Black)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "jess-top-black"
+    },
+    {
+      "id": "7121867800673",
+      "gid": "gid://shopify/Product/7121867800673",
+      "title": "Jess Top (Teal)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "jess-top-teal"
+    },
+    {
+      "id": "7334353043553",
+      "gid": "gid://shopify/Product/7334353043553",
+      "title": "Josephine Skirt (Green)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "josephine-skirt-green"
+    },
+    {
+      "id": "7336243953761",
+      "gid": "gid://shopify/Product/7336243953761",
+      "title": "Josephine Skirt (Pink)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "josephine-skirt-pink"
+    },
+    {
+      "id": "7492659413089",
+      "gid": "gid://shopify/Product/7492659413089",
+      "title": "Kalina Skirt (Beige)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "kalina-skirt-beige"
+    },
+    {
+      "id": "7492662886497",
+      "gid": "gid://shopify/Product/7492662886497",
+      "title": "Kalina Skirt (Light Blue Pattern)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "kalina-skirt-light-blue-pattern"
+    },
+    {
+      "id": "7492662853729",
+      "gid": "gid://shopify/Product/7492662853729",
+      "title": "Kalina Skirt (Lavender/Teal)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "kalina-skirt-lavender-teal"
+    },
+    {
+      "id": "7483449933921",
+      "gid": "gid://shopify/Product/7483449933921",
+      "title": "Lexi Dress (Blue/Purple)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "lexi-dress-blue-purple"
+    },
+    {
+      "id": "7483453177953",
+      "gid": "gid://shopify/Product/7483453177953",
+      "title": "Lexi Dress (Ivory Ground)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "lexi-dress-ivory-ground"
+    },
+    {
+      "id": "7355894268001",
+      "gid": "gid://shopify/Product/7355894268001",
+      "title": "Lexi Dress 53\" (Beige)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "lexi-dress-53-beige"
+    },
+    {
+      "id": "7518537056353",
+      "gid": "gid://shopify/Product/7518537056353",
+      "title": "Liana Skirt (Light Sage)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "liana-skirt-light-sage"
+    },
+    {
+      "id": "7434986946657",
+      "gid": "gid://shopify/Product/7434986946657",
+      "title": "Lisa Skirt (Pink Flower)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "lisa-skirt-pink-flower"
+    },
+    {
+      "id": "7434977542241",
+      "gid": "gid://shopify/Product/7434977542241",
+      "title": "Lisa Skirt (Teal Flower)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "lisa-skirt-teal-flower"
+    },
+    {
+      "id": "7389505880161",
+      "gid": "gid://shopify/Product/7389505880161",
+      "title": "Loni Dress 39\" (Black)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "loni-dress-black"
+    },
+    {
+      "id": "7492665344097",
+      "gid": "gid://shopify/Product/7492665344097",
+      "title": "Maison Cardigan (Blue)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "maison-cardigan-blue"
+    },
+    {
+      "id": "7441932910689",
+      "gid": "gid://shopify/Product/7441932910689",
+      "title": "Malia Top (Navy)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "malia-top-navy"
+    },
+    {
+      "id": "7441933598817",
+      "gid": "gid://shopify/Product/7441933598817",
+      "title": "Malia Top (Rust)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "malia-top-rust"
+    },
+    {
+      "id": "7441929568353",
+      "gid": "gid://shopify/Product/7441929568353",
+      "title": "Malia Skirt (Rust)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "malia-skirt-rust"
+    },
+    {
+      "id": "7442948685921",
+      "gid": "gid://shopify/Product/7442948685921",
+      "title": "Mara Dress Long Sleeve (Khaki)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "mara-dress-khaki"
+    },
+    {
+      "id": "7458050965601",
+      "gid": "gid://shopify/Product/7458050965601",
+      "title": "Mariella Dress (Black Coral)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "mariella-dress-black-coral"
+    },
+    {
+      "id": "7351922458721",
+      "gid": "gid://shopify/Product/7351922458721",
+      "title": "Marina Top (Plum)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "marina-top-plum"
+    },
+    {
+      "id": "7339820023905",
+      "gid": "gid://shopify/Product/7339820023905",
+      "title": "Mavis Dress 53\" (Multi)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "mavis-dress-53-multi"
+    },
+    {
+      "id": "7377767071841",
+      "gid": "gid://shopify/Product/7377767071841",
+      "title": "Miren Dress (Light Plum)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "miren-dress-light-plum"
+    },
+    {
+      "id": "7108227170401",
+      "gid": "gid://shopify/Product/7108227170401",
+      "title": "Momentum Top (Black)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "momentum-top-black"
+    },
+    {
+      "id": "7108229234785",
+      "gid": "gid://shopify/Product/7108229234785",
+      "title": "Momentum Top (Lavender)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "momentum-top-lavender"
+    },
+    {
+      "id": "7108223303777",
+      "gid": "gid://shopify/Product/7108223303777",
+      "title": "Momentum Top (White)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "momentum-top-white"
+    },
+    {
+      "id": "7378905497697",
+      "gid": "gid://shopify/Product/7378905497697",
+      "title": "Moss Cardigan (Navy)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "moss-cardigan-navy"
+    },
+    {
+      "id": "7378911428705",
+      "gid": "gid://shopify/Product/7378911428705",
+      "title": "Moss Cardigan (Light Pink)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "moss-cardigan-light-pink"
+    },
+    {
+      "id": "7378893930593",
+      "gid": "gid://shopify/Product/7378893930593",
+      "title": "Moss Cardigan (Rose Pink)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "moss-cardigan-rose-pink"
+    },
+    {
+      "id": "7492665114721",
+      "gid": "gid://shopify/Product/7492665114721",
+      "title": "Natalia Skirt (Blue Pattern)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "natalia-skirt-blue-pattern"
+    },
+    {
+      "id": "7403035033697",
+      "gid": "gid://shopify/Product/7403035033697",
+      "title": "Natalia Skirt (Peach/Grey)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "natalia-skirt-peach-grey"
+    },
+    {
+      "id": "7108212686945",
+      "gid": "gid://shopify/Product/7108212686945",
+      "title": "Perform Top (Black)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "perform-top-black"
+    },
+    {
+      "id": "7107870818401",
+      "gid": "gid://shopify/Product/7107870818401",
+      "title": "Perform Top (Sage)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "perform-top-sage"
+    },
+    {
+      "id": "7107869180001",
+      "gid": "gid://shopify/Product/7107869180001",
+      "title": "Propel Top (Black)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "propel-top-black"
+    },
+    {
+      "id": "7107870294113",
+      "gid": "gid://shopify/Product/7107870294113",
+      "title": "Propel Top (Sage)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "propel-top-sage"
+    },
+    {
+      "id": "7245760168033",
+      "gid": "gid://shopify/Product/7245760168033",
+      "title": "Reyna Dress (Black)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "reyna-dress-black"
+    },
+    {
+      "id": "7492660854881",
+      "gid": "gid://shopify/Product/7492660854881",
+      "title": "Rosalie Dress (Navy)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "rosalie-dress-navy"
+    },
+    {
+      "id": "7189462810721",
+      "gid": "gid://shopify/Product/7189462810721",
+      "title": "Stride Jacket (Black)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "stride-jacket-black"
+    },
+    {
+      "id": "7189462679649",
+      "gid": "gid://shopify/Product/7189462679649",
+      "title": "Stride Jacket (White)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "stride-jacket-white"
+    },
+    {
+      "id": "7457086308449",
+      "gid": "gid://shopify/Product/7457086308449",
+      "title": "Suri Skirt (Ivory)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "suri-skirt-ivory"
+    },
+    {
+      "id": "7334337544289",
+      "gid": "gid://shopify/Product/7334337544289",
+      "title": "Valentina Dress (Beige)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "valentina-dress-beige"
+    },
+    {
+      "id": "7492663935073",
+      "gid": "gid://shopify/Product/7492663935073",
+      "title": "Valentina Dress (Orange)",
+      "type": "Dress",
+      "price": 15,
+      "in_master": true,
+      "handle": "valentina-dress-orange"
+    },
+    {
+      "id": "7492662427745",
+      "gid": "gid://shopify/Product/7492662427745",
+      "title": "Zoe Cardigan (Navy)",
+      "type": "Top",
+      "price": 5,
+      "in_master": true,
+      "handle": "zoe-cardigan-navy"
+    },
+    {
+      "id": "7332895981665",
+      "gid": "gid://shopify/Product/7332895981665",
+      "title": "Tansy Skirt (Blue)",
+      "type": "Skirt",
+      "price": 10,
+      "in_master": true,
+      "handle": "tansy-skirt-blue"
+    }
+  ],
+  "dropped": [
+    {
+      "id": "7475712688225",
+      "title": "Alice Dress Short Sleeve (Navy/Teal)",
+      "type": "Dress",
+      "price": 15,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7434921050209",
+      "title": "Alice Dress Short Sleeve 53\" (Black Flower)",
+      "type": "Dress",
+      "price": 15,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7362728329313",
+      "title": "Alora Top ( Black)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7362714632289",
+      "title": "Alora Top ( Blue)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7362716336225",
+      "title": "Alora Top ( Sage)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7173134123105",
+      "title": "Atara Top (Beige)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7173135335521",
+      "title": "Atara Top (Mocha)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7481464979553",
+      "title": "Audrey Dress Short Sleeve (Teal Green)",
+      "type": "Dress",
+      "price": 15,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7195210973281",
+      "title": "Claire Top (Beige)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7195210416225",
+      "title": "Claire Top (Black)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7195208417377",
+      "title": "Claire Top (Blue)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7188471251041",
+      "title": "Claire Top (Denim)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7358740103265",
+      "title": "Daisy Top (Green)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7331319808097",
+      "title": "Dakota Skirt (Olive Green)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7357652959329",
+      "title": "Danika Cardigan (Black)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7372194873441",
+      "title": "Elan Top (Black)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7372207030369",
+      "title": "Elan Top (Blue)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7348281802849",
+      "title": "Ellery Top (Dark Rose)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7324784459873",
+      "title": "Josephine Skirt (Purple)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7417912623201",
+      "title": "Juliana Dress (Blue)",
+      "type": "Dress",
+      "price": 15,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7356678799457",
+      "title": "Kalina Skirt (Light Brown)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7466717479009",
+      "title": "Kora Skirt (Blue)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7466718462049",
+      "title": "Kora Top (Blue)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7403039555681",
+      "title": "Laurel Skirt (Navy Flower)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7457043316833",
+      "title": "Lisa Skirt (Navy/Mint)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7328418922593",
+      "title": "Lisa Skirt 36\" (Cream)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7441928749153",
+      "title": "Malia Skirt (Navy)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7287797022817",
+      "title": "Mira Skirt (Beige)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7359034589281",
+      "title": "Ray Top (Mocha)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7492666097761",
+      "title": "Rosalie Dress (Navy Pattern)",
+      "type": "Dress",
+      "price": 15,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7351426580577",
+      "title": "Sylvie Skirt (Brown Multi)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7362741469281",
+      "title": "Terra Skirt (Sage)",
+      "type": "Skirt",
+      "price": 10,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7341273153633",
+      "title": "Valentina Dress (Mocha)",
+      "type": "Dress",
+      "price": 15,
+      "reason": "not in in-season catalog"
+    },
+    {
+      "id": "7372203819105",
+      "title": "Elan Top (White)",
+      "type": "Top",
+      "price": 5,
+      "reason": "not in in-season catalog"
+    }
+  ]
+}
