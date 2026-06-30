@@ -43,6 +43,10 @@ jobs:
           # Shopify products and enrich from inventory -> data/full-offering.json.
           # Non-fatal so a hiccup here never blocks the F26 catalog publish.
           node build/build-full-offering.mjs || echo "! build-full-offering failed — keeping the existing full-offering.json"
+          # Off Price offering: refresh availability/prices for the fixed F26
+          # off-price selection (data/off-seed.json) -> data/off-offering.json.
+          # Non-fatal; the committed snapshot is used if this hiccups.
+          node build/build-off-offering.mjs || echo "! build-off-offering failed — keeping the existing off-offering.json"
       - name: Commit & push if changed
         run: |
           git config user.name "yb-resync-bot"

@@ -5,25 +5,187 @@
     "Skirt": 10,
     "Dress": 15
   },
-  "generated_note": "Tops $5 / Skirts $10 / Dresses $15",
+  "note": "Tops $5 / Skirts $10 / Dresses $15",
   "total_selected": 103,
-  "resolved": 69,
   "items": [
+    {
+      "id": "7475712688225",
+      "gid": "gid://shopify/Product/7475712688225",
+      "title": "Alice Dress Short Sleeve (Navy/Teal)",
+      "type": "Dress",
+      "off_price": 15,
+      "msrp": 138,
+      "current_price": 138,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alice-dress-short-sleeve-navyteal-dress-yakira-bella-9411674.jpg?v=1770293298",
+      "sizes_raw": {
+        "M": 5,
+        "L": 0,
+        "S": 25,
+        "XS": 26,
+        "XL": 0
+      },
+      "total_raw": 56,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7434921050209",
+      "gid": "gid://shopify/Product/7434921050209",
+      "title": "Alice Dress Short Sleeve 53\" (Black Flower)",
+      "type": "Dress",
+      "off_price": 15,
+      "msrp": 128,
+      "current_price": 79.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alice-dress-short-sleeve-53-black-flower-dress-yakira-bella-7752067.jpg?v=1769012960",
+      "sizes_raw": {
+        "M": 17,
+        "S": 34,
+        "XS": 41,
+        "XL": 1,
+        "L": 10
+      },
+      "total_raw": 103,
+      "in_master": false,
+      "handle": null
+    },
     {
       "id": "7492606001249",
       "gid": "gid://shopify/Product/7492606001249",
       "title": "Alice Dress Short Sleeve (Ivory Khaki)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 138,
+      "current_price": 59.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alice-dress-short-sleeve-ivory-khaki-dress-yakira-bella-6557641.jpg?v=1773896535",
+      "sizes_raw": {
+        "M": 15,
+        "XS": 38,
+        "XL": 0,
+        "L": 9,
+        "S": 26
+      },
+      "total_raw": 88,
       "in_master": true,
       "handle": "alice-dress-short-sleeve-53-ivory-khaki"
+    },
+    {
+      "id": "7362728329313",
+      "gid": "gid://shopify/Product/7362728329313",
+      "title": "Alora Top ( Black)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alora-top-black-top-yakira-bella-4828894.png?v=1757630144",
+      "sizes_raw": {
+        "L": 0,
+        "XS": 16,
+        "XL": 0,
+        "S": 9,
+        "M": 4
+      },
+      "total_raw": 29,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7362714632289",
+      "gid": "gid://shopify/Product/7362714632289",
+      "title": "Alora Top ( Blue)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alora-top-blue-top-yakira-bella-6336910.jpg?v=1757630144",
+      "sizes_raw": {
+        "XS": 17,
+        "S": 16,
+        "L": 0,
+        "XL": 1,
+        "M": 3
+      },
+      "total_raw": 37,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7362716336225",
+      "gid": "gid://shopify/Product/7362716336225",
+      "title": "Alora Top ( Sage)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alora-top-sage-top-yakira-bella-4728624.jpg?v=1757548249",
+      "sizes_raw": {
+        "S": 11,
+        "XL": 2,
+        "XS": 20,
+        "M": 3,
+        "L": 0
+      },
+      "total_raw": 36,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7173134123105",
+      "gid": "gid://shopify/Product/7173134123105",
+      "title": "Atara Top (Beige)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 54,
+      "current_price": 14.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-1975.jpg?v=1756227152",
+      "sizes_raw": {
+        "XL": 0,
+        "S": 3,
+        "XS": 23,
+        "L": 7,
+        "M": 0
+      },
+      "total_raw": 33,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7173135335521",
+      "gid": "gid://shopify/Product/7173135335521",
+      "title": "Atara Top (Mocha)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 54,
+      "current_price": 14.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/atara-top-mocha-top-yakira-bella-6310622.jpg?v=1756303801",
+      "sizes_raw": {
+        "S": 19,
+        "M": 3,
+        "XS": 44,
+        "L": 1,
+        "XL": 0
+      },
+      "total_raw": 67,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7481436504161",
       "gid": "gid://shopify/Product/7481436504161",
       "title": "Audrey Dress Long Sleeve (Blue Pattern)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 168,
+      "current_price": 168,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A0717.jpg?v=1771885919",
+      "sizes_raw": {
+        "S": 14,
+        "M": 10,
+        "XS": 22,
+        "XXS": 7,
+        "XL": 7,
+        "L": 5
+      },
+      "total_raw": 65,
       "in_master": true,
       "handle": "audrey-dress-long-sleeve-light-blue-pattern"
     },
@@ -32,7 +194,19 @@
       "gid": "gid://shopify/Product/7481448693857",
       "title": "Audrey Dress Short Sleeve (Kelly Green)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 148,
+      "current_price": 79.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9111.jpg?v=1772725849",
+      "sizes_raw": {
+        "M": 12,
+        "L": 6,
+        "S": 20,
+        "XS": 16,
+        "XXS": 0,
+        "XL": 7
+      },
+      "total_raw": 61,
       "in_master": true,
       "handle": "audrey-dress-short-sleeve-kelly-green"
     },
@@ -41,7 +215,19 @@
       "gid": "gid://shopify/Product/7441401151585",
       "title": "Audrey Dress Short Sleeve (Peach Flower)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 148,
+      "current_price": 79.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/audrey-dress-short-sleeve-peach-flower-dress-yakira-bella-7647055.png?v=1768266431",
+      "sizes_raw": {
+        "XL": 12,
+        "L": 17,
+        "S": 28,
+        "XXS": 5,
+        "M": 22,
+        "XS": 32
+      },
+      "total_raw": 116,
       "in_master": true,
       "handle": "audrey-dress-short-sleeve-peach-flower"
     },
@@ -50,25 +236,180 @@
       "gid": "gid://shopify/Product/7492199809121",
       "title": "Audrey Dress Short Sleeve (Royal Blue Pattern)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 168,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/audrey-dress-short-sleeve-royal-blue-pattern-dress-yakira-bella-8605273.jpg?v=1772739498",
+      "sizes_raw": {
+        "XS": 26,
+        "S": 28,
+        "M": 5,
+        "XXS": 3,
+        "XL": 2,
+        "L": 0
+      },
+      "total_raw": 64,
       "in_master": true,
       "handle": "audrey-dress-short-sleeve-royal-blue-pattern"
+    },
+    {
+      "id": "7481464979553",
+      "gid": "gid://shopify/Product/7481464979553",
+      "title": "Audrey Dress Short Sleeve (Teal Green)",
+      "type": "Dress",
+      "off_price": 15,
+      "msrp": 148,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/audrey-dress-short-sleeve-teal-green-dress-yakira-bella-4974754.jpg?v=1770873432",
+      "sizes_raw": {
+        "S": 0,
+        "XL": 8,
+        "XS": 14,
+        "M": 0,
+        "XXS": 0,
+        "L": 2
+      },
+      "total_raw": 24,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7195689975905",
       "gid": "gid://shopify/Product/7195689975905",
       "title": "Callie Skirt (Brown)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 58,
+      "current_price": 58,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/callie-skirt-brown-skirt-yakira-bella-9830918.jpg?v=1755351314",
+      "sizes_raw": {
+        "L": 0,
+        "M": 0,
+        "S": 17,
+        "XL": 1,
+        "XS": 25
+      },
+      "total_raw": 43,
       "in_master": true,
       "handle": "callie-skirt-brown"
+    },
+    {
+      "id": "7195210973281",
+      "gid": "gid://shopify/Product/7195210973281",
+      "title": "Claire Top (Beige)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 58,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/claire-top-beige-top-yakira-bella-9698219.jpg?v=1752811114",
+      "sizes_raw": {
+        "S": 18,
+        "M": 0,
+        "XS": 49,
+        "XL": 0,
+        "L": 4
+      },
+      "total_raw": 71,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7195210416225",
+      "gid": "gid://shopify/Product/7195210416225",
+      "title": "Claire Top (Black)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 58,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/claire-top-black-top-yakira-bella-5531301.jpg?v=1756303535",
+      "sizes_raw": {
+        "XL": 1,
+        "S": 40,
+        "XS": 41,
+        "M": 15,
+        "L": 1
+      },
+      "total_raw": 98,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7195208417377",
+      "gid": "gid://shopify/Product/7195208417377",
+      "title": "Claire Top (Blue)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 58,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/claire-top-blue-top-yakira-bella-4029097.jpg?v=1752916393",
+      "sizes_raw": {
+        "M": 27,
+        "L": 8,
+        "S": 51,
+        "XS": 65,
+        "XL": 0
+      },
+      "total_raw": 151,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7188471251041",
+      "gid": "gid://shopify/Product/7188471251041",
+      "title": "Claire Top (Denim)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 58,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/claire-top-denim-top-yakira-bella-5049765.jpg?v=1753266897",
+      "sizes_raw": {
+        "M": 5,
+        "XL": 1,
+        "L": 4,
+        "S": 4,
+        "XS": 11
+      },
+      "total_raw": 25,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7358740103265",
+      "gid": "gid://shopify/Product/7358740103265",
+      "title": "Daisy Top (Green)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/daisy-top-green-top-yakira-bella-3921845.jpg?v=1757463675",
+      "sizes_raw": {
+        "XS": 12,
+        "S": 6,
+        "M": 5,
+        "L": 5,
+        "XL": 5
+      },
+      "total_raw": 33,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7492665573473",
       "gid": "gid://shopify/Product/7492665573473",
       "title": "Dahlia Cardigan (Light Pink)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9988.jpg?v=1774984242",
+      "sizes_raw": {
+        "M": 10,
+        "XS": 15,
+        "XL": 8,
+        "L": 9,
+        "S": 20
+      },
+      "total_raw": 62,
       "in_master": true,
       "handle": "dahlia-cardigan-light-pink"
     },
@@ -77,7 +418,18 @@
       "gid": "gid://shopify/Product/7492665540705",
       "title": "Dahlia Cardigan (White)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9893.jpg?v=1773264002",
+      "sizes_raw": {
+        "L": 1,
+        "XL": 4,
+        "XS": 13,
+        "M": 10,
+        "S": 17
+      },
+      "total_raw": 45,
       "in_master": true,
       "handle": "dahlia-cardigan-white"
     },
@@ -86,7 +438,20 @@
       "gid": "gid://shopify/Product/7309774946401",
       "title": "Dakota Skirt (Ivory/Peach)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/dakota-skirt-ivorypeach-skirt-yakira-bella-628332.jpg?v=1748590691",
+      "sizes_raw": {
+        "XXS": 0,
+        "M": 3,
+        "XXL": 7,
+        "XS": 4,
+        "S": 2,
+        "XL": 10,
+        "L": 7
+      },
+      "total_raw": 33,
       "in_master": true,
       "handle": "dakota-skirt-ivory-peach"
     },
@@ -95,34 +460,176 @@
       "gid": "gid://shopify/Product/7295827443809",
       "title": "Dakota Skirt (Light Purple)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 88,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/dakota-skirt-light-purple-skirt-yakira-bella-442511.jpg?v=1746558796",
+      "sizes_raw": {
+        "XXS": 0,
+        "L": 0,
+        "XL": 0,
+        "M": 7,
+        "XS": 14,
+        "S": 9
+      },
+      "total_raw": 30,
       "in_master": true,
       "handle": "dakota-skirt-light-purple"
+    },
+    {
+      "id": "7331319808097",
+      "gid": "gid://shopify/Product/7331319808097",
+      "title": "Dakota Skirt (Olive Green)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 88,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/dakota-skirt-olive-green-skirt-yakira-bella-9878364.jpg?v=1755848445",
+      "sizes_raw": {
+        "XL": 2,
+        "XS": 14,
+        "M": 12,
+        "S": 4,
+        "L": 3,
+        "XXS": 2
+      },
+      "total_raw": 37,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7355221868641",
       "gid": "gid://shopify/Product/7355221868641",
       "title": "Dakota Skirt (Pink Ground)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0928.jpg?v=1755882827",
+      "sizes_raw": {
+        "XL": 0,
+        "S": 14,
+        "L": 0,
+        "M": 7,
+        "XS": 13
+      },
+      "total_raw": 34,
       "in_master": true,
       "handle": "dakota-skirt-pink-ground"
+    },
+    {
+      "id": "7357652959329",
+      "gid": "gid://shopify/Product/7357652959329",
+      "title": "Danika Cardigan (Black)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/danika-cardigan-black-top-yakira-bella-6599109.jpg?v=1757463675",
+      "sizes_raw": {
+        "XL": 0,
+        "M": 0,
+        "S": 6,
+        "XS": 16,
+        "L": 0
+      },
+      "total_raw": 22,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7372194873441",
+      "gid": "gid://shopify/Product/7372194873441",
+      "title": "Elan Top (Black)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/elan-top-black-top-yakira-bella-2978327.jpg?v=1760554404",
+      "sizes_raw": {
+        "S": 24,
+        "L": 0,
+        "XS": 26,
+        "M": 12,
+        "XL": 0
+      },
+      "total_raw": 62,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7372207030369",
+      "gid": "gid://shopify/Product/7372207030369",
+      "title": "Elan Top (Blue)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/elan-top-blue-top-yakira-bella-3688974.jpg?v=1760554407",
+      "sizes_raw": {
+        "L": 0,
+        "M": 8,
+        "XS": 29,
+        "S": 19,
+        "XL": 0
+      },
+      "total_raw": 56,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7113845997665",
       "gid": "gid://shopify/Product/7113845997665",
       "title": "Elite Full Zip (Black)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/elite-full-zip-black-top-yakira-bella-526277.jpg?v=1747364890",
+      "sizes_raw": {
+        "XL": 25,
+        "M": 34,
+        "S": 43,
+        "L": 24,
+        "XS": 40
+      },
+      "total_raw": 166,
       "in_master": true,
       "handle": "elite-full-zip-black-1"
+    },
+    {
+      "id": "7348281802849",
+      "gid": "gid://shopify/Product/7348281802849",
+      "title": "Ellery Top (Dark Rose)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 48,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0417.jpg?v=1755880471",
+      "sizes_raw": {
+        "L": 14,
+        "S": 0,
+        "M": 6
+      },
+      "total_raw": 20,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7348282949729",
       "gid": "gid://shopify/Product/7348282949729",
       "title": "Ellery Top (Ivory)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 48,
+      "current_price": 48,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/ellery-top-ivory-top-yakira-bella-6798154.jpg?v=1756302513",
+      "sizes_raw": {
+        "L": 21,
+        "M": 0,
+        "S": 0
+      },
+      "total_raw": 21,
       "in_master": true,
       "handle": "ellery-top-ivory"
     },
@@ -131,7 +638,18 @@
       "gid": "gid://shopify/Product/7110998425697",
       "title": "Endure Half Zip (Black)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/endure-half-zip-black-top-yakira-bella-337120.png?v=1748544355",
+      "sizes_raw": {
+        "S": 18,
+        "M": 12,
+        "XS": 18,
+        "XL": 12,
+        "L": 12
+      },
+      "total_raw": 72,
       "in_master": true,
       "handle": "endure-half-zip-black"
     },
@@ -140,7 +658,18 @@
       "gid": "gid://shopify/Product/7110996787297",
       "title": "Endure Half Zip (Pink)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0743.jpg?v=1747333542",
+      "sizes_raw": {
+        "XL": 14,
+        "S": 19,
+        "M": 17,
+        "XS": 18,
+        "L": 14
+      },
+      "total_raw": 82,
       "in_master": true,
       "handle": "endure-half-zip-pink"
     },
@@ -149,7 +678,18 @@
       "gid": "gid://shopify/Product/7110999179361",
       "title": "Endure Half Zip (White)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/endure-half-zip-white-top-yakira-bella-672546.jpg?v=1746848496",
+      "sizes_raw": {
+        "L": 12,
+        "M": 20,
+        "S": 21,
+        "XS": 15,
+        "XL": 12
+      },
+      "total_raw": 80,
       "in_master": true,
       "handle": "endure-half-zip-white"
     },
@@ -158,7 +698,18 @@
       "gid": "gid://shopify/Product/7111006290017",
       "title": "Excel Half Zip (Black)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 68,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0986.jpg?v=1747335423",
+      "sizes_raw": {
+        "L": 8,
+        "M": 9,
+        "XS": 13,
+        "XL": 13,
+        "S": 17
+      },
+      "total_raw": 60,
       "in_master": true,
       "handle": "elite-full-zip-black"
     },
@@ -167,7 +718,18 @@
       "gid": "gid://shopify/Product/7111010353249",
       "title": "Excel Half Zip (Lavender)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 68,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/excel-half-zip-lavender-top-yakira-bella-235836.png?v=1748544351",
+      "sizes_raw": {
+        "S": 19,
+        "XS": 16,
+        "M": 16,
+        "XL": 9,
+        "L": 12
+      },
+      "total_raw": 72,
       "in_master": true,
       "handle": "excel-half-zip-lavender"
     },
@@ -176,7 +738,18 @@
       "gid": "gid://shopify/Product/7111011074145",
       "title": "Excel Half Zip (Pink)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 68,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/excel-half-zip-pink-top-yakira-bella-470589.jpg?v=1746651946",
+      "sizes_raw": {
+        "M": 17,
+        "XS": 17,
+        "S": 21,
+        "XL": 10,
+        "L": 10
+      },
+      "total_raw": 75,
       "in_master": true,
       "handle": "excel-half-zip-pink"
     },
@@ -185,7 +758,18 @@
       "gid": "gid://shopify/Product/7114890215521",
       "title": "Excel Half Zip (White)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 68,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0593.jpg?v=1747332082",
+      "sizes_raw": {
+        "S": 16,
+        "M": 18,
+        "XS": 17,
+        "L": 13,
+        "XL": 9
+      },
+      "total_raw": 73,
       "in_master": true,
       "handle": "excel-half-zip-white"
     },
@@ -194,7 +778,18 @@
       "gid": "gid://shopify/Product/7517697933409",
       "title": "Gabrielle Cardigan (Blue Pattern)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 88,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/gabrielle-cardigan-blue-pattern-top-yakira-bella-4519052.jpg?v=1776996086",
+      "sizes_raw": {
+        "L": 8,
+        "XL": 7,
+        "M": 7,
+        "XS": 24,
+        "S": 20
+      },
+      "total_raw": 66,
       "in_master": true,
       "handle": "gabrielle-cardigan-blue-pattern"
     },
@@ -203,7 +798,18 @@
       "gid": "gid://shopify/Product/7517721559137",
       "title": "Gabrielle Cardigan (Light Blue Ground)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9548.jpg?v=1776954358",
+      "sizes_raw": {
+        "XS": 32,
+        "M": 24,
+        "XL": 7,
+        "S": 36,
+        "L": 10
+      },
+      "total_raw": 109,
       "in_master": true,
       "handle": "gabrielle-cardigan-blue-pattern-copy"
     },
@@ -212,7 +818,18 @@
       "gid": "gid://shopify/Product/7517725786209",
       "title": "Gabrielle Cardigan (Light Pink)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 88,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A4751.jpg?v=1776953710",
+      "sizes_raw": {
+        "M": 6,
+        "XL": 6,
+        "S": 7,
+        "XS": 10,
+        "L": 4
+      },
+      "total_raw": 33,
       "in_master": true,
       "handle": "gabrielle-cardigan-light-pink"
     },
@@ -221,7 +838,18 @@
       "gid": "gid://shopify/Product/7516569632865",
       "title": "Gabrielle Cardigan (White/Blue)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/gabrielle-cardigan-whiteblue-top-yakira-bella-1734253.jpg?v=1776996085",
+      "sizes_raw": {
+        "L": 15,
+        "XL": 9,
+        "S": 32,
+        "M": 20,
+        "XS": 30
+      },
+      "total_raw": 106,
       "in_master": true,
       "handle": "gabrielle-cardigan-white-blue"
     },
@@ -230,7 +858,18 @@
       "gid": "gid://shopify/Product/7492661968993",
       "title": "Gianna Dress (Blue Stripe)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 118,
+      "current_price": 118,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/gianna-dress-blue-stripe-dress-yakira-bella-5551104.jpg?v=1777404552",
+      "sizes_raw": {
+        "XS": 17,
+        "S": 23,
+        "XL": 2,
+        "M": 16,
+        "L": 5
+      },
+      "total_raw": 63,
       "in_master": true,
       "handle": "gianna-dress-blue-stripe"
     },
@@ -239,7 +878,18 @@
       "gid": "gid://shopify/Product/7121865637985",
       "title": "Jess Top (Black)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 42,
+      "current_price": 42,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0830.jpg?v=1753199723",
+      "sizes_raw": {
+        "M": 9,
+        "L": 6,
+        "S": 14,
+        "XL": 9,
+        "XS": 15
+      },
+      "total_raw": 53,
       "in_master": true,
       "handle": "jess-top-black"
     },
@@ -248,7 +898,18 @@
       "gid": "gid://shopify/Product/7121867800673",
       "title": "Jess Top (Teal)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 42,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/jess-top-teal-top-yakira-bella-986356.jpg?v=1728570334",
+      "sizes_raw": {
+        "XS": 9,
+        "S": 12,
+        "M": 10,
+        "L": 12,
+        "XL": 11
+      },
+      "total_raw": 54,
       "in_master": true,
       "handle": "jess-top-teal"
     },
@@ -257,7 +918,18 @@
       "gid": "gid://shopify/Product/7334353043553",
       "title": "Josephine Skirt (Green)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-1127.jpg?v=1752771668",
+      "sizes_raw": {
+        "M": 5,
+        "XS": 8,
+        "S": 8,
+        "XL": 2,
+        "L": 1
+      },
+      "total_raw": 24,
       "in_master": true,
       "handle": "josephine-skirt-green"
     },
@@ -266,25 +938,118 @@
       "gid": "gid://shopify/Product/7336243953761",
       "title": "Josephine Skirt (Pink)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/josephine-skirt-pink-skirt-yakira-bella-8690364.jpg?v=1770743664",
+      "sizes_raw": {
+        "L": 5,
+        "XL": 2,
+        "XS": 26,
+        "M": 11,
+        "S": 22
+      },
+      "total_raw": 66,
       "in_master": true,
       "handle": "josephine-skirt-pink"
+    },
+    {
+      "id": "7324784459873",
+      "gid": "gid://shopify/Product/7324784459873",
+      "title": "Josephine Skirt (Purple)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-2008.jpg?v=1752184301",
+      "sizes_raw": {
+        "XL": 11,
+        "M": 24,
+        "XS": 36,
+        "L": 17,
+        "S": 30
+      },
+      "total_raw": 118,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7417912623201",
+      "gid": "gid://shopify/Product/7417912623201",
+      "title": "Juliana Dress (Blue)",
+      "type": "Dress",
+      "off_price": 15,
+      "msrp": 128,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/juliana-dress-blue-dress-yakira-bella-3342859.jpg?v=1768349243",
+      "sizes_raw": {
+        "XL": 9,
+        "L": 13,
+        "XS": 32,
+        "S": 26,
+        "M": 14
+      },
+      "total_raw": 94,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7492659413089",
       "gid": "gid://shopify/Product/7492659413089",
       "title": "Kalina Skirt (Beige)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kalina-skirt-beige-skirt-yakira-bella-5067973.jpg?v=1773233475",
+      "sizes_raw": {
+        "XS": 23,
+        "XL": 7,
+        "S": 23,
+        "L": 5,
+        "M": 16
+      },
+      "total_raw": 74,
       "in_master": true,
       "handle": "kalina-skirt-beige"
+    },
+    {
+      "id": "7356678799457",
+      "gid": "gid://shopify/Product/7356678799457",
+      "title": "Kalina Skirt (Light Brown)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CaptureOne6508.jpg?v=1757449629",
+      "sizes_raw": {
+        "XL": 3,
+        "M": 10,
+        "XS": 19,
+        "S": 12,
+        "L": 3
+      },
+      "total_raw": 47,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7492662886497",
       "gid": "gid://shopify/Product/7492662886497",
       "title": "Kalina Skirt (Light Blue Pattern)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A7313.jpg?v=1773159729",
+      "sizes_raw": {
+        "L": 2,
+        "S": 19,
+        "M": 6,
+        "XS": 24,
+        "XL": 6
+      },
+      "total_raw": 57,
       "in_master": true,
       "handle": "kalina-skirt-light-blue-pattern"
     },
@@ -293,16 +1058,98 @@
       "gid": "gid://shopify/Product/7492662853729",
       "title": "Kalina Skirt (Lavender/Teal)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kalina-skirt-lavenderteal-skirt-yakira-bella-9704978.jpg?v=1773233475",
+      "sizes_raw": {
+        "XS": 34,
+        "S": 32,
+        "M": 19,
+        "L": 13,
+        "XL": 10
+      },
+      "total_raw": 108,
       "in_master": true,
       "handle": "kalina-skirt-lavender-teal"
+    },
+    {
+      "id": "7466717479009",
+      "gid": "gid://shopify/Product/7466717479009",
+      "title": "Kora Skirt (Blue)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 78,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kora-skirt-blue-skirt-yakira-bella-5487334.jpg?v=1770742041",
+      "sizes_raw": {
+        "S": 18,
+        "XS": 23,
+        "M": 15,
+        "XL": 9,
+        "L": 8
+      },
+      "total_raw": 73,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7466718462049",
+      "gid": "gid://shopify/Product/7466718462049",
+      "title": "Kora Top (Blue)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kora-top-blue-top-yakira-bella-6157378.jpg?v=1769713282",
+      "sizes_raw": {
+        "S": 19,
+        "M": 17,
+        "XL": 10,
+        "XS": 16,
+        "L": 6
+      },
+      "total_raw": 68,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7403039555681",
+      "gid": "gid://shopify/Product/7403039555681",
+      "title": "Laurel Skirt (Navy Flower)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/laurel-skirt-navy-flower-skirt-yakira-bella-6339385.jpg?v=1770743299",
+      "sizes_raw": {
+        "XL": 9,
+        "M": 9,
+        "L": 11,
+        "XS": 26,
+        "S": 22
+      },
+      "total_raw": 77,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7483449933921",
       "gid": "gid://shopify/Product/7483449933921",
       "title": "Lexi Dress (Blue/Purple)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 128,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lexi-dress-bluepurple-dress-yakira-bella-8370438.jpg?v=1770873435",
+      "sizes_raw": {
+        "XL": 0,
+        "L": 0,
+        "XS": 17,
+        "M": 1,
+        "S": 24
+      },
+      "total_raw": 42,
       "in_master": true,
       "handle": "lexi-dress-blue-purple"
     },
@@ -311,7 +1158,18 @@
       "gid": "gid://shopify/Product/7483453177953",
       "title": "Lexi Dress (Ivory Ground)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 128,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lexi-dress-ivory-ground-dress-yakira-bella-1129169.jpg?v=1770956173",
+      "sizes_raw": {
+        "S": 26,
+        "XS": 25,
+        "M": 11,
+        "L": 1,
+        "XL": 0
+      },
+      "total_raw": 63,
       "in_master": true,
       "handle": "lexi-dress-ivory-ground"
     },
@@ -320,7 +1178,18 @@
       "gid": "gid://shopify/Product/7355894268001",
       "title": "Lexi Dress 53\" (Beige)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 148,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lexi-dress-53-beige-dress-yakira-bella-3292507.jpg?v=1763399789",
+      "sizes_raw": {
+        "M": 7,
+        "XS": 15,
+        "XL": 0,
+        "L": 0,
+        "S": 12
+      },
+      "total_raw": 34,
       "in_master": true,
       "handle": "lexi-dress-53-beige"
     },
@@ -329,16 +1198,58 @@
       "gid": "gid://shopify/Product/7518537056353",
       "title": "Liana Skirt (Light Sage)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/liana-skirt-light-sage-skirt-yakira-bella-8717441.jpg?v=1777498453",
+      "sizes_raw": {
+        "M": 14,
+        "XS": 20,
+        "XL": 6,
+        "L": 5,
+        "S": 15
+      },
+      "total_raw": 60,
       "in_master": true,
       "handle": "liana-skirt-light-sage"
+    },
+    {
+      "id": "7457043316833",
+      "gid": "gid://shopify/Product/7457043316833",
+      "title": "Lisa Skirt (Navy/Mint)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lisa-skirt-navymint-skirt-yakira-bella-3700776.jpg?v=1773234013",
+      "sizes_raw": {
+        "M": 9,
+        "S": 21,
+        "XS": 24,
+        "XL": 0,
+        "L": 0
+      },
+      "total_raw": 54,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7434986946657",
       "gid": "gid://shopify/Product/7434986946657",
       "title": "Lisa Skirt (Pink Flower)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lisa-skirt-pink-flower-skirt-yakira-bella-2630728.jpg?v=1771176309",
+      "sizes_raw": {
+        "L": 12,
+        "S": 32,
+        "XL": 3,
+        "M": 21,
+        "XS": 37
+      },
+      "total_raw": 105,
       "in_master": true,
       "handle": "lisa-skirt-pink-flower"
     },
@@ -347,16 +1258,59 @@
       "gid": "gid://shopify/Product/7434977542241",
       "title": "Lisa Skirt (Teal Flower)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lisa-skirt-teal-flower-skirt-yakira-bella-6905537.jpg?v=1770742883",
+      "sizes_raw": {
+        "XS": 21,
+        "XL": 1,
+        "M": 20,
+        "L": 6,
+        "S": 26
+      },
+      "total_raw": 74,
       "in_master": true,
       "handle": "lisa-skirt-teal-flower"
+    },
+    {
+      "id": "7328418922593",
+      "gid": "gid://shopify/Product/7328418922593",
+      "title": "Lisa Skirt 36\" (Cream)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lisa-skirt-36-cream-skirt-yakira-bella-1579910.jpg?v=1752065007",
+      "sizes_raw": {
+        "M": 8,
+        "L": 9,
+        "S": 9,
+        "XXS": 0,
+        "XS": 24,
+        "XL": 3
+      },
+      "total_raw": 53,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7389505880161",
       "gid": "gid://shopify/Product/7389505880161",
       "title": "Loni Dress 39\" (Black)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 88,
+      "current_price": 88,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/loni-dress-39-black-dress-yakira-bella-2882563.jpg?v=1771619481",
+      "sizes_raw": {
+        "L": 4,
+        "XS": 0,
+        "XL": 2,
+        "M": 12,
+        "S": 11
+      },
+      "total_raw": 29,
       "in_master": true,
       "handle": "loni-dress-black"
     },
@@ -365,16 +1319,58 @@
       "gid": "gid://shopify/Product/7492665344097",
       "title": "Maison Cardigan (Blue)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/maison-cardigan-blue-top-yakira-bella-7131383.jpg?v=1773233473",
+      "sizes_raw": {
+        "XL": 5,
+        "XS": 9,
+        "M": 12,
+        "L": 5,
+        "S": 8
+      },
+      "total_raw": 39,
       "in_master": true,
       "handle": "maison-cardigan-blue"
+    },
+    {
+      "id": "7441928749153",
+      "gid": "gid://shopify/Product/7441928749153",
+      "title": "Malia Skirt (Navy)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 68,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/malia-skirt-navy-skirt-yakira-bella-8167610.jpg?v=1770742625",
+      "sizes_raw": {
+        "XS": 26,
+        "M": 6,
+        "XL": 9,
+        "L": 1,
+        "S": 23
+      },
+      "total_raw": 65,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7441932910689",
       "gid": "gid://shopify/Product/7441932910689",
       "title": "Malia Top (Navy)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 58,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/malia-top-navy-top-yakira-bella-1667284.jpg?v=1768349239",
+      "sizes_raw": {
+        "XS": 26,
+        "M": 6,
+        "XL": 11,
+        "L": 1,
+        "S": 22
+      },
+      "total_raw": 66,
       "in_master": true,
       "handle": "malia-top-navy"
     },
@@ -383,7 +1379,18 @@
       "gid": "gid://shopify/Product/7441933598817",
       "title": "Malia Top (Rust)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 58,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/malia-top-rust-top-yakira-bella-6091871.jpg?v=1768349241",
+      "sizes_raw": {
+        "XS": 22,
+        "S": 21,
+        "L": 0,
+        "M": 13,
+        "XL": 6
+      },
+      "total_raw": 62,
       "in_master": true,
       "handle": "malia-top-rust"
     },
@@ -392,7 +1399,18 @@
       "gid": "gid://shopify/Product/7441929568353",
       "title": "Malia Skirt (Rust)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 68,
+      "current_price": 29.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/malia-skirt-rust-skirt-yakira-bella-6428577.jpg?v=1770742618",
+      "sizes_raw": {
+        "S": 27,
+        "M": 14,
+        "L": 2,
+        "XL": 2,
+        "XS": 26
+      },
+      "total_raw": 71,
       "in_master": true,
       "handle": "malia-skirt-rust"
     },
@@ -401,7 +1419,18 @@
       "gid": "gid://shopify/Product/7442948685921",
       "title": "Mara Dress Long Sleeve (Khaki)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 98,
+      "current_price": 34.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/mara-dress-long-sleeve-khaki-dress-yakira-bella-8301393.jpg?v=1768432095",
+      "sizes_raw": {
+        "M": 5,
+        "L": 5,
+        "S": 3,
+        "XS": 7,
+        "XL": 5
+      },
+      "total_raw": 25,
       "in_master": true,
       "handle": "mara-dress-khaki"
     },
@@ -410,7 +1439,18 @@
       "gid": "gid://shopify/Product/7458050965601",
       "title": "Mariella Dress (Black Coral)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 148,
+      "current_price": 59.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/mariella-dress-black-coral-dress-yakira-bella-3643124.jpg?v=1770541874",
+      "sizes_raw": {
+        "S": 15,
+        "XS": 19,
+        "XL": 10,
+        "L": 2,
+        "M": 4
+      },
+      "total_raw": 50,
       "in_master": true,
       "handle": "mariella-dress-black-coral"
     },
@@ -419,7 +1459,18 @@
       "gid": "gid://shopify/Product/7351922458721",
       "title": "Marina Top (Plum)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 58,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/marina-top-plum-top-yakira-bella-1463969.jpg?v=1755931128",
+      "sizes_raw": {
+        "S": 9,
+        "XS": 13,
+        "M": 0,
+        "XL": 0,
+        "L": 0
+      },
+      "total_raw": 22,
       "in_master": true,
       "handle": "marina-top-plum"
     },
@@ -428,16 +1479,58 @@
       "gid": "gid://shopify/Product/7339820023905",
       "title": "Mavis Dress 53\" (Multi)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 98,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/mavis-dress-53-multi-dress-yakira-bella-9160041.jpg?v=1755351080",
+      "sizes_raw": {
+        "M": 14,
+        "XS": 19,
+        "S": 17,
+        "XL": 1,
+        "L": 1
+      },
+      "total_raw": 52,
       "in_master": true,
       "handle": "mavis-dress-53-multi"
+    },
+    {
+      "id": "7287797022817",
+      "gid": "gid://shopify/Product/7287797022817",
+      "title": "Mira Skirt (Beige)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 78,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0944.jpg?v=1753201657",
+      "sizes_raw": {
+        "XS": 18,
+        "XL": 6,
+        "S": 14,
+        "L": 11,
+        "M": 12
+      },
+      "total_raw": 61,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7377767071841",
       "gid": "gid://shopify/Product/7377767071841",
       "title": "Miren Dress (Light Plum)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 148,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/miren-dress-light-plum-dress-yakira-bella-4152718.jpg?v=1758896798",
+      "sizes_raw": {
+        "XS": 12,
+        "S": 16,
+        "XL": 0,
+        "M": 7,
+        "L": 4
+      },
+      "total_raw": 39,
       "in_master": true,
       "handle": "miren-dress-light-plum"
     },
@@ -446,7 +1539,18 @@
       "gid": "gid://shopify/Product/7108227170401",
       "title": "Momentum Top (Black)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 48,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/momentum-top-black-top-yakira-bella-518984.png?v=1748544355",
+      "sizes_raw": {
+        "XL": 13,
+        "S": 25,
+        "M": 19,
+        "L": 10,
+        "XS": 18
+      },
+      "total_raw": 85,
       "in_master": true,
       "handle": "momentum-top-black"
     },
@@ -455,7 +1559,18 @@
       "gid": "gid://shopify/Product/7108229234785",
       "title": "Momentum Top (Lavender)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 48,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/momentum-top-lavender-top-yakira-bella-690333.jpg?v=1746651944",
+      "sizes_raw": {
+        "L": 20,
+        "XS": 19,
+        "S": 34,
+        "M": 23,
+        "XL": 19
+      },
+      "total_raw": 115,
       "in_master": true,
       "handle": "momentum-top-lavender"
     },
@@ -464,7 +1579,18 @@
       "gid": "gid://shopify/Product/7108223303777",
       "title": "Momentum Top (White)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 48,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/momentum-top-white-top-yakira-bella-639515.jpg?v=1746848551",
+      "sizes_raw": {
+        "S": 24,
+        "L": 15,
+        "XS": 17,
+        "M": 23,
+        "XL": 16
+      },
+      "total_raw": 95,
       "in_master": true,
       "handle": "momentum-top-white"
     },
@@ -473,7 +1599,18 @@
       "gid": "gid://shopify/Product/7378905497697",
       "title": "Moss Cardigan (Navy)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 68,
+      "current_price": 68,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/moss-cardigan-navy-top-yakira-bella-5139138.jpg?v=1773234252",
+      "sizes_raw": {
+        "M": 19,
+        "S": 29,
+        "XL": 9,
+        "L": 9,
+        "XS": 31
+      },
+      "total_raw": 97,
       "in_master": true,
       "handle": "moss-cardigan-navy"
     },
@@ -482,7 +1619,18 @@
       "gid": "gid://shopify/Product/7378911428705",
       "title": "Moss Cardigan (Light Pink)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 68,
+      "current_price": 68,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/moss-cardigan-light-pink-top-yakira-bella-8599770.jpg?v=1770624916",
+      "sizes_raw": {
+        "L": 10,
+        "S": 26,
+        "XL": 12,
+        "XS": 24,
+        "M": 28
+      },
+      "total_raw": 100,
       "in_master": true,
       "handle": "moss-cardigan-light-pink"
     },
@@ -491,7 +1639,18 @@
       "gid": "gid://shopify/Product/7378893930593",
       "title": "Moss Cardigan (Rose Pink)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 68,
+      "current_price": 68,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/moss-cardigan-rose-pink-top-yakira-bella-5154333.jpg?v=1760554406",
+      "sizes_raw": {
+        "XS": 5,
+        "L": 6,
+        "XL": 0,
+        "S": 6,
+        "M": 3
+      },
+      "total_raw": 20,
       "in_master": true,
       "handle": "moss-cardigan-rose-pink"
     },
@@ -500,7 +1659,18 @@
       "gid": "gid://shopify/Product/7492665114721",
       "title": "Natalia Skirt (Blue Pattern)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/natalia-skirt-blue-pattern-skirt-yakira-bella-3350892.jpg?v=1777562062",
+      "sizes_raw": {
+        "M": 18,
+        "XL": 8,
+        "XS": 29,
+        "S": 30,
+        "L": 8
+      },
+      "total_raw": 93,
       "in_master": true,
       "handle": "natalia-skirt-blue-pattern"
     },
@@ -509,7 +1679,18 @@
       "gid": "gid://shopify/Product/7403035033697",
       "title": "Natalia Skirt (Peach/Grey)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 78,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/natalia-skirt-peachgrey-skirt-yakira-bella-5274555.jpg?v=1770753003",
+      "sizes_raw": {
+        "XL": 5,
+        "XS": 13,
+        "L": 3,
+        "S": 17,
+        "M": 4
+      },
+      "total_raw": 42,
       "in_master": true,
       "handle": "natalia-skirt-peach-grey"
     },
@@ -518,7 +1699,18 @@
       "gid": "gid://shopify/Product/7108212686945",
       "title": "Perform Top (Black)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 44,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/perform-top-black-top-yakira-bella-817525.png?v=1748544359",
+      "sizes_raw": {
+        "L": 17,
+        "S": 39,
+        "M": 26,
+        "XS": 26,
+        "XL": 20
+      },
+      "total_raw": 128,
       "in_master": true,
       "handle": "perform-top-black"
     },
@@ -527,7 +1719,18 @@
       "gid": "gid://shopify/Product/7107870818401",
       "title": "Perform Top (Sage)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 44,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0924.jpg?v=1747334851",
+      "sizes_raw": {
+        "XS": 16,
+        "L": 13,
+        "M": 18,
+        "S": 22,
+        "XL": 14
+      },
+      "total_raw": 83,
       "in_master": true,
       "handle": "perform-top-sage"
     },
@@ -536,7 +1739,18 @@
       "gid": "gid://shopify/Product/7107869180001",
       "title": "Propel Top (Black)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 44,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0392.jpg?v=1746808755",
+      "sizes_raw": {
+        "L": 13,
+        "S": 35,
+        "XS": 25,
+        "M": 21,
+        "XL": 16
+      },
+      "total_raw": 110,
       "in_master": true,
       "handle": "propel-top-black"
     },
@@ -545,16 +1759,58 @@
       "gid": "gid://shopify/Product/7107870294113",
       "title": "Propel Top (Sage)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 44,
+      "current_price": 19.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-2191.jpg?v=1746636997",
+      "sizes_raw": {
+        "XS": 12,
+        "XL": 9,
+        "L": 1,
+        "M": 7,
+        "S": 7
+      },
+      "total_raw": 36,
       "in_master": true,
       "handle": "propel-top-sage"
+    },
+    {
+      "id": "7359034589281",
+      "gid": "gid://shopify/Product/7359034589281",
+      "title": "Ray Top (Mocha)",
+      "type": "Top",
+      "off_price": 5,
+      "msrp": 38,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/ray-top-mocha-top-yakira-bella-5518357.jpg?v=1757463675",
+      "sizes_raw": {
+        "XL": 0,
+        "S": 10,
+        "L": 7,
+        "M": 7,
+        "XS": 8
+      },
+      "total_raw": 32,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7245760168033",
       "gid": "gid://shopify/Product/7245760168033",
       "title": "Reyna Dress (Black)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 98,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/reyna-dress-black-dress-yakira-bella-3073435.jpg?v=1764786441",
+      "sizes_raw": {
+        "S": 19,
+        "L": 0,
+        "XL": 2,
+        "M": 13,
+        "XS": 19
+      },
+      "total_raw": 53,
       "in_master": true,
       "handle": "reyna-dress-black"
     },
@@ -563,16 +1819,58 @@
       "gid": "gid://shopify/Product/7492660854881",
       "title": "Rosalie Dress (Navy)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 148,
+      "current_price": 59.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/rosalie-dress-navy-dress-yakira-bella-6923902.jpg?v=1773486316",
+      "sizes_raw": {
+        "M": 8,
+        "XS": 14,
+        "L": 3,
+        "S": 10,
+        "XL": 1
+      },
+      "total_raw": 36,
       "in_master": true,
       "handle": "rosalie-dress-navy"
+    },
+    {
+      "id": "7492666097761",
+      "gid": "gid://shopify/Product/7492666097761",
+      "title": "Rosalie Dress (Navy Pattern)",
+      "type": "Dress",
+      "off_price": 15,
+      "msrp": 138,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/rosalie-dress-navy-pattern-dress-yakira-bella-8138587.jpg?v=1773331803",
+      "sizes_raw": {
+        "S": 42,
+        "XL": 16,
+        "XS": 41,
+        "L": 22,
+        "M": 31
+      },
+      "total_raw": 152,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7189462810721",
       "gid": "gid://shopify/Product/7189462810721",
       "title": "Stride Jacket (Black)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 78,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0303.jpg?v=1743716723",
+      "sizes_raw": {
+        "XS": 23,
+        "XL": 12,
+        "L": 12,
+        "M": 21,
+        "S": 19
+      },
+      "total_raw": 87,
       "in_master": true,
       "handle": "stride-jacket-black"
     },
@@ -581,7 +1879,18 @@
       "gid": "gid://shopify/Product/7189462679649",
       "title": "Stride Jacket (White)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 78,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/stride-jacket-white-top-yakira-bella-1377599.jpg?v=1774976481",
+      "sizes_raw": {
+        "L": 13,
+        "XS": 18,
+        "M": 21,
+        "S": 19,
+        "XL": 11
+      },
+      "total_raw": 82,
       "in_master": true,
       "handle": "stride-jacket-white"
     },
@@ -590,25 +1899,118 @@
       "gid": "gid://shopify/Product/7457086308449",
       "title": "Suri Skirt (Ivory)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 84,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/suri-skirt-ivory-skirt-yakira-bella-5339982.jpg?v=1772058675",
+      "sizes_raw": {
+        "XL": 3,
+        "M": 9,
+        "XS": 11,
+        "S": 22,
+        "L": 7
+      },
+      "total_raw": 52,
       "in_master": true,
       "handle": "suri-skirt-ivory"
+    },
+    {
+      "id": "7351426580577",
+      "gid": "gid://shopify/Product/7351426580577",
+      "title": "Sylvie Skirt (Brown Multi)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/sylvie-skirt-brown-multi-skirt-yakira-bella-4983403.jpg?v=1756469210",
+      "sizes_raw": {
+        "S": 11,
+        "XS": 14,
+        "M": 5,
+        "XL": 5,
+        "L": 3
+      },
+      "total_raw": 38,
+      "in_master": false,
+      "handle": null
+    },
+    {
+      "id": "7362741469281",
+      "gid": "gid://shopify/Product/7362741469281",
+      "title": "Terra Skirt (Sage)",
+      "type": "Skirt",
+      "off_price": 10,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/terra-skirt-sage-skirt-yakira-bella-5258386.jpg?v=1758896798",
+      "sizes_raw": {
+        "XL": 0,
+        "XS": 18,
+        "L": 0,
+        "M": 8,
+        "S": 16
+      },
+      "total_raw": 42,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7334337544289",
       "gid": "gid://shopify/Product/7334337544289",
       "title": "Valentina Dress (Beige)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 118,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/valentina-dress-beige-dress-yakira-bella-5387253.jpg?v=1752727925",
+      "sizes_raw": {
+        "XS": 25,
+        "S": 11,
+        "L": 0,
+        "XL": 3,
+        "M": 14
+      },
+      "total_raw": 53,
       "in_master": true,
       "handle": "valentina-dress-beige"
+    },
+    {
+      "id": "7341273153633",
+      "gid": "gid://shopify/Product/7341273153633",
+      "title": "Valentina Dress (Mocha)",
+      "type": "Dress",
+      "off_price": 15,
+      "msrp": 118,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/valentina-dress-mocha-dress-yakira-bella-5938411.jpg?v=1755351070",
+      "sizes_raw": {
+        "XS": 25,
+        "XL": 1,
+        "L": 3,
+        "M": 15,
+        "S": 19
+      },
+      "total_raw": 63,
+      "in_master": false,
+      "handle": null
     },
     {
       "id": "7492663935073",
       "gid": "gid://shopify/Product/7492663935073",
       "title": "Valentina Dress (Orange)",
       "type": "Dress",
-      "price": 15,
+      "off_price": 15,
+      "msrp": 118,
+      "current_price": 49.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/valentina-dress-orange-dress-yakira-bella-6881116.jpg?v=1776299662",
+      "sizes_raw": {
+        "M": 24,
+        "L": 12,
+        "S": 25,
+        "XS": 32,
+        "XL": 13
+      },
+      "total_raw": 106,
       "in_master": true,
       "handle": "valentina-dress-orange"
     },
@@ -617,7 +2019,18 @@
       "gid": "gid://shopify/Product/7492662427745",
       "title": "Zoe Cardigan (Navy)",
       "type": "Top",
-      "price": 5,
+      "off_price": 5,
+      "msrp": 78,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/zoe-cardigan-navy-top-yakira-bella-6502893.jpg?v=1773404531",
+      "sizes_raw": {
+        "L": 9,
+        "XS": 17,
+        "XL": 10,
+        "M": 11,
+        "S": 17
+      },
+      "total_raw": 64,
       "in_master": true,
       "handle": "zoe-cardigan-navy"
     },
@@ -626,249 +2039,40 @@
       "gid": "gid://shopify/Product/7332895981665",
       "title": "Tansy Skirt (Blue)",
       "type": "Skirt",
-      "price": 10,
+      "off_price": 10,
+      "msrp": 98,
+      "current_price": 39.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/tansy-skirt-blue-skirt-yakira-bella-7979512.jpg?v=1755351090",
+      "sizes_raw": {
+        "XS": 10,
+        "L": 5,
+        "M": 4,
+        "S": 4,
+        "XL": 0
+      },
+      "total_raw": 23,
       "in_master": true,
       "handle": "tansy-skirt-blue"
-    }
-  ],
-  "dropped": [
-    {
-      "id": "7475712688225",
-      "title": "Alice Dress Short Sleeve (Navy/Teal)",
-      "type": "Dress",
-      "price": 15,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7434921050209",
-      "title": "Alice Dress Short Sleeve 53\" (Black Flower)",
-      "type": "Dress",
-      "price": 15,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7362728329313",
-      "title": "Alora Top ( Black)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7362714632289",
-      "title": "Alora Top ( Blue)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7362716336225",
-      "title": "Alora Top ( Sage)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7173134123105",
-      "title": "Atara Top (Beige)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7173135335521",
-      "title": "Atara Top (Mocha)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7481464979553",
-      "title": "Audrey Dress Short Sleeve (Teal Green)",
-      "type": "Dress",
-      "price": 15,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7195210973281",
-      "title": "Claire Top (Beige)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7195210416225",
-      "title": "Claire Top (Black)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7195208417377",
-      "title": "Claire Top (Blue)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7188471251041",
-      "title": "Claire Top (Denim)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7358740103265",
-      "title": "Daisy Top (Green)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7331319808097",
-      "title": "Dakota Skirt (Olive Green)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7357652959329",
-      "title": "Danika Cardigan (Black)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7372194873441",
-      "title": "Elan Top (Black)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7372207030369",
-      "title": "Elan Top (Blue)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7348281802849",
-      "title": "Ellery Top (Dark Rose)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7324784459873",
-      "title": "Josephine Skirt (Purple)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7417912623201",
-      "title": "Juliana Dress (Blue)",
-      "type": "Dress",
-      "price": 15,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7356678799457",
-      "title": "Kalina Skirt (Light Brown)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7466717479009",
-      "title": "Kora Skirt (Blue)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7466718462049",
-      "title": "Kora Top (Blue)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7403039555681",
-      "title": "Laurel Skirt (Navy Flower)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7457043316833",
-      "title": "Lisa Skirt (Navy/Mint)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7328418922593",
-      "title": "Lisa Skirt 36\" (Cream)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7441928749153",
-      "title": "Malia Skirt (Navy)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7287797022817",
-      "title": "Mira Skirt (Beige)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7359034589281",
-      "title": "Ray Top (Mocha)",
-      "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7492666097761",
-      "title": "Rosalie Dress (Navy Pattern)",
-      "type": "Dress",
-      "price": 15,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7351426580577",
-      "title": "Sylvie Skirt (Brown Multi)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7362741469281",
-      "title": "Terra Skirt (Sage)",
-      "type": "Skirt",
-      "price": 10,
-      "reason": "not in in-season catalog"
-    },
-    {
-      "id": "7341273153633",
-      "title": "Valentina Dress (Mocha)",
-      "type": "Dress",
-      "price": 15,
-      "reason": "not in in-season catalog"
     },
     {
       "id": "7372203819105",
+      "gid": "gid://shopify/Product/7372203819105",
       "title": "Elan Top (White)",
       "type": "Top",
-      "price": 5,
-      "reason": "not in in-season catalog"
+      "off_price": 5,
+      "msrp": 88,
+      "current_price": 24.99,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/elan-top-white-top-yakira-bella-2382380.jpg?v=1763587683",
+      "sizes_raw": {
+        "S": 10,
+        "L": 0,
+        "XS": 18,
+        "XL": 0,
+        "M": 8
+      },
+      "total_raw": 36,
+      "in_master": false,
+      "handle": null
     }
   ]
 }

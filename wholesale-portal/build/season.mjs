@@ -9,7 +9,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyPricing } from "../../src/linesheets/pricing.js";
-import { offToPricing } from "./off-pricing.mjs";
 import { SIZE_CORE, LOCATIONS } from "./orderfile.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -113,31 +112,37 @@ export function buildSeasonOrder({ account, lines, notes, shipping, level, maste
 }
 
 // ============================================================================
-// Off Price offering. Same in-season master (full-offering.json) as Full Price,
-// but products are opt-IN (only `picks` show) and pricing is ONE global rule
-// (off-pricing.mjs modes) that applies to every account — not per-account.
+// Off Price offering. Its own frozen snapshot (data/off-offering.json — the F26
+// off-price selection), NOT the in-season master. Every style is in by default
+// and carries a baked off_price (Tops $5 / Skirts $10 / Dresses $15). The admin
+// config only `removes` styles or `overrides` individual prices; pricing is the
+// same for every account.
 // ============================================================================
 
-// Price products by the global off rule. `rule` is { default:{mode,value},
-// overrides:{gid:dollars} }. Returns Map: gid -> whole-dollar price.
-export function priceOff(products, rule) {
-  const pricing = offToPricing({ default: rule?.default, overrides: rule?.overrides || {} });
-  const rows = (products || []).map((p) => ({
-    product_id: p.gid,
-    compare_at_price: p.compare_at,
-    current_price: p.current_price ?? p.msrp,
-    unit_cost: p.unit_cost
-  }));
-  const out = new Map();
-  for (const r of applyPricing(rows, pricing)) out.set(r.product_id, r.effective_price);
-  return out;
+const OFF_MASTER_PATH = path.join(__dirname, "..", "data", "off-offering.json");
+let _off = null, _offMtime = 0;
+export function readOffOffering() {
+  if (!fs.existsSync(OFF_MASTER_PATH)) return { products: [], offering: "off", missing: true };
+  const st = fs.statSync(OFF_MASTER_PATH);
+  if (!_off || st.mtimeMs !== _offMtime) {
+    _off = JSON.parse(fs.readFileSync(OFF_MASTER_PATH, "utf8"));
+    _offMtime = st.mtimeMs;
+  }
+  return _off;
 }
 
-// Buyer-facing Off Price catalog: only hand-picked products, priced by the rule.
-export function buildOffCatalog({ master, picks = [], hidden = new Set(), rule }) {
-  const pickSet = new Set(picks);
-  const base = (master.products || []).filter((p) => pickSet.has(p.handle) && !hidden.has(p.handle));
-  const priced = priceOff(base, rule);
+// Effective Off Price for a snapshot product: an admin override wins, else the
+// baked off_price.
+function offPriceFor(p, overrides = {}) {
+  const ov = overrides[p.gid];
+  if (Number.isFinite(Number(ov)) && Number(ov) > 0) return Math.round(Number(ov));
+  return Number.isFinite(Number(p.off_price)) ? Math.round(Number(p.off_price)) : null;
+}
+
+// Buyer-facing Off Price catalog: all snapshot styles minus removes/hidden.
+export function buildOffCatalog({ master, removes = [], hidden = new Set(), overrides = {} }) {
+  const removeSet = new Set(removes);
+  const base = (master.products || []).filter((p) => !removeSet.has(p.handle) && !hidden.has(p.handle));
   return base
     .map((p) => ({
       product_id: p.product_id,
@@ -153,7 +158,7 @@ export function buildOffCatalog({ master, picks = [], hidden = new Set(), rule }
       msrp: p.msrp,
       compare_at: p.compare_at,
       retail_price: p.current_price,
-      wholesale_price: priced.get(p.gid) ?? null,
+      wholesale_price: offPriceFor(p, overrides),
       list_wholesale: null,
       total_available: p.total_available,
       sizes: p.sizes
@@ -161,19 +166,18 @@ export function buildOffCatalog({ master, picks = [], hidden = new Set(), rule }
     .filter((p) => Number.isFinite(p.wholesale_price) && p.wholesale_price > 0);
 }
 
-// Server-authoritative Off Price order. Only picked handles are orderable; the
-// unit price is recomputed here from the master + rule (never trusted from the
-// client). Same importer-draft shape as buildSeasonOrder.
-export function buildOffOrder({ account, lines, notes, shipping, rule, master, picks = [] }) {
-  const pickSet = new Set(picks);
-  const byHandle = new Map((master.products || []).filter((p) => pickSet.has(p.handle)).map((p) => [p.handle, p]));
-  const priced = priceOff([...byHandle.values()], rule);
+// Server-authoritative Off Price order. Any snapshot style not removed is
+// orderable; the unit price is recomputed here (override else baked off_price),
+// never trusted from the client. Same importer-draft shape as buildSeasonOrder.
+export function buildOffOrder({ account, lines, notes, shipping, master, removes = [], overrides = {} }) {
+  const removeSet = new Set(removes);
+  const byHandle = new Map((master.products || []).filter((p) => !removeSet.has(p.handle)).map((p) => [p.handle, p]));
   const items = [];
   let units = 0, subtotal = 0;
   const skipped = [];
   for (const line of lines || []) {
     const p = byHandle.get(line?.handle);
-    const price = p ? priced.get(p.gid) : null;
+    const price = p ? offPriceFor(p, overrides) : null;
     if (!p || !Number.isFinite(price)) { if (line?.handle) skipped.push(line.handle); continue; }
     const size_qty = {};
     let any = 0;

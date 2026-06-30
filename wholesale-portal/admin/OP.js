@@ -1,6 +1,7 @@
-// In-season (Off Price) admin: one global pricing rule + a hand-picked product
-// list. All endpoints are adminAuth-gated; the browser reuses the Basic
-// credentials it used to load this page (same as FP.js).
+// In-season (Off Price) admin. The product universe is the frozen F26 snapshot
+// (data/off-offering.json) — every style is in by default. This page only lets
+// the admin remove a style or override its price. adminAuth-gated; the browser
+// reuses the Basic credentials it used to load this page.
 "use strict";
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => [...document.querySelectorAll(s)];
@@ -18,95 +19,82 @@ function flash(el, msg, ok = true) {
   setTimeout(() => { el.textContent = ""; el.className = "status"; }, 4000);
 }
 
-// Which modes use the value field, and how it's labelled.
-const VALUE_HINT = {
-  ride_current: null,                 // no value — rides the current marked-down price
-  pct_off_msrp: "% off MSRP",
-  pct_off_current: "% off current",
-  fixed: "Flat $ price"
+// Effective price for a row = pending override else baked off_price.
+const effPrice = (p) => {
+  const ov = store.overrides[p.gid];
+  return Number.isFinite(Number(ov)) && Number(ov) > 0 ? Math.round(Number(ov)) : p.off_price;
 };
 
-const store = { products: [], pickSet: new Set(), overrides: {}, rule: { mode: "ride_current", value: 0 }, modes: [], onlyIn: false };
+const store = { products: [], removeSet: new Set(), overrides: {}, onlyOut: false };
 
-// ---------- load ----------
 async function loadAll() {
   const { json } = await api("/api/offering/off/master");
-  store.modes = json.modes || [];
-  store.rule = json.pricing?.default || { mode: "ride_current", value: 0 };
-  store.overrides = { ...(json.pricing?.overrides || {}) };
-  store.pickSet = new Set(json.picks || []);
-  store.products = json.products || [];
   if (json.missing) $("#missingWarn").style.display = "";
-  renderRule();
+  store.products = json.products || [];
+  store.removeSet = new Set(json.removes || []);
+  store.overrides = {};
+  for (const p of store.products) if (p.override != null) store.overrides[p.gid] = p.override;
+  renderSummary();
   renderProducts();
 }
 
-// ---------- 1. rule ----------
-function renderRule() {
-  $("#ruleMode").innerHTML = store.modes.map((m) => `<option value="${m.id}" ${m.id === store.rule.mode ? "selected" : ""}>${esc(m.label)}</option>`).join("");
-  $("#ruleValue").value = store.rule.value ?? 0;
-  syncValueField();
+function renderSummary() {
+  const inN = store.products.filter((p) => !store.removeSet.has(p.handle)).length;
+  const t = { Top: 0, Skirt: 0, Dress: 0 };
+  for (const p of store.products) if (!store.removeSet.has(p.handle) && t[p.type] != null) t[p.type]++;
+  let units = 0, val = 0;
+  for (const p of store.products) {
+    if (store.removeSet.has(p.handle)) continue;
+    const u = Number(p.total_available) || 0;
+    units += u; val += u * (effPrice(p) || 0);
+  }
+  $("#summary").innerHTML =
+    `<span><b>${inN}</b> / ${store.products.length} styles in offering</span>` +
+    `<span><b>${t.Top}</b> tops · <b>${t.Skirt}</b> skirts · <b>${t.Dress}</b> dresses</span>` +
+    `<span><b>${units.toLocaleString()}</b> units · <b>${money(val)}</b> at off price</span>`;
 }
-function syncValueField() {
-  const mode = $("#ruleMode").value;
-  const hint = VALUE_HINT[mode];
-  $("#valueFld").style.display = hint ? "" : "none";
-  if (hint) $("#valueFld").querySelector("label").textContent = hint;
-}
-$("#ruleMode").addEventListener("change", syncValueField);
-$("#saveRule").onclick = async () => {
-  const mode = $("#ruleMode").value;
-  const value = VALUE_HINT[mode] ? (parseFloat($("#ruleValue").value) || 0) : 0;
-  const { ok, json } = await api("/api/offering/off", {
-    method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ pricing: { default: { mode, value } } })
-  });
-  if (!ok) return flash($("#ruleStatus"), json.error || "Failed.", false);
-  flash($("#ruleStatus"), "Saved. Prices below updated.");
-  await loadAll(); // refresh the previewed off prices
-};
 
-// ---------- 2. products ----------
 function renderProducts() {
   const q = ($("#prodSearch").value || "").toLowerCase();
   let list = store.products.filter((p) => `${p.title} ${p.color || ""}`.toLowerCase().includes(q));
-  if (store.onlyIn) list = list.filter((p) => store.pickSet.has(p.handle));
-  const inCount = store.products.filter((p) => store.pickSet.has(p.handle)).length;
-  $("#prodCount").textContent = `${list.length} shown · ${inCount} in offering`;
+  if (store.onlyOut) list = list.filter((p) => store.removeSet.has(p.handle));
+  $("#prodCount").textContent = `${list.length} shown`;
   $("#prodRows").innerHTML = list.map((p) => {
-    const picked = store.pickSet.has(p.handle);
-    const ovr = store.overrides[p.gid];
-    return `<tr data-h="${esc(p.handle)}" data-gid="${esc(p.gid)}">
+    const inOff = !store.removeSet.has(p.handle);
+    const ov = store.overrides[p.gid];
+    return `<tr data-h="${esc(p.handle)}" data-gid="${esc(p.gid)}" class="${inOff ? "" : "out"}">
       <td>${p.image ? `<img class="thumb" src="${esc(p.image)}">` : ""}</td>
       <td><span class="tname">${esc(p.title)}</span><div class="tcolor">${esc(p.handle)}</div></td>
+      <td><span class="tpill ${esc(p.type)}">${esc(p.type || "")}</span></td>
       <td class="num">${money(p.msrp)}</td>
-      <td class="num off-price">${money(p.off_price)}</td>
-      <td class="num"><input class="ovr" type="number" min="0" step="1" placeholder="—" value="${ovr ?? ""}"></td>
+      <td class="num"><input class="price" type="number" min="0" step="1" value="${ov != null ? ov : (p.off_price ?? "")}"></td>
       <td class="num">${p.total_available ?? "—"}</td>
-      <td><button class="btn sm toggle"><span class="pill ${picked ? "" : "out"}">${picked ? "In" : "Out"}</span></button></td>
+      <td><button class="btn sm toggle"><span class="pill ${inOff ? "" : "out"}">${inOff ? "In" : "Out"}</span></button></td>
     </tr>`;
   }).join("") || `<tr><td colspan="7" class="muted">No products.</td></tr>`;
   $$("#prodRows .toggle").forEach((b) => b.onclick = () => {
     const h = b.closest("tr").dataset.h;
-    if (store.pickSet.has(h)) store.pickSet.delete(h); else store.pickSet.add(h);
-    renderProducts();
+    if (store.removeSet.has(h)) store.removeSet.delete(h); else store.removeSet.add(h);
+    renderProducts(); renderSummary();
   });
-  $$("#prodRows .ovr").forEach((inp) => inp.oninput = () => {
-    const gid = inp.closest("tr").dataset.gid;
+  $$("#prodRows .price").forEach((inp) => inp.oninput = () => {
+    const p = store.products.find((x) => x.gid === inp.closest("tr").dataset.gid);
     const v = parseFloat(inp.value);
-    if (Number.isFinite(v) && v > 0) store.overrides[gid] = Math.round(v);
-    else delete store.overrides[gid];
+    // Store an override only when it differs from the baked off_price.
+    if (Number.isFinite(v) && v > 0 && Math.round(v) !== p.off_price) store.overrides[p.gid] = Math.round(v);
+    else delete store.overrides[p.gid];
+    renderSummary();
   });
 }
 $("#prodSearch").addEventListener("input", renderProducts);
-$("#onlyInBtn").onclick = () => { store.onlyIn = !store.onlyIn; $("#onlyInBtn").classList.toggle("primary", store.onlyIn); renderProducts(); };
-$("#saveProducts").onclick = async () => {
+$("#onlyOutBtn").onclick = () => { store.onlyOut = !store.onlyOut; $("#onlyOutBtn").classList.toggle("on", store.onlyOut); renderProducts(); };
+$("#saveBtn").onclick = async () => {
   const { ok, json } = await api("/api/offering/off", {
     method: "POST", headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ picks: [...store.pickSet], overrides: store.overrides })
+    body: JSON.stringify({ removes: [...store.removeSet], overrides: store.overrides })
   });
-  if (!ok) return flash($("#productStatus"), json.error || "Failed.", false);
-  flash($("#productStatus"), "Saved. Live for buyers now.");
+  if (!ok) return flash($("#saveStatus"), json.error || "Failed.", false);
+  flash($("#saveStatus"), "Saved. Live for buyers now.");
   await loadAll();
 };
 

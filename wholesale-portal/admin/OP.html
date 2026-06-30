@@ -17,36 +17,37 @@ h1 .sub{display:block;font-size:11px;letter-spacing:.16em;text-transform:upperca
 .panel{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:18px 20px;margin:18px 0}
 .panel h2{font-family:Fraunces,serif;font-size:17px;margin:0 0 4px}
 .panel .hint{font-size:12.5px;color:var(--muted);margin:0 0 14px}
-.ruleRow{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
 .fld{display:flex;flex-direction:column;gap:5px}
-.fld label{font-size:11px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--muted)}
-select,input{border:1px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;font-size:14px;background:var(--card)}
-select:focus,input:focus{outline:none;border-color:var(--off)}
+input{border:1px solid var(--line);border-radius:9px;padding:9px 12px;font:inherit;font-size:14px;background:var(--card)}
+input:focus{outline:none;border-color:var(--off)}
 .btn{border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-weight:600;font-size:13px;padding:9px 16px;border-radius:999px;cursor:pointer}
 .btn:hover{border-color:var(--ink)}
 .btn.primary{background:var(--off);border-color:var(--off);color:#fff}
 .btn.primary:disabled{opacity:.5;cursor:not-allowed}
 .btn.sm{padding:6px 12px;font-size:12px}
-.btn.danger{color:var(--accent)}
-.bar{display:flex;gap:10px;align-items:center;margin-top:14px;flex-wrap:wrap}
+.btn.on{background:var(--ink);border-color:var(--ink);color:#fff}
 .status{font-size:13px;color:var(--muted)}
 .status.ok{color:var(--full)}.status.err{color:var(--accent)}
 .toolbar2{display:flex;gap:10px;align-items:center;margin:6px 0 12px;flex-wrap:wrap}
 .toolbar2 input[type=search]{flex:1;min-width:200px}
+.summary{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:0 0 12px}
+.summary b{color:var(--ink)}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card)}
 td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
 tr:hover td{background:var(--paper)}
+tr.out td{opacity:.5}
 .tname{font-weight:600}.tcolor{color:var(--muted);font-size:12px}
 .num{text-align:right;font-variant-numeric:tabular-nums}
-.tablewrap{max-height:56vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+.tablewrap{max-height:62vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
 .muted{color:var(--muted)}
 .thumb{width:30px;height:40px;object-fit:cover;border-radius:5px;background:var(--paper)}
+.tpill{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:999px;color:#fff}
+.tpill.Top{background:#52677A}.tpill.Skirt{background:var(--full)}.tpill.Dress{background:var(--accent)}
 .pill{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--off-soft);color:var(--off)}
 .pill.out{background:#F0EBE3;color:var(--muted)}
-.ovr{width:84px;text-align:right}
+.price{width:78px;text-align:right;font-weight:700;color:var(--off)}
 .warnbox{background:var(--amber-soft);border:1px solid #e8d4a6;color:#7a5510;border-radius:9px;padding:10px 13px;font-size:12.5px;margin:0 0 12px;display:none}
-.off-price{font-weight:700;color:var(--off)}
 </style>
 </head>
 <body>
@@ -56,34 +57,22 @@ tr:hover td{background:var(--paper)}
 </div></header>
 <div class="wrap">
 
-  <div class="warnbox" id="missingWarn">⚠ The in-season catalog hasn’t been built yet — there are no products to pick from. Run a resync first.</div>
+  <div class="warnbox" id="missingWarn">⚠ The Off Price snapshot hasn’t been built yet (<code>data/off-offering.json</code>). Run <code>build-off-offering</code>.</div>
 
-  <!-- 1. The one Off Price rule -->
-  <div class="panel">
-    <h2>Off Price rule</h2>
-    <p class="hint">One rule sets the wholesale price for every Off Price account. Pick how prices are derived, then save — the product list below updates to preview each price. You can still override individual styles with an exact price in the table.</p>
-    <div class="ruleRow">
-      <div class="fld"><label>Pricing method</label><select id="ruleMode" style="width:300px"></select></div>
-      <div class="fld" id="valueFld"><label>Value</label><input id="ruleValue" type="number" min="0" step="1" style="width:120px"></div>
-      <button class="btn primary" id="saveRule">Save rule</button>
-      <span class="status" id="ruleStatus"></span>
-    </div>
-  </div>
-
-  <!-- 2. Product picker -->
   <div class="panel">
     <h2>Off Price products</h2>
-    <p class="hint">Pick which in-season styles appear in the Off Price tab. Only styles you toggle <b>In</b> are shown to buyers. The price column previews the Off Price rule above; type a number in <b>Override</b> to set an exact wholesale price for that style. Save applies immediately — no rebuild.</p>
+    <p class="hint">This is the fixed F26 off-price selection — every style is <b>In</b> by default. Toggle a style <b>Out</b> to hide it from buyers, or edit its price (prefilled from the line sheet: Tops $5 · Skirts $10 · Dresses $15). Changes are live for buyers the moment you save — no rebuild.</p>
+    <div class="summary" id="summary"></div>
     <div class="toolbar2">
       <input id="prodSearch" type="search" placeholder="Search style or color…" autocomplete="off">
       <span class="muted" id="prodCount"></span>
-      <button class="btn sm" id="onlyInBtn">Show only “In”</button>
-      <button class="btn primary" id="saveProducts">Save products</button>
-      <span class="status" id="productStatus"></span>
+      <button class="btn sm" id="onlyOutBtn">Show only “Out”</button>
+      <button class="btn primary" id="saveBtn">Save changes</button>
+      <span class="status" id="saveStatus"></span>
     </div>
     <div class="tablewrap">
       <table>
-        <thead><tr><th></th><th>Style</th><th class="num">MSRP</th><th class="num">Off price</th><th class="num">Override $</th><th class="num">Avail</th><th>In offering</th></tr></thead>
+        <thead><tr><th></th><th>Style</th><th>Type</th><th class="num">MSRP</th><th class="num">Off price $</th><th class="num">Avail</th><th>In offering</th></tr></thead>
         <tbody id="prodRows"></tbody>
       </table>
     </div>

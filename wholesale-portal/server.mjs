@@ -22,7 +22,7 @@ import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
 import { buyerReceiptHtml, teamNotificationHtml } from "./build/email-templates.mjs";
 import { logVisit, listVisits } from "./build/visits-store.mjs";
 import { saveOrder, listOrders, getOrderCsv } from "./build/orders-store.mjs";
-import { readFullOffering, buildSeasonCatalog, buildSeasonOrder, postDraftToImporter, priceOff, buildOffCatalog, buildOffOrder } from "./build/season.mjs";
+import { readFullOffering, buildSeasonCatalog, buildSeasonOrder, postDraftToImporter, readOffOffering, buildOffCatalog, buildOffOrder } from "./build/season.mjs";
 import {
   getFullOfferingConfig, setFullOfferingConfig,
   getAccountsPricing, setAccountsPricing, resolveAccountPricing,
@@ -524,15 +524,15 @@ app.get("/api/season/catalog", requireSeasonSession, async (req, res) => {
     if (offering !== "full" && offering !== "off") return res.status(404).json({ error: "Unknown offering." });
     const { account, pricing } = req.season;
 
-    // ---- Off Price: one global rule, hand-picked products, every account ----
+    // ---- Off Price: frozen F26 snapshot, all-in minus admin removes ----
     if (offering === "off") {
-      const master = readFullOffering();
+      const master = readOffOffering();
       if (master.missing) {
-        return res.status(503).json({ error: "The in-season offering hasn't been built yet (run build-full-offering)." });
+        return res.status(503).json({ error: "The Off Price offering hasn't been built yet (run build-off-offering)." });
       }
-      const cfg = await getOffConfig().catch(() => ({ picks: [], pricing: { default: { mode: "ride_current", value: 0 }, overrides: {} } }));
+      const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
       const hidden = await hiddenSet();
-      const products = buildOffCatalog({ master, picks: cfg.picks, hidden, rule: cfg.pricing });
+      const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides });
       return res.json({
         offering: "off",
         offer: "INSEASON",
@@ -580,13 +580,13 @@ app.post("/api/season/orders", requireSeasonSession, async (req, res) => {
     const { offering, lines, notes, shipping } = req.body || {};
     if (offering && offering !== "full" && offering !== "off") return res.status(400).json({ ok: false, error: "Unknown offering." });
     const { account, pricing, email } = req.season;
-    const master = readFullOffering();
-    if (master.missing) return res.status(503).json({ ok: false, error: "Offering not built yet." });
 
-    // ---- Off Price order: global rule, picked products, server-authoritative ----
+    // ---- Off Price order: frozen snapshot, server-authoritative pricing ----
     if (offering === "off") {
-      const cfg = await getOffConfig().catch(() => ({ picks: [], pricing: { default: { mode: "ride_current", value: 0 }, overrides: {} } }));
-      const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, rule: cfg.pricing, master, picks: cfg.picks });
+      const offMaster = readOffOffering();
+      if (offMaster.missing) return res.status(503).json({ ok: false, error: "Off Price offering not built yet." });
+      const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
+      const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, master: offMaster, removes: cfg.removes, overrides: cfg.overrides });
       if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
       const result = await postDraftToImporter(order);
       if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
@@ -595,6 +595,8 @@ app.post("/api/season/orders", requireSeasonSession, async (req, res) => {
       return res.json({ ok: true, draft_id: result.order?.id ?? null, units, subtotal, styles: order.items.length, account: account.name });
     }
 
+    const master = readFullOffering();
+    if (master.missing) return res.status(503).json({ ok: false, error: "Offering not built yet." });
     if (!pricing.full_enabled) return res.status(403).json({ ok: false, error: "This account isn't enabled for the Full Price offering." });
 
     const { order, units, subtotal } = buildSeasonOrder({ account, lines, notes, shipping, level: pricing.full_level, master });
@@ -644,33 +646,34 @@ app.get("/api/offering/full/master", adminAuth, async (_req, res) => {
   } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
-// ---- admin: Off Price offering (one global rule + hand-picked products) ----
+// ---- admin: Off Price offering (frozen snapshot; remove or re-price styles) ----
 app.get("/api/offering/off", adminAuth, async (_req, res) => {
-  try { res.json({ ...(await getOffConfig()), modes: OFF_MODES }); }
+  try { res.json(await getOffConfig()); }
   catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 app.post("/api/offering/off", adminAuth, async (req, res) => {
   try {
-    const saved = await setOffConfig({ picks: req.body?.picks, pricing: req.body?.pricing, overrides: req.body?.overrides });
+    const saved = await setOffConfig({ removes: req.body?.removes, overrides: req.body?.overrides });
     res.json({ ok: true, saved });
   } catch (e) { res.status(400).json({ ok: false, error: String(e.message || e) }); }
 });
 
-// Admin: the in-season universe with each product's off-price previewed at the
-// current rule (+ any override), so the picker can show what buyers would pay.
+// Admin: the full Off Price snapshot with each style's effective price (override
+// else baked off_price) and whether it's currently in the offering.
 app.get("/api/offering/off/master", adminAuth, async (_req, res) => {
   try {
-    const master = readFullOffering();
-    const cfg = await getOffConfig().catch(() => ({ picks: [], pricing: { default: { mode: "ride_current", value: 0 }, overrides: {} } }));
-    const priced = priceOff(master.products || [], cfg.pricing);
+    const master = readOffOffering();
+    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
+    const removeSet = new Set(cfg.removes);
     const products = (master.products || []).map((p) => ({
-      handle: p.handle, title: p.title, color: p.color, image: p.image, gid: p.gid,
+      handle: p.handle, title: p.title, color: p.color, image: p.image, gid: p.gid, type: p.type,
       msrp: p.msrp, compare_at: p.compare_at, current_price: p.current_price,
       total_available: p.total_available,
-      off_price: priced.get(p.gid) ?? null,
-      override: cfg.pricing.overrides[p.gid] ?? null
+      off_price: p.off_price ?? null,
+      override: cfg.overrides[p.gid] ?? null,
+      in_offering: !removeSet.has(p.handle)
     }));
-    res.json({ generated_at: master.generated_at || null, missing: !!master.missing, products, picks: cfg.picks, pricing: cfg.pricing, modes: OFF_MODES });
+    res.json({ generated_at: master.generated_at || null, missing: !!master.missing, rule: master.rule || null, products, removes: cfg.removes });
   } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
