@@ -11,6 +11,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<
 const state = {
   account: null,
   guest: null,          // { company, email } when entered via the no-login gate
+  publicOff: false,     // browsing Off Price without a session (gate or direct link)
   entitlements: { full: false },
   level: 50,
   offering: "full",
@@ -39,10 +40,28 @@ async function api(path, opts = {}) {
 
 // ---------- auth ----------
 async function boot() {
+  const params = new URLSearchParams(location.search);
+  const directOff = location.pathname.replace(/\/+$/, "") === "/offprice" || params.has("op") || params.has("offprice");
   const { json } = await api("/api/season/me");
   if (json.account) { applyMe(json); await loadOffering(state.offering); return; }
-  // Not signed in → default to the no-login Off Price gate (company + email).
+  // Direct Off Price link → skip the gate, collect company + email at checkout.
+  if (directOff) return enterPublicOff();
+  // Otherwise default to the no-login Off Price gate (company + email up front).
   showGate();
+}
+
+function enterPublicOff() {
+  state.publicOff = true;
+  state.guest = null;
+  state.account = { name: "" };
+  state.entitlements = { full: false, off: true };
+  state.offering = "off";
+  $("#gateOverlay").classList.remove("show");
+  $("#loginOverlay").classList.remove("show");
+  $("#acctLine").innerHTML = `Off Price · <a id="switchLink">Have a Full Price login? Sign in</a>`;
+  $("#switchLink").onclick = showLogin;
+  renderTabs();
+  loadOffering("off");
 }
 
 function showGate() {
@@ -65,6 +84,7 @@ $("#gateForm").addEventListener("submit", async (e) => {
   if (!company) { $("#gateErr").textContent = "Enter your company or store name."; return; }
   if (!email || !/.+@.+\..+/.test(email)) { $("#gateErr").textContent = "Enter a valid email."; return; }
   state.guest = { company, email };
+  state.publicOff = true;
   state.account = { name: company };
   state.entitlements = { full: false, off: true };
   state.offering = "off";
@@ -79,7 +99,8 @@ $("#toSignIn").onclick = showLogin;
 $("#toGuest").onclick = showGate;
 
 function applyMe(me) {
-  state.guest = null; // a real session supersedes any guest entry
+  state.guest = null; // a real session supersedes any guest/public entry
+  state.publicOff = false;
   state.account = me.account;
   state.entitlements = me.entitlements || { full: false };
   state.level = me.pricing?.full_level || 50;
@@ -124,9 +145,9 @@ function renderTabs() {
 
 // ---------- catalog ----------
 async function loadOffering(offering) {
-  // Guests use the public Off Price endpoint (no session); signed-in accounts
-  // use the per-account season catalog.
-  const url = state.guest && offering === "off"
+  // Public Off Price (gate or direct link) uses the no-session endpoint;
+  // signed-in accounts use the per-account season catalog.
+  const url = state.publicOff && offering === "off"
     ? "/api/offprice/catalog"
     : `/api/season/catalog?offering=${encodeURIComponent(offering)}`;
   const { ok, status, json } = await api(url);
@@ -293,6 +314,9 @@ function openReview() {
         </div>`;
       }).join("")}
     </div>
+    ${state.publicOff && !(state.guest && state.guest.company) ? `
+    <div class="field"><label>Company / store name</label><input id="ckCompany" type="text" autocomplete="organization" placeholder="Your store"></div>
+    <div class="field"><label>Email</label><input id="ckEmail" type="email" autocomplete="email" placeholder="you@store.com"></div>` : ""}
     <div class="field">
       <label>Shipping</label>
       <div class="seg ship" id="shipSeg">
@@ -313,10 +337,21 @@ async function submitOrder() {
   const lines = Object.keys(state.cart).map((h) => ({ handle: h, size_qty: state.cart[h].size_qty })).filter((l) => Object.keys(l.size_qty).length);
   if (!lines.length) return;
   const notes = $("#orderNotes")?.value || "";
+  let req;
+  if (state.publicOff && state.offering === "off") {
+    // Company/email come from the gate, or are collected here on the direct link.
+    let company = state.guest?.company, email = state.guest?.email;
+    if (!company) {
+      company = ($("#ckCompany")?.value || "").trim();
+      email = ($("#ckEmail")?.value || "").trim();
+      if (!company) { toast("Please enter your company name."); $("#ckCompany")?.focus(); return; }
+      if (!email || !/.+@.+\..+/.test(email)) { toast("Please enter a valid email."); $("#ckEmail")?.focus(); return; }
+    }
+    req = api("/api/offprice/orders", { method: "POST", body: JSON.stringify({ company, email, lines, notes, shipping: state.shipping }) });
+  } else {
+    req = api("/api/season/orders", { method: "POST", body: JSON.stringify({ offering: state.offering, lines, notes, shipping: state.shipping }) });
+  }
   $("#submitBtn").disabled = true;
-  const req = state.guest && state.offering === "off"
-    ? api("/api/offprice/orders", { method: "POST", body: JSON.stringify({ company: state.guest.company, email: state.guest.email, lines, notes, shipping: state.shipping }) })
-    : api("/api/season/orders", { method: "POST", body: JSON.stringify({ offering: state.offering, lines, notes, shipping: state.shipping }) });
   const { ok, json } = await req;
   $("#submitBtn").disabled = false;
   if (!ok) { toast(json.error || "Order failed — please try again."); return; }

@@ -145,6 +145,9 @@ app.get("/admin/season", adminAuth, (_req, res) => res.redirect("/admin/FP"));
 
 // ---- in-season portal page (login-gated client-side; APIs enforce the session) ----
 app.get(["/season", "/season/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
+// Direct Off Price link — same page, but the client skips the gate and opens
+// straight into Off Price (company + email is collected at checkout instead).
+app.get(["/offprice", "/offprice/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
 
 // ---- account resolution (buyer portal) ----
 // Returns ONLY the public-facing fields for a known token (name, slug,
