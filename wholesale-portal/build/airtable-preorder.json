@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-06-29T14:01:59.866Z",
+  "fetched_at": "2026-06-30T12:06:43.548Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -1029,6 +1029,27 @@
       "image": "data/preorder-img/520.jpg"
     },
     {
+      "airtable_id": "877",
+      "name": "Dena (Blue Grey)",
+      "color": "Blue Grey",
+      "msrp": 68,
+      "status": null,
+      "type": "Top",
+      "class": "Fashion",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": "2026-09-20",
+      "image": "data/preorder-img/877.jpg"
+    },
+    {
       "airtable_id": "773",
       "name": "Elenia Skirt (Brown Plaid)",
       "color": "Brown Plaid",
@@ -1698,27 +1719,6 @@
       "handle": null,
       "ship_cancel": "2026-07-10",
       "image": "data/preorder-img/170.jpg"
-    },
-    {
-      "airtable_id": "877",
-      "name": "Jana Top (Blue Grey)",
-      "color": "Blue Grey",
-      "msrp": 68,
-      "status": null,
-      "type": "Top",
-      "class": "Fashion",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": "2026-09-20",
-      "image": "data/preorder-img/877.jpg"
     },
     {
       "airtable_id": "954",
@@ -3428,7 +3428,7 @@
       ],
       "shopify_gid": null,
       "handle": null,
-      "ship_cancel": null,
+      "ship_cancel": "2026-08-15",
       "image": "data/preorder-img/863.jpg"
     },
     {
