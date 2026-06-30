@@ -9,6 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { applyPricing } from "../../src/linesheets/pricing.js";
+import { offToPricing } from "./off-pricing.mjs";
 import { SIZE_CORE, LOCATIONS } from "./orderfile.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -106,6 +107,94 @@ export function buildSeasonOrder({ account, lines, notes, shipping, level, maste
     shipping: shipping === "when_ready" ? "when_ready" : "all",
     notes: `[In-Season · Full Price · ${level}% of MSRP] [${shipLabel}]${userNotes ? " " + userNotes : ""}`,
     source_filename: `wholesale-portal/season-full/${account.slug}-${dateStr}.json`,
+    items
+  };
+  return { order, units, subtotal, skipped, dateStr };
+}
+
+// ============================================================================
+// Off Price offering. Same in-season master (full-offering.json) as Full Price,
+// but products are opt-IN (only `picks` show) and pricing is ONE global rule
+// (off-pricing.mjs modes) that applies to every account — not per-account.
+// ============================================================================
+
+// Price products by the global off rule. `rule` is { default:{mode,value},
+// overrides:{gid:dollars} }. Returns Map: gid -> whole-dollar price.
+export function priceOff(products, rule) {
+  const pricing = offToPricing({ default: rule?.default, overrides: rule?.overrides || {} });
+  const rows = (products || []).map((p) => ({
+    product_id: p.gid,
+    compare_at_price: p.compare_at,
+    current_price: p.current_price ?? p.msrp,
+    unit_cost: p.unit_cost
+  }));
+  const out = new Map();
+  for (const r of applyPricing(rows, pricing)) out.set(r.product_id, r.effective_price);
+  return out;
+}
+
+// Buyer-facing Off Price catalog: only hand-picked products, priced by the rule.
+export function buildOffCatalog({ master, picks = [], hidden = new Set(), rule }) {
+  const pickSet = new Set(picks);
+  const base = (master.products || []).filter((p) => pickSet.has(p.handle) && !hidden.has(p.handle));
+  const priced = priceOff(base, rule);
+  return base
+    .map((p) => ({
+      product_id: p.product_id,
+      gid: p.gid,
+      handle: p.handle,
+      title: p.title,
+      color: p.color,
+      type: p.type,
+      class: p.class,
+      style_name: p.style_name,
+      status: p.status,
+      image: p.image,
+      msrp: p.msrp,
+      compare_at: p.compare_at,
+      retail_price: p.current_price,
+      wholesale_price: priced.get(p.gid) ?? null,
+      list_wholesale: null,
+      total_available: p.total_available,
+      sizes: p.sizes
+    }))
+    .filter((p) => Number.isFinite(p.wholesale_price) && p.wholesale_price > 0);
+}
+
+// Server-authoritative Off Price order. Only picked handles are orderable; the
+// unit price is recomputed here from the master + rule (never trusted from the
+// client). Same importer-draft shape as buildSeasonOrder.
+export function buildOffOrder({ account, lines, notes, shipping, rule, master, picks = [] }) {
+  const pickSet = new Set(picks);
+  const byHandle = new Map((master.products || []).filter((p) => pickSet.has(p.handle)).map((p) => [p.handle, p]));
+  const priced = priceOff([...byHandle.values()], rule);
+  const items = [];
+  let units = 0, subtotal = 0;
+  const skipped = [];
+  for (const line of lines || []) {
+    const p = byHandle.get(line?.handle);
+    const price = p ? priced.get(p.gid) : null;
+    if (!p || !Number.isFinite(price)) { if (line?.handle) skipped.push(line.handle); continue; }
+    const size_qty = {};
+    let any = 0;
+    for (const k of SIZE_CORE) { const q = Math.max(0, parseInt(line.size_qty?.[k], 10) || 0); size_qty[k] = q; any += q; }
+    if (p.sizes.some((s) => s.size === "OS")) { const q = Math.max(0, parseInt(line.size_qty?.OS, 10) || 0); size_qty.OS = q; any += q; }
+    if (!any) continue;
+    items.push({ handle: p.handle, product_name: p.title, unit_price: price, size_qty, _sources: [`(season:off:${account.slug})`] });
+    units += any;
+    subtotal += any * price;
+  }
+  const dateStr = new Date().toISOString().slice(0, 10);
+  const shipLabel = shipping === "when_ready" ? "Ship when ready" : "Ship all together";
+  const userNotes = String(notes || "").trim();
+  const order = {
+    name: `In-Season Off — ${account.name} — ${dateStr}`,
+    customer_id: account.customer_id ?? null,
+    line_sheet_id: null,
+    location_ids: LOCATIONS,
+    shipping: shipping === "when_ready" ? "when_ready" : "all",
+    notes: `[In-Season · Off Price] [${shipLabel}]${userNotes ? " " + userNotes : ""}`,
+    source_filename: `wholesale-portal/season-off/${account.slug}-${dateStr}.json`,
     items
   };
   return { order, units, subtotal, skipped, dateStr };

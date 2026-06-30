@@ -83,7 +83,9 @@ $("#loginForm").addEventListener("submit", async (e) => {
 function renderTabs() {
   const tabs = [];
   if (state.entitlements.full) tabs.push({ v: "full", label: "Full Price" });
-  // Off Price tab will append here once that offering ships.
+  if (state.entitlements.off) tabs.push({ v: "off", label: "Off Price" });
+  // If the current offering isn't entitled (e.g. full disabled), fall back to the first tab.
+  if (tabs.length && !tabs.some((t) => t.v === state.offering)) state.offering = tabs[0].v;
   $("#tabBar").innerHTML = tabs.map((t) =>
     `<button class="tiertab ${t.v === state.offering ? "on" : ""}" data-v="${t.v}">${t.label}</button>`
   ).join("");
@@ -154,7 +156,7 @@ function sizeRun(p) {
 }
 
 function render() {
-  $("#offerName").textContent = state.offering === "full" ? "In-Season · Full Price" : "In-Season";
+  $("#offerName").textContent = state.offering === "full" ? "In-Season · Full Price" : state.offering === "off" ? "In-Season · Off Price" : "In-Season";
   const list = visibleProducts();
   $("#count").textContent = `${list.length} style${list.length === 1 ? "" : "s"}`;
   const grid = $("#grid");

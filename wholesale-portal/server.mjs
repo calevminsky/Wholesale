@@ -22,12 +22,13 @@ import { buildOrder, orderCSV, orderSummary } from "./build/orderfile.mjs";
 import { buyerReceiptHtml, teamNotificationHtml } from "./build/email-templates.mjs";
 import { logVisit, listVisits } from "./build/visits-store.mjs";
 import { saveOrder, listOrders, getOrderCsv } from "./build/orders-store.mjs";
-import { readFullOffering, buildSeasonCatalog, buildSeasonOrder, postDraftToImporter } from "./build/season.mjs";
+import { readFullOffering, buildSeasonCatalog, buildSeasonOrder, postDraftToImporter, priceOff, buildOffCatalog, buildOffOrder } from "./build/season.mjs";
 import {
   getFullOfferingConfig, setFullOfferingConfig,
   getAccountsPricing, setAccountsPricing, resolveAccountPricing,
   VALID_FULL_LEVELS
 } from "./build/offering-store.mjs";
+import { getOffConfig, setOffConfig } from "./build/off-offering-store.mjs";
 import {
   hashPassword, verifyPassword, signSession, verifySession, sessionConfigured, SESSION_COOKIE,
   getUserForAuth, listUsers, upsertUser, deleteUser, updateLastLogin
@@ -131,17 +132,14 @@ function adminAuth(req, res, next) {
 // ---- admin page ----
 app.get("/admin", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "index.html")));
 app.get("/admin/admin.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "admin.js")));
-// In-season admins: Full Price (/admin/FP) live; Off Price (/admin/OP) reserved.
+// In-season admins: Full Price (/admin/FP) and Off Price (/admin/OP), both live.
 app.get("/admin/FP", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "FP.html")));
 app.get("/admin/FP.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "FP.js")));
-app.get("/admin/OP", adminAuth, (_req, res) => res.send(
-  `<!doctype html><meta charset=utf-8><title>Off Price admin</title>` +
-  `<body style="font-family:Inter,system-ui,sans-serif;background:#FAF7F2;color:#211C17;max-width:640px;margin:60px auto;padding:0 22px">` +
-  `<p style="font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:#8A8178;font-weight:600">Yakira Bella · Wholesale Admin</p>` +
-  `<h1 style="font-family:Fraunces,Georgia,serif;font-weight:500">Off Price — coming soon</h1>` +
-  `<p style="color:#8A8178;line-height:1.6">The Off Price offering isn't built yet. When it is, this is where you'll curate its products and set per-account prices.</p>` +
-  `<p><a href="/admin/FP" style="color:#7C3A2E;font-weight:600">→ Full Price admin</a> &nbsp;·&nbsp; <a href="/admin" style="color:#7C3A2E;font-weight:600">F26 pre-season</a></p>`
-));
+app.get("/admin/OP", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "OP.html")));
+app.get("/admin/OP.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "OP.js")));
+// Alias: /op/admin (and its script) -> the same Off Price admin page.
+app.get("/op/admin", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "OP.html")));
+app.get("/op/admin.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "OP.js")));
 // Back-compat: the old /admin/season path now points at Full Price.
 app.get("/admin/season", adminAuth, (_req, res) => res.redirect("/admin/FP"));
 
@@ -513,17 +511,42 @@ app.get("/api/season/me", async (req, res) => {
   if (!ctx) return res.json({ account: null });
   res.json({
     account: { name: ctx.account.name, customer_id: ctx.account.customer_id, email: ctx.email },
-    entitlements: { full: ctx.pricing.full_enabled },
+    // Off Price is open to every signed-in account (one global rule, no per-account gate).
+    entitlements: { full: ctx.pricing.full_enabled, off: true },
     pricing: { full_level: ctx.pricing.full_level }
   });
 });
 
-// Buyer-facing per-account catalog for a tab. v1: offering=full only. Login required.
+// Buyer-facing per-account catalog for a tab (offering=full | off). Login required.
 app.get("/api/season/catalog", requireSeasonSession, async (req, res) => {
   try {
     const offering = String(req.query.offering || "full");
-    if (offering !== "full") return res.status(404).json({ error: "Unknown offering." });
+    if (offering !== "full" && offering !== "off") return res.status(404).json({ error: "Unknown offering." });
     const { account, pricing } = req.season;
+
+    // ---- Off Price: one global rule, hand-picked products, every account ----
+    if (offering === "off") {
+      const master = readFullOffering();
+      if (master.missing) {
+        return res.status(503).json({ error: "The in-season offering hasn't been built yet (run build-full-offering)." });
+      }
+      const cfg = await getOffConfig().catch(() => ({ picks: [], pricing: { default: { mode: "ride_current", value: 0 }, overrides: {} } }));
+      const hidden = await hiddenSet();
+      const products = buildOffCatalog({ master, picks: cfg.picks, hidden, rule: cfg.pricing });
+      return res.json({
+        offering: "off",
+        offer: "INSEASON",
+        currency: master.currency || "USD",
+        size_order: master.size_order,
+        delivery_default_days: master.delivery_default_days || 14,
+        generated_at: master.generated_at || null,
+        account: { name: account.name, slug: account.slug, customer_id: account.customer_id },
+        entitlements: { off: true },
+        counts: { products: products.length },
+        products
+      });
+    }
+
     if (!pricing.full_enabled) return res.status(403).json({ error: "This account isn't enabled for the Full Price offering." });
     const master = readFullOffering();
     if (master.missing) {
@@ -555,11 +578,24 @@ app.get("/api/season/catalog", requireSeasonSession, async (req, res) => {
 app.post("/api/season/orders", requireSeasonSession, async (req, res) => {
   try {
     const { offering, lines, notes, shipping } = req.body || {};
-    if (offering && offering !== "full") return res.status(400).json({ ok: false, error: "Unknown offering." });
+    if (offering && offering !== "full" && offering !== "off") return res.status(400).json({ ok: false, error: "Unknown offering." });
     const { account, pricing, email } = req.season;
-    if (!pricing.full_enabled) return res.status(403).json({ ok: false, error: "This account isn't enabled for the Full Price offering." });
     const master = readFullOffering();
     if (master.missing) return res.status(503).json({ ok: false, error: "Offering not built yet." });
+
+    // ---- Off Price order: global rule, picked products, server-authoritative ----
+    if (offering === "off") {
+      const cfg = await getOffConfig().catch(() => ({ picks: [], pricing: { default: { mode: "ride_current", value: 0 }, overrides: {} } }));
+      const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, rule: cfg.pricing, master, picks: cfg.picks });
+      if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
+      const result = await postDraftToImporter(order);
+      if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
+      saveOrder({ ref: `${account.slug}-off-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail: email, units, subtotal, order })
+        .catch((e) => console.warn("season(off) saveOrder failed:", e.message));
+      return res.json({ ok: true, draft_id: result.order?.id ?? null, units, subtotal, styles: order.items.length, account: account.name });
+    }
+
+    if (!pricing.full_enabled) return res.status(403).json({ ok: false, error: "This account isn't enabled for the Full Price offering." });
 
     const { order, units, subtotal } = buildSeasonOrder({ account, lines, notes, shipping, level: pricing.full_level, master });
     if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
@@ -605,6 +641,36 @@ app.get("/api/offering/full/master", adminAuth, async (_req, res) => {
       msrp: p.msrp, total_available: p.total_available
     }));
     res.json({ generated_at: master.generated_at || null, missing: !!master.missing, products, ...cfg });
+  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+
+// ---- admin: Off Price offering (one global rule + hand-picked products) ----
+app.get("/api/offering/off", adminAuth, async (_req, res) => {
+  try { res.json({ ...(await getOffConfig()), modes: OFF_MODES }); }
+  catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+app.post("/api/offering/off", adminAuth, async (req, res) => {
+  try {
+    const saved = await setOffConfig({ picks: req.body?.picks, pricing: req.body?.pricing, overrides: req.body?.overrides });
+    res.json({ ok: true, saved });
+  } catch (e) { res.status(400).json({ ok: false, error: String(e.message || e) }); }
+});
+
+// Admin: the in-season universe with each product's off-price previewed at the
+// current rule (+ any override), so the picker can show what buyers would pay.
+app.get("/api/offering/off/master", adminAuth, async (_req, res) => {
+  try {
+    const master = readFullOffering();
+    const cfg = await getOffConfig().catch(() => ({ picks: [], pricing: { default: { mode: "ride_current", value: 0 }, overrides: {} } }));
+    const priced = priceOff(master.products || [], cfg.pricing);
+    const products = (master.products || []).map((p) => ({
+      handle: p.handle, title: p.title, color: p.color, image: p.image, gid: p.gid,
+      msrp: p.msrp, compare_at: p.compare_at, current_price: p.current_price,
+      total_available: p.total_available,
+      off_price: priced.get(p.gid) ?? null,
+      override: cfg.pricing.overrides[p.gid] ?? null
+    }));
+    res.json({ generated_at: master.generated_at || null, missing: !!master.missing, products, picks: cfg.picks, pricing: cfg.pricing, modes: OFF_MODES });
   } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
