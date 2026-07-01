@@ -219,6 +219,10 @@ function sizeRun(p) {
 
 function render() {
   $("#offerName").textContent = state.offering === "full" ? "In-Season · Full Price" : state.offering === "off" ? "In-Season · Off Price" : "In-Season";
+  // Printable line sheet (PDF / Excel) — available for the Off Price offering.
+  const showDl = state.offering === "off" ? "" : "none";
+  $("#pdfBtn").style.display = showDl;
+  $("#xlsxBtn").style.display = showDl;
   const list = visibleProducts();
   $("#count").textContent = `${list.length} style${list.length === 1 ? "" : "s"}`;
   const grid = $("#grid");
@@ -384,5 +388,19 @@ $("#closeReview").onclick = closeReview;
 $("#backToBrowse").onclick = () => { closeReview(); $("#submitBtn").style.display = ""; $("#backToBrowse").textContent = "Keep shopping"; };
 $("#submitBtn").onclick = submitOrder;
 $("#clearCart").onclick = () => { state.cart = {}; render(); toast("Cart cleared"); };
+
+// ---------- printable line sheet (Off Price) ----------
+$("#pdfBtn").onclick = async () => {
+  toast("Building PDF…");
+  try {
+    const res = await fetch("/api/offprice/linesheet.pdf");
+    if (!res.ok) throw new Error();
+    const url = URL.createObjectURL(await res.blob());
+    const a = document.createElement("a");
+    a.href = url; a.download = "yakira-bella-off-price.pdf"; a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+  } catch { toast("Couldn't build the PDF — please try again."); }
+};
+$("#xlsxBtn").onclick = () => { window.location.href = "/api/offprice/linesheet.xlsx"; };
 
 boot();

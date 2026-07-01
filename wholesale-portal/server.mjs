@@ -643,6 +643,38 @@ app.get("/api/offprice/catalog", async (_req, res) => {
   } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
+// Printable Off Price line sheet — same renderers as the F26 portal, public.
+async function offCatalogForPrint() {
+  const master = readOffOffering();
+  if (master.missing) return null;
+  const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
+  const hidden = await hiddenSet();
+  const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides, order: cfg.order });
+  return { offer: "Off Price", currency: master.currency || "USD", delivery_default_days: master.delivery_default_days || 14, products };
+}
+app.get("/api/offprice/linesheet.pdf", async (_req, res) => {
+  try {
+    const cat = await offCatalogForPrint();
+    if (!cat) return res.status(503).json({ error: "Off Price offering not built yet." });
+    const pdf = await lineSheetPdf(cat, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
+    const date = new Date().toISOString().slice(0, 10);
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-off-price-${date}.pdf"`);
+    res.send(Buffer.from(pdf));
+  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+app.get("/api/offprice/linesheet.xlsx", async (_req, res) => {
+  try {
+    const cat = await offCatalogForPrint();
+    if (!cat) return res.status(503).json({ error: "Off Price offering not built yet." });
+    const buf = await lineSheetBuffer(cat, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
+    const date = new Date().toISOString().slice(0, 10);
+    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+    res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-off-price-${date}.xlsx"`);
+    res.send(Buffer.from(buf));
+  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+});
+
 app.post("/api/offprice/orders", async (req, res) => {
   try {
     const { company, email, lines, notes, shipping } = req.body || {};
