@@ -41,11 +41,17 @@ async function api(path, opts = {}) {
 // ---------- auth ----------
 async function boot() {
   const params = new URLSearchParams(location.search);
-  const directOff = location.pathname.replace(/\/+$/, "") === "/offprice" || params.has("op") || params.has("offprice");
   const { json } = await api("/api/season/me");
   if (json.account) { applyMe(json); await loadOffering(state.offering); return; }
-  // Direct Off Price link → skip the gate, collect company + email at checkout.
-  if (directOff) return enterPublicOff();
+  // Keyed no-login link: ?bypass=<key> (validated server-side, same key as the
+  // F26 portal) opens Off Price directly — company + email at checkout.
+  const bypassKey = params.get("bypass");
+  if (bypassKey) {
+    const g = await api(`/api/gate?key=${encodeURIComponent(bypassKey)}`);
+    if (g.json?.ok) return enterPublicOff();
+  }
+  // Clean-path form of the same direct entry.
+  if (location.pathname.replace(/\/+$/, "") === "/offprice" || params.has("op") || params.has("offprice")) return enterPublicOff();
   // Otherwise default to the no-login Off Price gate (company + email up front).
   showGate();
 }
