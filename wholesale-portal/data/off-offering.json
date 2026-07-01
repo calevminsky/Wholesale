@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-06-30T20:32:05.238Z",
+  "generated_at": "2026-07-01T12:32:28.410Z",
   "offering": "off",
   "offer": "INSEASON",
   "currency": "USD",
@@ -27,6 +27,7 @@
     "Dress": 15
   },
   "counts": {
+    "selected": 103,
     "products": 103
   },
   "products": [
@@ -37,8 +38,8 @@
       "title": "Alice Dress Short Sleeve (Ivory Khaki)",
       "color": "Ivory Khaki",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Alice Dress Short Sleeve",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alice-dress-short-sleeve-ivory-khaki-dress-yakira-bella-6557641.jpg?v=1773896535",
       "msrp": 138,
@@ -397,8 +398,8 @@
       "title": "Audrey Dress Long Sleeve (Blue Pattern)",
       "color": "Blue Pattern",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Audrey Dress Long Sleeve",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A0717.jpg?v=1771885919",
       "msrp": 168,
@@ -447,15 +448,15 @@
       "title": "Audrey Dress Short Sleeve (Kelly Green)",
       "color": "Kelly Green",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Audrey Dress Short Sleeve",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9111.jpg?v=1772725849",
       "msrp": 148,
       "compare_at": 148,
       "current_price": 55.99,
       "unit_cost": 28.85,
-      "total_available": 6,
+      "total_available": 7,
       "sizes": [
         {
           "size": "XXS",
@@ -465,7 +466,7 @@
         {
           "size": "XS",
           "sku": "S6-DW-093-GR000-50S-XS",
-          "available": 0
+          "available": 1
         },
         {
           "size": "S",
@@ -497,15 +498,15 @@
       "title": "Audrey Dress Short Sleeve (Peach Flower)",
       "color": "Peach Flower",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Audrey Dress Short Sleeve",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/audrey-dress-short-sleeve-peach-flower-dress-yakira-bella-7647055.png?v=1768266431",
       "msrp": 148,
       "compare_at": 148,
       "current_price": 55.99,
       "unit_cost": 28.85,
-      "total_available": 70,
+      "total_available": 68,
       "sizes": [
         {
           "size": "XXS",
@@ -515,7 +516,7 @@
         {
           "size": "XS",
           "sku": "S6-DW-093-OR874-50S-XS",
-          "available": 18
+          "available": 17
         },
         {
           "size": "S",
@@ -530,7 +531,7 @@
         {
           "size": "L",
           "sku": "S6-DW-093-OR874-50S-L",
-          "available": 16
+          "available": 15
         },
         {
           "size": "XL",
@@ -547,15 +548,15 @@
       "title": "Audrey Dress Short Sleeve (Royal Blue Pattern)",
       "color": "Royal Blue Pattern",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Audrey Dress Short Sleeve",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/audrey-dress-short-sleeve-royal-blue-pattern-dress-yakira-bella-8605273.jpg?v=1772739498",
       "msrp": 168,
       "compare_at": 168,
       "current_price": 34.99,
       "unit_cost": 28.85,
-      "total_available": 6,
+      "total_available": 4,
       "sizes": [
         {
           "size": "XXS",
@@ -565,7 +566,7 @@
         {
           "size": "XS",
           "sku": "S6-DW-093-BL996-50Q-XS",
-          "available": 6
+          "available": 4
         },
         {
           "size": "S",
@@ -647,8 +648,8 @@
       "title": "Callie Skirt (Brown)",
       "color": "Brown",
       "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Callie Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/callie-skirt-brown-skirt-yakira-bella-9830918.jpg?v=1755351314",
       "msrp": 58,
@@ -872,15 +873,15 @@
       "title": "Dahlia Cardigan (Light Pink)",
       "color": "Light Pink",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Dahlia Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9988.jpg?v=1774984242",
       "msrp": 88,
       "compare_at": 88,
       "current_price": 27.99,
       "unit_cost": 27.85,
-      "total_available": 48,
+      "total_available": 47,
       "sizes": [
         {
           "size": "XS",
@@ -890,7 +891,7 @@
         {
           "size": "S",
           "sku": "S6-TK-754-PK000-00L-S",
-          "available": 17
+          "available": 16
         },
         {
           "size": "M",
@@ -917,8 +918,8 @@
       "title": "Dahlia Cardigan (White)",
       "color": "White",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Dahlia Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9893.jpg?v=1773264002",
       "msrp": 88,
@@ -1007,15 +1008,15 @@
       "title": "Dakota Skirt (Ivory/Peach)",
       "color": "Ivory/Peach",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Dakota Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/dakota-skirt-ivorypeach-skirt-yakira-bella-628332.jpg?v=1748590691",
       "msrp": 88,
       "compare_at": 88,
       "current_price": 27.99,
       "unit_cost": 20.85,
-      "total_available": 8,
+      "total_available": 7,
       "sizes": [
         {
           "size": "XXS",
@@ -1045,7 +1046,7 @@
         {
           "size": "XL",
           "sku": "S5-SW-107-OW649-33N-XL",
-          "available": 4
+          "available": 3
         },
         {
           "size": "XXL",
@@ -1062,8 +1063,8 @@
       "title": "Dakota Skirt (Light Purple)",
       "color": "Light Purple",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Dakota Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/dakota-skirt-light-purple-skirt-yakira-bella-442511.jpg?v=1746558796",
       "msrp": 88,
@@ -1162,8 +1163,8 @@
       "title": "Dakota Skirt (Pink Ground)",
       "color": "Pink Ground",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Dakota Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0928.jpg?v=1755882827",
       "msrp": 88,
@@ -1387,8 +1388,8 @@
       "title": "Elite Full Zip (Black)",
       "color": "Black",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Elite Full Zip",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/elite-full-zip-black-top-yakira-bella-526277.jpg?v=1747364890",
       "msrp": 78,
@@ -1467,8 +1468,8 @@
       "title": "Ellery Top (Ivory)",
       "color": "Ivory",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Ellery Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/ellery-top-ivory-top-yakira-bella-6798154.jpg?v=1756302513",
       "msrp": 48,
@@ -1502,8 +1503,8 @@
       "title": "Endure Half Zip (Black)",
       "color": "Black",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Endure Half Zip",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/endure-half-zip-black-top-yakira-bella-337120.png?v=1748544355",
       "msrp": 78,
@@ -1547,8 +1548,8 @@
       "title": "Endure Half Zip (Pink)",
       "color": "Pink",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Endure Half Zip",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0743.jpg?v=1747333542",
       "msrp": 78,
@@ -1592,8 +1593,8 @@
       "title": "Endure Half Zip (White)",
       "color": "White",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Endure Half Zip",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/endure-half-zip-white-top-yakira-bella-672546.jpg?v=1746848496",
       "msrp": 78,
@@ -1637,15 +1638,15 @@
       "title": "Excel Half Zip (Black)",
       "color": "Black",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Excel Half Zip",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0986.jpg?v=1747335423",
       "msrp": 68,
       "compare_at": 68,
       "current_price": 20.99,
       "unit_cost": 27.35,
-      "total_available": 55,
+      "total_available": 54,
       "sizes": [
         {
           "size": "XS",
@@ -1660,7 +1661,7 @@
         {
           "size": "M",
           "sku": "S4-TK-126-BK000-00L-M",
-          "available": 6
+          "available": 5
         },
         {
           "size": "L",
@@ -1682,8 +1683,8 @@
       "title": "Excel Half Zip (Lavender)",
       "color": "Lavender",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Excel Half Zip",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/excel-half-zip-lavender-top-yakira-bella-235836.png?v=1748544351",
       "msrp": 68,
@@ -1727,8 +1728,8 @@
       "title": "Excel Half Zip (Pink)",
       "color": "Pink",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Excel Half Zip",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/excel-half-zip-pink-top-yakira-bella-470589.jpg?v=1746651946",
       "msrp": 68,
@@ -1772,8 +1773,8 @@
       "title": "Excel Half Zip (White)",
       "color": "White",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Excel Half Zip",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0593.jpg?v=1747332082",
       "msrp": 68,
@@ -1817,8 +1818,8 @@
       "title": "Gabrielle Cardigan (Blue Pattern)",
       "color": "Blue Pattern",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Gabrielle Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/gabrielle-cardigan-blue-pattern-top-yakira-bella-4519052.jpg?v=1776996086",
       "msrp": 88,
@@ -1862,20 +1863,20 @@
       "title": "Gabrielle Cardigan (Light Blue Ground)",
       "color": "Light Blue Ground",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Gabrielle Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9548.jpg?v=1776954358",
       "msrp": 88,
       "compare_at": 88,
       "current_price": 27.99,
       "unit_cost": 27.85,
-      "total_available": 45,
+      "total_available": 44,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-759-LB1127-00L-XS",
-          "available": 24
+          "available": 23
         },
         {
           "size": "S",
@@ -1907,15 +1908,15 @@
       "title": "Gabrielle Cardigan (Light Pink)",
       "color": "Light Pink",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Gabrielle Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A4751.jpg?v=1776953710",
       "msrp": 88,
       "compare_at": 88,
       "current_price": 61.6,
       "unit_cost": 27.85,
-      "total_available": 29,
+      "total_available": 28,
       "sizes": [
         {
           "size": "XS",
@@ -1925,7 +1926,7 @@
         {
           "size": "S",
           "sku": "S6-TK-759-LP1125-00L-S",
-          "available": 8
+          "available": 7
         },
         {
           "size": "M",
@@ -1952,15 +1953,15 @@
       "title": "Gabrielle Cardigan (White/Blue)",
       "color": "White/Blue",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Gabrielle Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/gabrielle-cardigan-whiteblue-top-yakira-bella-1734253.jpg?v=1776996085",
       "msrp": 88,
       "compare_at": 88,
       "current_price": 27.99,
       "unit_cost": 27.85,
-      "total_available": 31,
+      "total_available": 30,
       "sizes": [
         {
           "size": "XS",
@@ -1970,7 +1971,7 @@
         {
           "size": "S",
           "sku": "S6-TK-759-WH1126-00L-S",
-          "available": 10
+          "available": 9
         },
         {
           "size": "M",
@@ -1997,20 +1998,20 @@
       "title": "Gianna Dress (Blue Stripe)",
       "color": "Blue Stripe",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Gianna Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/gianna-dress-blue-stripe-dress-yakira-bella-5551104.jpg?v=1777404552",
       "msrp": 118,
       "compare_at": 118,
       "current_price": 82.6,
       "unit_cost": 27.85,
-      "total_available": 48,
+      "total_available": 47,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-690-BL1051-53L-XS",
-          "available": 14
+          "available": 13
         },
         {
           "size": "S",
@@ -2042,15 +2043,15 @@
       "title": "Jess Top (Black)",
       "color": "Black",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Jess Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0830.jpg?v=1753199723",
       "msrp": 42,
       "compare_at": 42,
       "current_price": 29.4,
       "unit_cost": 10.75,
-      "total_available": 47,
+      "total_available": 46,
       "sizes": [
         {
           "size": "XS",
@@ -2060,7 +2061,7 @@
         {
           "size": "S",
           "sku": "S4-TK-169-BK000-00L-S",
-          "available": 14
+          "available": 13
         },
         {
           "size": "M",
@@ -2087,15 +2088,15 @@
       "title": "Jess Top (Teal)",
       "color": "Teal",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Jess Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/jess-top-teal-top-yakira-bella-986356.jpg?v=1728570334",
       "msrp": 42,
       "compare_at": 42,
       "current_price": 13.99,
       "unit_cost": 10.75,
-      "total_available": 50,
+      "total_available": 45,
       "sizes": [
         {
           "size": "XS",
@@ -2110,17 +2111,17 @@
         {
           "size": "M",
           "sku": "S4-TK-169-MU000-00L-M",
-          "available": 10
+          "available": 8
         },
         {
           "size": "L",
           "sku": "S4-TK-169-MU000-00L-L",
-          "available": 11
+          "available": 9
         },
         {
           "size": "XL",
           "sku": "S4-TK-169-MU000-00L-XL",
-          "available": 11
+          "available": 10
         }
       ],
       "off_price": 5
@@ -2132,20 +2133,20 @@
       "title": "Josephine Skirt (Green)",
       "color": "Green",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Josephine Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-1127.jpg?v=1752771668",
       "msrp": 98,
       "compare_at": 98,
       "current_price": 24.99,
       "unit_cost": 24.5,
-      "total_available": 3,
+      "total_available": 2,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SW-441-GR697-36N-XS",
-          "available": 3
+          "available": 2
         },
         {
           "size": "S",
@@ -2177,8 +2178,8 @@
       "title": "Josephine Skirt (Pink)",
       "color": "Pink",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Josephine Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/josephine-skirt-pink-skirt-yakira-bella-8690364.jpg?v=1770743664",
       "msrp": 98,
@@ -2312,8 +2313,8 @@
       "title": "Kalina Skirt (Beige)",
       "color": "Beige",
       "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Kalina Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kalina-skirt-beige-skirt-yakira-bella-5067973.jpg?v=1773233475",
       "msrp": 98,
@@ -2357,15 +2358,15 @@
       "title": "Kalina Skirt (Lavender/Teal)",
       "color": "Lavender/Teal",
       "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Kalina Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kalina-skirt-lavenderteal-skirt-yakira-bella-9704978.jpg?v=1773233475",
       "msrp": 98,
       "compare_at": 98,
       "current_price": 27.99,
       "unit_cost": 24.85,
-      "total_available": 84,
+      "total_available": 83,
       "sizes": [
         {
           "size": "XS",
@@ -2390,7 +2391,7 @@
         {
           "size": "XL",
           "sku": "S6-SW-546-PL976-36N-XL",
-          "available": 8
+          "available": 7
         }
       ],
       "off_price": 10
@@ -2402,20 +2403,20 @@
       "title": "Kalina Skirt (Light Blue Pattern)",
       "color": "Light Blue Pattern",
       "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Kalina Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A7313.jpg?v=1773159729",
       "msrp": 98,
       "compare_at": 98,
       "current_price": 27.99,
       "unit_cost": 24.85,
-      "total_available": 9,
+      "total_available": 8,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-977-BL977-36N-XS",
-          "available": 9
+          "available": 8
         },
         {
           "size": "S",
@@ -2545,7 +2546,7 @@
       "compare_at": 78,
       "current_price": 27.99,
       "unit_cost": 26.85,
-      "total_available": 48,
+      "total_available": 47,
       "sizes": [
         {
           "size": "XS",
@@ -2560,7 +2561,7 @@
         {
           "size": "M",
           "sku": "S6-TK-635-BL000-00L-M",
-          "available": 12
+          "available": 11
         },
         {
           "size": "L",
@@ -2627,20 +2628,20 @@
       "title": "Lexi Dress (Blue/Purple)",
       "color": "Blue/Purple",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Lexi Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lexi-dress-bluepurple-dress-yakira-bella-8370438.jpg?v=1770873435",
       "msrp": 128,
       "compare_at": 128,
       "current_price": 34.99,
       "unit_cost": 28.85,
-      "total_available": 13,
+      "total_available": 12,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-080-BL1003-53L-XS",
-          "available": 5
+          "available": 4
         },
         {
           "size": "S",
@@ -2672,8 +2673,8 @@
       "title": "Lexi Dress (Ivory Ground)",
       "color": "Ivory Ground",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Lexi Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lexi-dress-ivory-ground-dress-yakira-bella-1129169.jpg?v=1770956173",
       "msrp": 128,
@@ -2717,8 +2718,8 @@
       "title": "Lexi Dress 53\" (Beige)",
       "color": "Beige",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Lexi Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lexi-dress-53-beige-dress-yakira-bella-3292507.jpg?v=1763399789",
       "msrp": 148,
@@ -2762,15 +2763,15 @@
       "title": "Liana Skirt (Light Sage)",
       "color": "Light Sage",
       "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Liana Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/liana-skirt-light-sage-skirt-yakira-bella-8717441.jpg?v=1777498453",
       "msrp": 88,
       "compare_at": 88,
       "current_price": 27.99,
       "unit_cost": 21.85,
-      "total_available": 38,
+      "total_available": 36,
       "sizes": [
         {
           "size": "XS",
@@ -2785,7 +2786,7 @@
         {
           "size": "M",
           "sku": "S6-SK-676-GR1131-39N-M",
-          "available": 9
+          "available": 8
         },
         {
           "size": "L",
@@ -2795,7 +2796,7 @@
         {
           "size": "XL",
           "sku": "S6-SK-676-GR1131-39N-XL",
-          "available": 4
+          "available": 3
         }
       ],
       "off_price": 10
@@ -2852,8 +2853,8 @@
       "title": "Lisa Skirt (Pink Flower)",
       "color": "Pink Flower",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Lisa Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lisa-skirt-pink-flower-skirt-yakira-bella-2630728.jpg?v=1771176309",
       "msrp": 88,
@@ -2897,8 +2898,8 @@
       "title": "Lisa Skirt (Teal Flower)",
       "color": "Teal Flower",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Lisa Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lisa-skirt-teal-flower-skirt-yakira-bella-6905537.jpg?v=1770742883",
       "msrp": 88,
@@ -2992,8 +2993,8 @@
       "title": "Loni Dress 39\" (Black)",
       "color": "Black",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Loni Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/loni-dress-39-black-dress-yakira-bella-2882563.jpg?v=1771619481",
       "msrp": 88,
@@ -3037,8 +3038,8 @@
       "title": "Maison Cardigan (Blue)",
       "color": "Blue",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Maison Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/maison-cardigan-blue-top-yakira-bella-7131383.jpg?v=1773233473",
       "msrp": 78,
@@ -3127,25 +3128,25 @@
       "title": "Malia Skirt (Rust)",
       "color": "Rust",
       "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Malia Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/malia-skirt-rust-skirt-yakira-bella-6428577.jpg?v=1770742618",
       "msrp": 68,
       "compare_at": 68,
       "current_price": 20.99,
       "unit_cost": 15.8,
-      "total_available": 37,
+      "total_available": 35,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SK-610-RD000-36N-XS",
-          "available": 17
+          "available": 16
         },
         {
           "size": "S",
           "sku": "S6-SK-610-RD000-36N-S",
-          "available": 19
+          "available": 18
         },
         {
           "size": "M",
@@ -3172,20 +3173,20 @@
       "title": "Malia Top (Navy)",
       "color": "Navy",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Malia Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/malia-top-navy-top-yakira-bella-1667284.jpg?v=1768349239",
       "msrp": 58,
       "compare_at": 58,
       "current_price": 20.99,
       "unit_cost": 17.85,
-      "total_available": 13,
+      "total_available": 12,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-609-BL000-00S-XS",
-          "available": 7
+          "available": 6
         },
         {
           "size": "S",
@@ -3217,15 +3218,15 @@
       "title": "Malia Top (Rust)",
       "color": "Rust",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Malia Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/malia-top-rust-top-yakira-bella-6091871.jpg?v=1768349241",
       "msrp": 58,
       "compare_at": 58,
       "current_price": 20.99,
       "unit_cost": 17.85,
-      "total_available": 18,
+      "total_available": 16,
       "sizes": [
         {
           "size": "XS",
@@ -3235,7 +3236,7 @@
         {
           "size": "S",
           "sku": "S6-TK-609-RD000-00S-S",
-          "available": 9
+          "available": 7
         },
         {
           "size": "M",
@@ -3262,20 +3263,20 @@
       "title": "Mara Dress Long Sleeve (Khaki)",
       "color": "Khaki",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Mara Dress Long Sleeve",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/mara-dress-long-sleeve-khaki-dress-yakira-bella-8301393.jpg?v=1768432095",
       "msrp": 98,
       "compare_at": 98,
       "current_price": 24.99,
       "unit_cost": 27.85,
-      "total_available": 2,
+      "total_available": 1,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-590-BG000-52L-XS",
-          "available": 1
+          "available": 0
         },
         {
           "size": "S",
@@ -3307,20 +3308,20 @@
       "title": "Mariella Dress (Black Coral)",
       "color": "Black Coral",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Mariella Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/mariella-dress-black-coral-dress-yakira-bella-3643124.jpg?v=1770541874",
       "msrp": 148,
       "compare_at": 148,
       "current_price": 41.99,
       "unit_cost": 27.35,
-      "total_available": 4,
+      "total_available": 3,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-593-BK944-54L-XS",
-          "available": 2
+          "available": 1
         },
         {
           "size": "S",
@@ -3352,15 +3353,15 @@
       "title": "Marina Top (Plum)",
       "color": "Plum",
       "type": "Top",
-      "class": "Core",
-      "style_name": "Marina Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/marina-top-plum-top-yakira-bella-1463969.jpg?v=1755931128",
       "msrp": 58,
       "compare_at": 58,
       "current_price": 13.99,
       "unit_cost": 16.5,
-      "total_available": 11,
+      "total_available": 10,
       "sizes": [
         {
           "size": "XS",
@@ -3370,7 +3371,7 @@
         {
           "size": "S",
           "sku": "F5-TK-557-RD000-00L-S",
-          "available": 1
+          "available": 0
         },
         {
           "size": "M",
@@ -3397,30 +3398,30 @@
       "title": "Mavis Dress 53\" (Multi)",
       "color": "Multi",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Mavis Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/mavis-dress-53-multi-dress-yakira-bella-9160041.jpg?v=1755351080",
       "msrp": 98,
       "compare_at": 98,
       "current_price": 27.99,
       "unit_cost": 27.85,
-      "total_available": 40,
+      "total_available": 35,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-DW-438-ML764-53L-XS",
-          "available": 18
+          "available": 15
         },
         {
           "size": "S",
           "sku": "F5-DW-438-ML764-53L-S",
-          "available": 12
+          "available": 11
         },
         {
           "size": "M",
           "sku": "F5-DW-438-ML764-53L-M",
-          "available": 9
+          "available": 8
         },
         {
           "size": "L",
@@ -3487,8 +3488,8 @@
       "title": "Miren Dress (Light Plum)",
       "color": "Light Plum",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Miren Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/miren-dress-light-plum-dress-yakira-bella-4152718.jpg?v=1758896798",
       "msrp": 148,
@@ -3532,8 +3533,8 @@
       "title": "Momentum Top (Black)",
       "color": "Black",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Momentum Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/momentum-top-black-top-yakira-bella-518984.png?v=1748544355",
       "msrp": 48,
@@ -3577,8 +3578,8 @@
       "title": "Momentum Top (Lavender)",
       "color": "Lavender",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Momentum Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/momentum-top-lavender-top-yakira-bella-690333.jpg?v=1746651944",
       "msrp": 48,
@@ -3622,8 +3623,8 @@
       "title": "Momentum Top (White)",
       "color": "White",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Momentum Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/momentum-top-white-top-yakira-bella-639515.jpg?v=1746848551",
       "msrp": 48,
@@ -3667,8 +3668,8 @@
       "title": "Moss Cardigan (Light Pink)",
       "color": "Light Pink",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Moss Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/moss-cardigan-light-pink-top-yakira-bella-8599770.jpg?v=1770624916",
       "msrp": 68,
@@ -3712,8 +3713,8 @@
       "title": "Moss Cardigan (Navy)",
       "color": "Navy",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Moss Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/moss-cardigan-navy-top-yakira-bella-5139138.jpg?v=1773234252",
       "msrp": 68,
@@ -3757,8 +3758,8 @@
       "title": "Moss Cardigan (Rose Pink)",
       "color": "Rose Pink",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Moss Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/moss-cardigan-rose-pink-top-yakira-bella-5154333.jpg?v=1760554406",
       "msrp": 68,
@@ -3802,20 +3803,20 @@
       "title": "Natalia Skirt (Blue Pattern)",
       "color": "Blue Pattern",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Natalia Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/natalia-skirt-blue-pattern-skirt-yakira-bella-3350892.jpg?v=1777562062",
       "msrp": 88,
       "compare_at": 88,
       "current_price": 27.99,
       "unit_cost": 21.85,
-      "total_available": 25,
+      "total_available": 22,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SK-569-BL1087-36N-XS",
-          "available": 14
+          "available": 12
         },
         {
           "size": "S",
@@ -3825,7 +3826,7 @@
         {
           "size": "M",
           "sku": "S6-SK-569-BL1087-36N-M",
-          "available": 1
+          "available": 0
         },
         {
           "size": "L",
@@ -3847,15 +3848,15 @@
       "title": "Natalia Skirt (Peach/Grey)",
       "color": "Peach/Grey",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Natalia Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/natalia-skirt-peachgrey-skirt-yakira-bella-5274555.jpg?v=1770753003",
       "msrp": 78,
       "compare_at": 78,
       "current_price": 27.99,
       "unit_cost": 21.85,
-      "total_available": 23,
+      "total_available": 20,
       "sizes": [
         {
           "size": "XS",
@@ -3865,12 +3866,12 @@
         {
           "size": "S",
           "sku": "F5-SK-569-GY833-36N-S",
-          "available": 11
+          "available": 10
         },
         {
           "size": "M",
           "sku": "F5-SK-569-GY833-36N-M",
-          "available": 3
+          "available": 1
         },
         {
           "size": "L",
@@ -3892,8 +3893,8 @@
       "title": "Perform Top (Black)",
       "color": "Black",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Perform Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/perform-top-black-top-yakira-bella-817525.png?v=1748544359",
       "msrp": 44,
@@ -3937,8 +3938,8 @@
       "title": "Perform Top (Sage)",
       "color": "Sage",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Perform Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0924.jpg?v=1747334851",
       "msrp": 44,
@@ -3982,8 +3983,8 @@
       "title": "Propel Top (Black)",
       "color": "Black",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Propel Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0392.jpg?v=1746808755",
       "msrp": 44,
@@ -4027,8 +4028,8 @@
       "title": "Propel Top (Sage)",
       "color": "Sage",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Propel Top",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-2191.jpg?v=1746636997",
       "msrp": 44,
@@ -4117,15 +4118,15 @@
       "title": "Reyna Dress (Black)",
       "color": "Black",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Reyna Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/reyna-dress-black-dress-yakira-bella-3073435.jpg?v=1764786441",
       "msrp": 98,
       "compare_at": 98,
       "current_price": 27.99,
       "unit_cost": 26.85,
-      "total_available": 15,
+      "total_available": 11,
       "sizes": [
         {
           "size": "XS",
@@ -4135,12 +4136,12 @@
         {
           "size": "S",
           "sku": "S5-DW-394-BK000-49Q-S",
-          "available": 4
+          "available": 3
         },
         {
           "size": "M",
           "sku": "S5-DW-394-BK000-49Q-M",
-          "available": 3
+          "available": 0
         },
         {
           "size": "L",
@@ -4207,15 +4208,15 @@
       "title": "Rosalie Dress (Navy)",
       "color": "Navy",
       "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Rosalie Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/rosalie-dress-navy-dress-yakira-bella-6923902.jpg?v=1773486316",
       "msrp": 148,
       "compare_at": 148,
       "current_price": 41.99,
       "unit_cost": 28.85,
-      "total_available": 3,
+      "total_available": 2,
       "sizes": [
         {
           "size": "XS",
@@ -4225,7 +4226,7 @@
         {
           "size": "S",
           "sku": "S6-DW-304-BL000-53S-S",
-          "available": 1
+          "available": 0
         },
         {
           "size": "M",
@@ -4252,8 +4253,8 @@
       "title": "Stride Jacket (Black)",
       "color": "Black",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Stride Jacket",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/Canon-0303.jpg?v=1743716723",
       "msrp": 78,
@@ -4297,30 +4298,30 @@
       "title": "Stride Jacket (White)",
       "color": "White",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Stride Jacket",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/stride-jacket-white-top-yakira-bella-1377599.jpg?v=1774976481",
       "msrp": 78,
       "compare_at": 78,
       "current_price": 54.6,
       "unit_cost": 28.85,
-      "total_available": 82,
+      "total_available": 70,
       "sizes": [
         {
           "size": "XS",
           "sku": "S4-TK-258-WH000-00L-XS",
-          "available": 18
+          "available": 14
         },
         {
           "size": "S",
           "sku": "S4-TK-258-WH000-00L-S",
-          "available": 19
+          "available": 13
         },
         {
           "size": "M",
           "sku": "S4-TK-258-WH000-00L-M",
-          "available": 21
+          "available": 19
         },
         {
           "size": "L",
@@ -4342,20 +4343,20 @@
       "title": "Suri Skirt (Ivory)",
       "color": "Ivory",
       "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Suri Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/suri-skirt-ivory-skirt-yakira-bella-5339982.jpg?v=1772058675",
       "msrp": 84,
       "compare_at": 84,
       "current_price": 27.99,
       "unit_cost": 24.85,
-      "total_available": 31,
+      "total_available": 28,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-540-OW1007-36N-XS",
-          "available": 2
+          "available": 0
         },
         {
           "size": "S",
@@ -4370,7 +4371,7 @@
         {
           "size": "L",
           "sku": "S6-SW-540-OW1007-36N-L",
-          "available": 6
+          "available": 5
         },
         {
           "size": "XL",
@@ -4432,8 +4433,8 @@
       "title": "Tansy Skirt (Blue)",
       "color": "Blue",
       "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Tansy Skirt",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/tansy-skirt-blue-skirt-yakira-bella-7979512.jpg?v=1755351090",
       "msrp": 98,
@@ -4522,20 +4523,20 @@
       "title": "Valentina Dress (Beige)",
       "color": "Beige",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Valentina Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/valentina-dress-beige-dress-yakira-bella-5387253.jpg?v=1752727925",
       "msrp": 118,
       "compare_at": 118,
       "current_price": 34.99,
       "unit_cost": 27.85,
-      "total_available": 11,
+      "total_available": 10,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-DW-533-BG698-53L-XS",
-          "available": 11
+          "available": 10
         },
         {
           "size": "S",
@@ -4612,15 +4613,15 @@
       "title": "Valentina Dress (Orange)",
       "color": "Orange",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Valentina Dress",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/valentina-dress-orange-dress-yakira-bella-6881116.jpg?v=1776299662",
       "msrp": 118,
       "compare_at": 118,
       "current_price": 34.99,
       "unit_cost": 28.85,
-      "total_available": 80,
+      "total_available": 77,
       "sizes": [
         {
           "size": "XS",
@@ -4635,17 +4636,17 @@
         {
           "size": "M",
           "sku": "S6-DW-533-OR000-53L-M",
-          "available": 18
+          "available": 17
         },
         {
           "size": "L",
           "sku": "S6-DW-533-OR000-53L-L",
-          "available": 5
+          "available": 4
         },
         {
           "size": "XL",
           "sku": "S6-DW-533-OR000-53L-XL",
-          "available": 7
+          "available": 6
         }
       ],
       "off_price": 15
@@ -4657,20 +4658,20 @@
       "title": "Zoe Cardigan (Navy)",
       "color": "Navy",
       "type": "Top",
-      "class": "Fashion",
-      "style_name": "Zoe Cardigan",
+      "class": null,
+      "style_name": null,
       "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/zoe-cardigan-navy-top-yakira-bella-6502893.jpg?v=1773404531",
       "msrp": 78,
       "compare_at": 78,
       "current_price": 27.99,
       "unit_cost": 27.85,
-      "total_available": 15,
+      "total_available": 14,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-697-BL000-00L-XS",
-          "available": 8
+          "available": 7
         },
         {
           "size": "S",
