@@ -9,7 +9,7 @@
 <style>
 :root{--paper:#FAF7F2;--card:#FFF;--ink:#211C17;--muted:#8A8178;--line:#E7E0D6;--accent:#7C3A2E;--accent-soft:#F1E3DE;--off:#B5612A;--off-soft:#F6E7D8;--full:#2E5A3F;--full-soft:#E1EBE3;--amber:#B8791A;--amber-soft:#F6EBD6;--shadow:0 1px 2px rgba(33,28,23,.06),0 6px 18px rgba(33,28,23,.06)}
 *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font-family:Inter,system-ui,sans-serif}
-.wrap{max-width:1080px;margin:0 auto;padding:0 22px}
+.wrap{max-width:1180px;margin:0 auto;padding:0 22px}
 header.top{background:var(--card);border-bottom:1px solid var(--line);padding:20px 0}
 h1{font-family:Fraunces,serif;font-weight:500;font-size:24px;margin:0}
 h1 .sub{display:block;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);font-family:Inter;font-weight:600;margin-bottom:7px}
@@ -30,7 +30,7 @@ input:focus{outline:none;border-color:var(--off)}
 .status.ok{color:var(--full)}.status.err{color:var(--accent)}
 .toolbar2{display:flex;gap:10px;align-items:center;margin:6px 0 8px;flex-wrap:wrap}
 .toolbar2 input[type=search]{flex:1;min-width:200px}
-.selbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--off-soft);border:1px solid #e8cdb4;border-radius:9px;padding:8px 12px;margin:0 0 12px;font-size:13px}
+.selbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--off-soft);border:1px solid #e8cdb4;border-radius:9px;padding:8px 12px;margin:0 0 12px;font-size:13px;position:sticky;top:8px;z-index:5;box-shadow:var(--shadow)}
 .selbar.hide{display:none}
 .selbar b{color:var(--off)}
 .selgroup{display:inline-flex;align-items:center;gap:6px;padding-left:10px;margin-left:2px;border-left:1px solid #e8cdb4;color:var(--muted);font-size:12px}
@@ -38,28 +38,40 @@ input:focus{outline:none;border-color:var(--off)}
 .dimhint{font-size:12px;color:var(--muted);margin:0 0 10px}
 .summary{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin:0 0 12px}
 .summary b{color:var(--ink)}
-table{width:100%;border-collapse:collapse;font-size:13px}
-th{text-align:left;font-size:11px;letter-spacing:.04em;text-transform:uppercase;color:var(--muted);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--card);z-index:1}
-td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:middle}
-tr:hover td{background:var(--paper)}
-tr.out td{opacity:.5}
-tr.sel td{background:var(--off-soft)!important}
-tr.drop-before td{box-shadow:inset 0 2px 0 0 var(--off)}
-tr.drop-after td{box-shadow:inset 0 -2px 0 0 var(--off)}
-tr.dragging{opacity:.4}
-.grip{cursor:grab;color:var(--muted);font-size:15px;user-select:none;text-align:center;width:26px}
-.grip:active{cursor:grabbing}
-.grip.off{opacity:.25;cursor:not-allowed}
-.tname{font-weight:600}.tcolor{color:var(--muted);font-size:12px}
-.num{text-align:right;font-variant-numeric:tabular-nums}
-.tablewrap{max-height:64vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
 .muted{color:var(--muted)}
-.thumb{width:30px;height:40px;object-fit:cover;border-radius:5px;background:var(--paper)}
-.tpill{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 7px;border-radius:999px;color:#fff}
+
+/* card grid (mirrors the buyer view) */
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fill,minmax(196px,1fr));padding-bottom:20px}
+.grid.compact{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:flex;flex-direction:column;position:relative;transition:.1s}
+.card.out{opacity:.5}
+.card.sel{border-color:var(--off);box-shadow:0 0 0 2px var(--off),var(--shadow)}
+.card.dragging{opacity:.35}
+.card.drop-before{box-shadow:inset 4px 0 0 var(--off)}
+.card.drop-after{box-shadow:inset -4px 0 0 var(--off)}
+.imgwrap{aspect-ratio:3/4;background:#fff;overflow:hidden;position:relative}
+.imgwrap img{width:100%;height:100%;object-fit:contain;display:block}
+.noimg{width:100%;height:100%;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px}
+.pick{position:absolute;top:8px;left:8px;background:rgba(255,255,255,.94);border-radius:7px;padding:3px 4px;box-shadow:0 1px 3px rgba(0,0,0,.15);display:flex;cursor:pointer}
+.pick input{width:17px;height:17px;padding:0;cursor:pointer;accent-color:var(--off)}
+.grip{position:absolute;top:8px;right:8px;background:rgba(255,255,255,.94);border-radius:7px;padding:1px 7px;box-shadow:0 1px 3px rgba(0,0,0,.15);cursor:grab;color:var(--muted);font-size:15px;user-select:none;line-height:1.4}
+.grip:active{cursor:grabbing}.grip.off{opacity:.3;cursor:not-allowed}
+.tpill{position:absolute;bottom:8px;left:8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 8px;border-radius:999px;color:#fff}
 .tpill.Top{background:#52677A}.tpill.Skirt{background:var(--full)}.tpill.Dress{background:var(--accent)}
-.pill{display:inline-block;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.04em;padding:2px 7px;border-radius:999px;background:var(--off-soft);color:var(--off)}
-.pill.out{background:#F0EBE3;color:var(--muted)}
-.price{width:78px;text-align:right;font-weight:700;color:var(--off)}
+.spill{position:absolute;bottom:8px;right:8px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.03em;padding:2px 8px;border-radius:999px}
+.spill.in{background:var(--off-soft);color:var(--off)}.spill.out{background:#EEE9E1;color:var(--muted)}
+.body{padding:10px 11px 11px;display:flex;flex-direction:column;gap:6px;flex:1}
+.title{font-size:13px;font-weight:600;line-height:1.25}
+.meta{font-size:11.5px;color:var(--muted);display:flex;gap:6px;flex-wrap:wrap}
+.priceRow{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:auto}
+.was{font-size:11.5px;color:var(--muted)}.was s{text-decoration:line-through}
+.pedit{display:inline-flex;align-items:center;gap:1px;font-weight:700;color:var(--off)}
+.pedit .cur{font-size:15px}
+.pedit input{width:52px;text-align:right;font-family:Fraunces,serif;font-weight:600;font-size:16px;color:var(--off);border:1px solid var(--line);border-radius:7px;padding:4px 6px}
+.pedit input:focus{border-color:var(--off)}
+.cardbtn{border:1px solid var(--line);background:var(--card);border-radius:8px;padding:7px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink)}
+.cardbtn:hover{border-color:var(--ink)}
+.card.out .cardbtn{background:var(--off);border-color:var(--off);color:#fff}
 .warnbox{background:var(--amber-soft);border:1px solid #e8d4a6;color:#7a5510;border-radius:9px;padding:10px 13px;font-size:12.5px;margin:0 0 12px;display:none}
 </style>
 </head>
@@ -70,17 +82,20 @@ tr.dragging{opacity:.4}
 </div></header>
 <div class="wrap">
 
-  <div class="warnbox" id="missingWarn">⚠ The Off Price snapshot hasn’t been built yet (<code>data/off-offering.json</code>). Run <code>build-off-offering</code>.</div>
+  <div class="warnbox" id="missingWarn">⚠ The Off Price snapshot hasn’t been built yet (<code>data/off-offering.json</code>).</div>
 
   <div class="panel">
     <h2>Off Price products</h2>
-    <p class="hint">Every style is <b>In</b> by default. Toggle a style <b>Out</b> to hide it, or edit its price. <b>Reorder</b> the way buyers see them: drag the ⠿ handle, or tick several rows and use “Move”. This is the “Featured” order on the storefront. Save applies immediately — no rebuild.</p>
+    <p class="hint">Same cards buyers see. Every style is <b>In</b> by default — click <b>In/Out</b> on a card to hide it, or edit its price right on the card. Or <b>check off</b> several cards and use the bar to remove / re-price / reorder in bulk. Drag the ⠿ handle to reorder. Save applies immediately — no rebuild.</p>
     <div class="summary" id="summary"></div>
     <div class="toolbar2">
       <input id="prodSearch" type="search" placeholder="Search style or color…" autocomplete="off">
+      <label class="muted" style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" id="selAll" style="width:16px;height:16px"> Select all shown</label>
       <span class="muted" id="prodCount"></span>
-      <button class="btn sm" id="onlyOutBtn">Show only “Out”</button>
-      <button class="btn primary" id="saveBtn">Save changes</button>
+      <div class="seg" style="display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden">
+        <button class="btn sm" id="onlyOutBtn" style="border:0;border-radius:0">Only “Out”</button>
+      </div>
+      <button class="btn primary" id="saveBtn" style="margin-left:auto">Save changes</button>
       <span class="status" id="saveStatus"></span>
     </div>
     <div class="selbar hide" id="selBar">
@@ -91,17 +106,8 @@ tr.dragging{opacity:.4}
       <span class="selgroup">Order <button class="btn sm" id="moveTopBtn">↑ Top</button><button class="btn sm" id="moveBottomBtn">↓ Bottom</button></span>
       <button class="btn sm" id="clearSelBtn" style="margin-left:auto">Clear</button>
     </div>
-    <p class="dimhint" id="searchDragHint" style="display:none">Clear the search to drag-reorder rows.</p>
-    <div class="tablewrap">
-      <table>
-        <thead><tr>
-          <th></th>
-          <th><input type="checkbox" id="selAll" title="Select all shown"></th>
-          <th></th><th>Style</th><th>Type</th><th class="num">MSRP</th><th class="num">Off price $</th><th class="num">Avail</th><th>In offering</th>
-        </tr></thead>
-        <tbody id="prodRows"></tbody>
-      </table>
-    </div>
+    <p class="dimhint" id="searchDragHint" style="display:none">Clear the search / filter to drag-reorder.</p>
+    <div class="grid" id="prodGrid"></div>
   </div>
 
 </div>

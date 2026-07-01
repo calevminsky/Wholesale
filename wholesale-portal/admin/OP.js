@@ -75,42 +75,51 @@ function renderProducts() {
   const drag = !searching() && !store.onlyOut; // reordering only on the full, unfiltered list
   $("#searchDragHint").style.display = (searching() || store.onlyOut) ? "" : "none";
   $("#prodCount").textContent = `${list.length} shown`;
-  $("#prodRows").innerHTML = list.map((p) => {
+  $("#prodGrid").innerHTML = list.map((p) => {
     const inOff = !store.removeSet.has(p.handle);
     const sel = store.selected.has(p.handle);
     const ov = store.overrides[p.gid];
-    return `<tr data-h="${esc(p.handle)}" data-gid="${esc(p.gid)}" class="${inOff ? "" : "out"} ${sel ? "sel" : ""}">
-      <td class="grip ${drag ? "" : "off"}" ${drag ? 'draggable="true"' : ""} title="${drag ? "Drag to reorder" : "Clear search/filter to reorder"}">⠿</td>
-      <td><input type="checkbox" class="selbox" ${sel ? "checked" : ""}></td>
-      <td>${p.image ? `<img class="thumb" src="${esc(p.image)}">` : ""}</td>
-      <td><span class="tname">${esc(p.title)}</span><div class="tcolor">${esc(p.handle)}</div></td>
-      <td><span class="tpill ${esc(p.type)}">${esc(p.type || "")}</span></td>
-      <td class="num">${money(p.msrp)}</td>
-      <td class="num"><input class="price" type="number" min="0" step="1" value="${ov != null ? ov : (p.off_price ?? "")}"></td>
-      <td class="num">${p.total_available ?? "—"}</td>
-      <td><button class="btn sm toggle"><span class="pill ${inOff ? "" : "out"}">${inOff ? "In" : "Out"}</span></button></td>
-    </tr>`;
-  }).join("") || `<tr><td colspan="9" class="muted">No products.</td></tr>`;
+    const priceVal = ov != null ? ov : (p.off_price ?? "");
+    const img = p.image ? `<img src="${esc(p.image)}" loading="lazy">` : `<div class="noimg">No image</div>`;
+    return `<div class="card ${inOff ? "" : "out"} ${sel ? "sel" : ""}" data-h="${esc(p.handle)}" data-gid="${esc(p.gid)}">
+      <div class="imgwrap">
+        ${img}
+        <label class="pick"><input type="checkbox" class="selbox" ${sel ? "checked" : ""}></label>
+        <span class="grip ${drag ? "" : "off"}" ${drag ? 'draggable="true"' : ""} title="${drag ? "Drag to reorder" : "Clear search to reorder"}">⠿</span>
+        <span class="tpill ${esc(p.type)}">${esc(p.type || "")}</span>
+        <span class="spill ${inOff ? "in" : "out"}">${inOff ? "In" : "Out"}</span>
+      </div>
+      <div class="body">
+        <div class="title">${esc(p.title)}</div>
+        <div class="meta"><span>${esc(p.color || "—")}</span><span>·</span><span>${p.total_available ?? "—"} avail</span></div>
+        <div class="priceRow">
+          <span class="was">MSRP <s>${money(p.msrp)}</s></span>
+          <span class="pedit"><span class="cur">$</span><input class="price" type="number" min="0" step="1" value="${priceVal}"></span>
+        </div>
+        <button class="cardbtn toggle">${inOff ? "Remove from sheet" : "Restore to sheet"}</button>
+      </div>
+    </div>`;
+  }).join("") || `<div class="muted">No products.</div>`;
 
   // toggle in/out
-  $$("#prodRows .toggle").forEach((b) => b.onclick = () => {
-    const h = b.closest("tr").dataset.h;
+  $$("#prodGrid .toggle").forEach((b) => b.onclick = () => {
+    const h = b.closest(".card").dataset.h;
     if (store.removeSet.has(h)) store.removeSet.delete(h); else store.removeSet.add(h);
     renderProducts(); renderSummary();
   });
-  // price override
-  $$("#prodRows .price").forEach((inp) => inp.oninput = () => {
-    const p = store.products.find((x) => x.gid === inp.closest("tr").dataset.gid);
+  // price override (edit right on the card)
+  $$("#prodGrid .price").forEach((inp) => inp.oninput = () => {
+    const p = store.products.find((x) => x.gid === inp.closest(".card").dataset.gid);
     const v = parseFloat(inp.value);
     if (Number.isFinite(v) && v > 0 && Math.round(v) !== p.off_price) store.overrides[p.gid] = Math.round(v);
     else delete store.overrides[p.gid];
     renderSummary();
   });
   // selection
-  $$("#prodRows .selbox").forEach((cb) => cb.onchange = () => {
-    const h = cb.closest("tr").dataset.h;
+  $$("#prodGrid .selbox").forEach((cb) => cb.onchange = () => {
+    const card = cb.closest(".card"), h = card.dataset.h;
     if (cb.checked) store.selected.add(h); else store.selected.delete(h);
-    cb.closest("tr").classList.toggle("sel", cb.checked);
+    card.classList.toggle("sel", cb.checked);
     renderSelBar();
   });
   if (drag) wireDrag();
@@ -186,38 +195,38 @@ $("#moveTopBtn").onclick = () => moveSelected(true);
 $("#moveBottomBtn").onclick = () => moveSelected(false);
 
 function wireDrag() {
-  const clearIndicators = () => $$("#prodRows tr").forEach((r) => r.classList.remove("drop-before", "drop-after", "dragging"));
-  $$("#prodRows .grip").forEach((g) => {
+  const clearIndicators = () => $$("#prodGrid .card").forEach((c) => c.classList.remove("drop-before", "drop-after", "dragging"));
+  $$("#prodGrid .grip").forEach((g) => {
     g.addEventListener("dragstart", (e) => {
-      const tr = g.closest("tr");
-      const h = tr.dataset.h;
-      // If the dragged row is part of a multi-selection, move the whole set.
+      const card = g.closest(".card");
+      const h = card.dataset.h;
+      // If the dragged card is part of a multi-selection, move the whole set.
       dragSet = store.selected.has(h) && store.selected.size > 1 ? [...store.selected] : [h];
-      tr.classList.add("dragging");
+      card.classList.add("dragging");
       e.dataTransfer.effectAllowed = "move";
       e.dataTransfer.setData("text/plain", h);
     });
     g.addEventListener("dragend", () => { dragSet = null; clearIndicators(); });
   });
-  const tbody = $("#prodRows");
-  tbody.addEventListener("dragover", (e) => {
+  const grid = $("#prodGrid");
+  grid.addEventListener("dragover", (e) => {
     if (!dragSet) return;
     e.preventDefault();
-    const tr = e.target.closest("tr");
-    if (!tr || !tr.dataset.h) return;
-    const rect = tr.getBoundingClientRect();
-    const after = (e.clientY - rect.top) > rect.height / 2;
-    $$("#prodRows tr").forEach((r) => r.classList.remove("drop-before", "drop-after"));
-    tr.classList.add(after ? "drop-after" : "drop-before");
+    const card = e.target.closest(".card");
+    if (!card || !card.dataset.h) return;
+    const rect = card.getBoundingClientRect();
+    const after = (e.clientX - rect.left) > rect.width / 2; // cards flow left→right
+    $$("#prodGrid .card").forEach((c) => c.classList.remove("drop-before", "drop-after"));
+    card.classList.add(after ? "drop-after" : "drop-before");
   });
-  tbody.addEventListener("drop", (e) => {
+  grid.addEventListener("drop", (e) => {
     if (!dragSet) return;
     e.preventDefault();
-    const tr = e.target.closest("tr");
-    if (!tr || !tr.dataset.h) return;
-    const rect = tr.getBoundingClientRect();
-    const after = (e.clientY - rect.top) > rect.height / 2;
-    reorder(dragSet, tr.dataset.h, after);
+    const card = e.target.closest(".card");
+    if (!card || !card.dataset.h) return;
+    const rect = card.getBoundingClientRect();
+    const after = (e.clientX - rect.left) > rect.width / 2;
+    reorder(dragSet, card.dataset.h, after);
     dragSet = null;
     renderProducts(); renderSummary();
     flash($("#saveStatus"), "Reordered — Save to publish.", true);
