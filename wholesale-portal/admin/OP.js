@@ -134,6 +134,34 @@ $("#selAll").onchange = () => {
 };
 $("#clearSelBtn").onclick = () => { store.selected.clear(); renderProducts(); };
 
+// ---------- bulk actions on the checked rows ----------
+const selectedProducts = () => store.products.filter((p) => store.selected.has(p.handle));
+$("#removeSelBtn").onclick = () => {
+  const sel = selectedProducts();
+  if (!sel.length) return;
+  sel.forEach((p) => store.removeSet.add(p.handle));
+  renderProducts(); renderSummary();
+  flash($("#saveStatus"), `${sel.length} removed — Save to publish.`, true);
+};
+$("#restoreSelBtn").onclick = () => {
+  const sel = selectedProducts();
+  if (!sel.length) return;
+  sel.forEach((p) => store.removeSet.delete(p.handle));
+  renderProducts(); renderSummary();
+  flash($("#saveStatus"), `${sel.length} restored — Save to publish.`, true);
+};
+$("#setPriceBtn").onclick = () => {
+  const sel = selectedProducts();
+  if (!sel.length) return;
+  const v = parseFloat($("#selPrice").value);
+  if (!Number.isFinite(v) || v <= 0) { flash($("#saveStatus"), "Enter a price first.", false); $("#selPrice").focus(); return; }
+  const price = Math.round(v);
+  // Store an override only where it differs from the baked off_price.
+  sel.forEach((p) => { if (price !== p.off_price) store.overrides[p.gid] = price; else delete store.overrides[p.gid]; });
+  renderProducts(); renderSummary();
+  flash($("#saveStatus"), `Priced ${sel.length} at $${price} — Save to publish.`, true);
+};
+
 // ---------- reordering ----------
 function reorder(moving, targetHandle, after) {
   const movingSet = new Set(moving);
