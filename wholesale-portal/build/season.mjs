@@ -119,16 +119,19 @@ export function buildSeasonOrder({ account, lines, notes, shipping, level, maste
 // same for every account.
 // ============================================================================
 
-const OFF_MASTER_PATH = path.join(__dirname, "..", "data", "off-offering.json");
-let _off = null, _offMtime = 0;
-export function readOffOffering() {
-  if (!fs.existsSync(OFF_MASTER_PATH)) return { products: [], offering: "off", missing: true };
-  const st = fs.statSync(OFF_MASTER_PATH);
-  if (!_off || st.mtimeMs !== _offMtime) {
-    _off = JSON.parse(fs.readFileSync(OFF_MASTER_PATH, "utf8"));
-    _offMtime = st.mtimeMs;
+// Two off-price snapshots, keyed by offering id.
+const OFF_FILES = { off: "off-offering.json", offall: "off-offering-all.json" };
+const _offCache = {}; // oid -> { data, mtime }
+export function readOffOffering(oid = "off") {
+  const file = OFF_FILES[oid] || OFF_FILES.off;
+  const p = path.join(__dirname, "..", "data", file);
+  if (!fs.existsSync(p)) return { products: [], offering: oid, missing: true };
+  const st = fs.statSync(p);
+  const c = _offCache[oid];
+  if (!c || st.mtimeMs !== c.mtime) {
+    _offCache[oid] = { data: JSON.parse(fs.readFileSync(p, "utf8")), mtime: st.mtimeMs };
   }
-  return _off;
+  return _offCache[oid].data;
 }
 
 // Effective Off Price for a snapshot product: an admin override wins, else the

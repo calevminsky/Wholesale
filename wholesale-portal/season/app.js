@@ -38,36 +38,44 @@ async function api(path, opts = {}) {
   return { ok: res.ok, status: res.status, json };
 }
 
+// Public (no-login) endpoint base for each off-price offering.
+const pubBase = (o) => (o === "offall" ? "/api/offall" : "/api/offprice");
+const offLabel = (o) => (o === "offall" ? "Off Price — All" : "Off Price");
+
 // ---------- auth ----------
 async function boot() {
   const params = new URLSearchParams(location.search);
+  const p = location.pathname.replace(/\/+$/, "");
+  // Which off-price offering does this entry point target?
+  const wantsAll = p === "/offprice-all" || params.get("o") === "offall" || params.has("offall");
+  const oid = wantsAll ? "offall" : "off";
   const { json } = await api("/api/season/me");
   if (json.account) { applyMe(json); await loadOffering(state.offering); return; }
   // Keyed no-login link: ?bypass=<key> (validated server-side, same key as the
-  // F26 portal) opens Off Price directly — company + email at checkout.
+  // F26 portal) opens the offering directly — company + email at checkout.
   const bypassKey = params.get("bypass");
   if (bypassKey) {
     const g = await api(`/api/gate?key=${encodeURIComponent(bypassKey)}`);
-    if (g.json?.ok) return enterPublicOff();
+    if (g.json?.ok) return enterPublicOff(oid);
   }
   // Clean-path form of the same direct entry.
-  if (location.pathname.replace(/\/+$/, "") === "/offprice" || params.has("op") || params.has("offprice")) return enterPublicOff();
+  if (p === "/offprice" || p === "/offprice-all" || params.has("op") || params.has("offprice") || params.has("offall")) return enterPublicOff(oid);
   // Otherwise default to the no-login Off Price gate (company + email up front).
   showGate();
 }
 
-function enterPublicOff() {
+function enterPublicOff(oid = "off") {
   state.publicOff = true;
   state.guest = null;
   state.account = { name: "" };
-  state.entitlements = { full: false, off: true };
-  state.offering = "off";
+  state.entitlements = { full: false, off: oid === "off", offall: oid === "offall" };
+  state.offering = oid;
   $("#gateOverlay").classList.remove("show");
   $("#loginOverlay").classList.remove("show");
-  $("#acctLine").innerHTML = `Off Price · <a id="switchLink">Have a Full Price login? Sign in</a>`;
+  $("#acctLine").innerHTML = `${offLabel(oid)} · <a id="switchLink">Have a Full Price login? Sign in</a>`;
   $("#switchLink").onclick = showLogin;
   renderTabs();
-  loadOffering("off");
+  loadOffering(oid);
 }
 
 function showGate() {
@@ -141,6 +149,7 @@ function renderTabs() {
   const tabs = [];
   if (state.entitlements.full) tabs.push({ v: "full", label: "Full Price" });
   if (state.entitlements.off) tabs.push({ v: "off", label: "Off Price" });
+  if (state.entitlements.offall) tabs.push({ v: "offall", label: "Off Price — All" });
   // If the current offering isn't entitled (e.g. full disabled), fall back to the first tab.
   if (tabs.length && !tabs.some((t) => t.v === state.offering)) state.offering = tabs[0].v;
   $("#tabBar").innerHTML = tabs.map((t) =>
@@ -153,8 +162,8 @@ function renderTabs() {
 async function loadOffering(offering) {
   // Public Off Price (gate or direct link) uses the no-session endpoint;
   // signed-in accounts use the per-account season catalog.
-  const url = state.publicOff && offering === "off"
-    ? "/api/offprice/catalog"
+  const url = state.publicOff && (offering === "off" || offering === "offall")
+    ? `${pubBase(offering)}/catalog`
     : `/api/season/catalog?offering=${encodeURIComponent(offering)}`;
   const { ok, status, json } = await api(url);
   if (!ok) {
@@ -218,9 +227,12 @@ function sizeRun(p) {
 }
 
 function render() {
-  $("#offerName").textContent = state.offering === "full" ? "In-Season · Full Price" : state.offering === "off" ? "In-Season · Off Price" : "In-Season";
-  // Printable line sheet (PDF / Excel) — available for the Off Price offering.
-  const showDl = state.offering === "off" ? "" : "none";
+  $("#offerName").textContent = state.offering === "full" ? "In-Season · Full Price"
+    : state.offering === "off" ? "In-Season · Off Price"
+    : state.offering === "offall" ? "Off Price — All"
+    : "In-Season";
+  // Printable line sheet (PDF / Excel) — available for the off-price offerings.
+  const showDl = (state.offering === "off" || state.offering === "offall") ? "" : "none";
   $("#pdfBtn").style.display = showDl;
   $("#xlsxBtn").style.display = showDl;
   const list = visibleProducts();
@@ -348,7 +360,7 @@ async function submitOrder() {
   if (!lines.length) return;
   const notes = $("#orderNotes")?.value || "";
   let req;
-  if (state.publicOff && state.offering === "off") {
+  if (state.publicOff && (state.offering === "off" || state.offering === "offall")) {
     // Company/email come from the gate, or are collected here on the direct link.
     let company = state.guest?.company, email = state.guest?.email;
     if (!company) {
@@ -357,7 +369,7 @@ async function submitOrder() {
       if (!company) { toast("Please enter your company name."); $("#ckCompany")?.focus(); return; }
       if (!email || !/.+@.+\..+/.test(email)) { toast("Please enter a valid email."); $("#ckEmail")?.focus(); return; }
     }
-    req = api("/api/offprice/orders", { method: "POST", body: JSON.stringify({ company, email, lines, notes, shipping: state.shipping }) });
+    req = api(`${pubBase(state.offering)}/orders`, { method: "POST", body: JSON.stringify({ company, email, lines, notes, shipping: state.shipping }) });
   } else {
     req = api("/api/season/orders", { method: "POST", body: JSON.stringify({ offering: state.offering, lines, notes, shipping: state.shipping }) });
   }
@@ -393,14 +405,14 @@ $("#clearCart").onclick = () => { state.cart = {}; render(); toast("Cart cleared
 $("#pdfBtn").onclick = async () => {
   toast("Building PDF…");
   try {
-    const res = await fetch("/api/offprice/linesheet.pdf");
+    const res = await fetch(`${pubBase(state.offering)}/linesheet.pdf`);
     if (!res.ok) throw new Error();
     const url = URL.createObjectURL(await res.blob());
     const a = document.createElement("a");
-    a.href = url; a.download = "yakira-bella-off-price.pdf"; a.click();
+    a.href = url; a.download = `yakira-bella-${state.offering === "offall" ? "off-price-all" : "off-price"}.pdf`; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 4000);
   } catch { toast("Couldn't build the PDF — please try again."); }
 };
-$("#xlsxBtn").onclick = () => { window.location.href = "/api/offprice/linesheet.xlsx"; };
+$("#xlsxBtn").onclick = () => { window.location.href = `${pubBase(state.offering)}/linesheet.xlsx`; };
 
 boot();

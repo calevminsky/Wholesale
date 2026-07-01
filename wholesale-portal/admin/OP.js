@@ -19,6 +19,16 @@ function flash(el, msg, ok = true) {
   setTimeout(() => { el.textContent = ""; el.className = "status"; }, 4000);
 }
 
+// This page serves two offerings, chosen by path: /op/admin -> "off",
+// /op/admin/all -> "offall".
+const OID = location.pathname.replace(/\/+$/, "").endsWith("/all") ? "offall" : "off";
+const BASE = "/api/offering/" + OID;
+if (OID === "offall") {
+  document.title = "Yakira Bella — Off Price (All) Admin";
+  const h1 = document.querySelector("header.top h1");
+  if (h1) h1.childNodes[h1.childNodes.length - 1].textContent = "Off Price — All";
+}
+
 const effPrice = (p) => {
   const ov = store.overrides[p.gid];
   return Number.isFinite(Number(ov)) && Number(ov) > 0 ? Math.round(Number(ov)) : p.off_price;
@@ -29,7 +39,7 @@ const store = { products: [], removeSet: new Set(), overrides: {}, selected: new
 let dragSet = null; // handles currently being dragged
 
 async function loadAll() {
-  const { json } = await api("/api/offering/off/master");
+  const { json } = await api(`${BASE}/master`);
   if (json.missing) $("#missingWarn").style.display = "";
   store.products = json.products || []; // already in saved order from the server
   store.removeSet = new Set(json.removes || []);
@@ -190,7 +200,7 @@ function wireDrag() {
 $("#prodSearch").addEventListener("input", renderProducts);
 $("#onlyOutBtn").onclick = () => { store.onlyOut = !store.onlyOut; $("#onlyOutBtn").classList.toggle("on", store.onlyOut); renderProducts(); };
 $("#saveBtn").onclick = async () => {
-  const { ok, json } = await api("/api/offering/off", {
+  const { ok, json } = await api(BASE, {
     method: "POST", headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       removes: [...store.removeSet],

@@ -47,6 +47,8 @@ jobs:
           # off-price selection (data/off-seed.json) -> data/off-offering.json.
           # Non-fatal; the committed snapshot is used if this hiccups.
           node build/build-off-offering.mjs || echo "! build-off-offering failed — keeping the existing off-offering.json"
+          # Off Price — All: in-season off + online markdowns (non-core, >=10 Bog+WH).
+          node build/build-off-offering-all.mjs || echo "! build-off-offering-all failed — keeping the existing off-offering-all.json"
       - name: Commit & push if changed
         run: |
           git config user.name "yb-resync-bot"

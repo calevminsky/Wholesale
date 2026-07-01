@@ -140,14 +140,17 @@ app.get("/admin/OP.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirna
 // Alias: /op/admin (and its script) -> the same Off Price admin page.
 app.get("/op/admin", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "OP.html")));
 app.get("/op/admin.js", adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "OP.js")));
+// Off Price — All admin (same page/JS; the page detects the offering from the path).
+app.get(["/op/admin/all", "/op/admin/all/"], adminAuth, (_req, res) => res.sendFile(path.join(__dirname, "admin", "OP.html")));
 // Back-compat: the old /admin/season path now points at Full Price.
 app.get("/admin/season", adminAuth, (_req, res) => res.redirect("/admin/FP"));
 
 // ---- in-season portal page (login-gated client-side; APIs enforce the session) ----
 app.get(["/season", "/season/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
-// Direct Off Price link — same page, but the client skips the gate and opens
-// straight into Off Price (company + email is collected at checkout instead).
+// Direct Off Price links — same page, client skips the gate and opens straight
+// into the offering (company + email is collected at checkout instead).
 app.get(["/offprice", "/offprice/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
+app.get(["/offprice-all", "/offprice-all/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
 
 // ---- account resolution (buyer portal) ----
 // Returns ONLY the public-facing fields for a known token (name, slug,
@@ -626,75 +629,81 @@ app.post("/api/season/orders", requireSeasonSession, async (req, res) => {
 // ============================================================================
 // Off Price — PUBLIC (no login). Pricing is one global rule for everyone, so
 // there's nothing per-account to gate: buyers just enter company + email (like
-// the F26 portal) and browse/order. Orders still route to the importer as drafts.
+// the F26 portal) and browse/order. Orders route to the importer as drafts.
+// Two offerings share these routes: "off" (curated F26) at /api/offprice, and
+// "offall" (in-season off + all online markdowns) at /api/offall.
 // ============================================================================
-app.get("/api/offprice/catalog", async (_req, res) => {
-  try {
-    const master = readOffOffering();
-    if (master.missing) return res.status(503).json({ error: "The Off Price offering hasn't been built yet." });
-    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
+function registerOffPublicRoutes(oid, base, label) {
+  app.get(`${base}/catalog`, async (_req, res) => {
+    try {
+      const master = readOffOffering(oid);
+      if (master.missing) return res.status(503).json({ error: `The ${label} offering hasn't been built yet.` });
+      const cfg = await getOffConfig(oid).catch(() => ({ removes: [], overrides: {}, order: [] }));
+      const hidden = await hiddenSet();
+      const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides, order: cfg.order });
+      res.json({
+        offering: oid, offer: "INSEASON", currency: master.currency || "USD",
+        size_order: master.size_order, delivery_default_days: master.delivery_default_days || 14,
+        generated_at: master.generated_at || null, counts: { products: products.length }, products
+      });
+    } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+  });
+
+  async function catalogForPrint() {
+    const master = readOffOffering(oid);
+    if (master.missing) return null;
+    const cfg = await getOffConfig(oid).catch(() => ({ removes: [], overrides: {}, order: [] }));
     const hidden = await hiddenSet();
     const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides, order: cfg.order });
-    res.json({
-      offering: "off", offer: "INSEASON", currency: master.currency || "USD",
-      size_order: master.size_order, delivery_default_days: master.delivery_default_days || 14,
-      generated_at: master.generated_at || null, counts: { products: products.length }, products
-    });
-  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
-});
+    return { offer: label, currency: master.currency || "USD", delivery_default_days: master.delivery_default_days || 14, products };
+  }
+  const fileSlug = oid === "offall" ? "off-price-all" : "off-price";
+  app.get(`${base}/linesheet.pdf`, async (_req, res) => {
+    try {
+      const cat = await catalogForPrint();
+      if (!cat) return res.status(503).json({ error: `${label} offering not built yet.` });
+      const pdf = await lineSheetPdf(cat, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
+      const date = new Date().toISOString().slice(0, 10);
+      res.setHeader("Content-Type", "application/pdf");
+      res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-${fileSlug}-${date}.pdf"`);
+      res.send(Buffer.from(pdf));
+    } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+  });
+  app.get(`${base}/linesheet.xlsx`, async (_req, res) => {
+    try {
+      const cat = await catalogForPrint();
+      if (!cat) return res.status(503).json({ error: `${label} offering not built yet.` });
+      const buf = await lineSheetBuffer(cat, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
+      const date = new Date().toISOString().slice(0, 10);
+      res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+      res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-${fileSlug}-${date}.xlsx"`);
+      res.send(Buffer.from(buf));
+    } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+  });
 
-// Printable Off Price line sheet — same renderers as the F26 portal, public.
-async function offCatalogForPrint() {
-  const master = readOffOffering();
-  if (master.missing) return null;
-  const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
-  const hidden = await hiddenSet();
-  const products = buildOffCatalog({ master, removes: cfg.removes, hidden, overrides: cfg.overrides, order: cfg.order });
-  return { offer: "Off Price", currency: master.currency || "USD", delivery_default_days: master.delivery_default_days || 14, products };
+  app.post(`${base}/orders`, async (req, res) => {
+    try {
+      const { company, email, lines, notes, shipping } = req.body || {};
+      const co = String(company || "").trim();
+      if (!co) return res.status(400).json({ ok: false, error: "Please enter your company name." });
+      const account = { name: co, slug: slugify(co), customer_id: null };
+      const master = readOffOffering(oid);
+      if (master.missing) return res.status(503).json({ ok: false, error: `${label} offering not built yet.` });
+      const cfg = await getOffConfig(oid).catch(() => ({ removes: [], overrides: {}, order: [] }));
+      const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, master, removes: cfg.removes, overrides: cfg.overrides });
+      if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
+      const result = await postDraftToImporter(order);
+      if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
+      const buyerEmail = String(email || "").trim();
+      saveOrder({ ref: `${account.slug}-${oid}-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail, units, subtotal, order })
+        .catch((e) => console.warn(`${oid} saveOrder failed:`, e.message));
+      if (buyerEmail) logVisit(co, buyerEmail).catch(() => {});
+      res.json({ ok: true, draft_id: result.order?.id ?? null, units, subtotal, styles: order.items.length, account: account.name });
+    } catch (e) { res.status(500).json({ ok: false, error: String(e.message || e) }); }
+  });
 }
-app.get("/api/offprice/linesheet.pdf", async (_req, res) => {
-  try {
-    const cat = await offCatalogForPrint();
-    if (!cat) return res.status(503).json({ error: "Off Price offering not built yet." });
-    const pdf = await lineSheetPdf(cat, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
-    const date = new Date().toISOString().slice(0, 10);
-    res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-off-price-${date}.pdf"`);
-    res.send(Buffer.from(pdf));
-  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
-});
-app.get("/api/offprice/linesheet.xlsx", async (_req, res) => {
-  try {
-    const cat = await offCatalogForPrint();
-    if (!cat) return res.status(503).json({ error: "Off Price offering not built yet." });
-    const buf = await lineSheetBuffer(cat, { defaultLeadDays: Number(cat.delivery_default_days) || 14 });
-    const date = new Date().toISOString().slice(0, 10);
-    res.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    res.setHeader("Content-Disposition", `attachment; filename="yakira-bella-off-price-${date}.xlsx"`);
-    res.send(Buffer.from(buf));
-  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
-});
-
-app.post("/api/offprice/orders", async (req, res) => {
-  try {
-    const { company, email, lines, notes, shipping } = req.body || {};
-    const co = String(company || "").trim();
-    if (!co) return res.status(400).json({ ok: false, error: "Please enter your company name." });
-    const account = { name: co, slug: slugify(co), customer_id: null };
-    const master = readOffOffering();
-    if (master.missing) return res.status(503).json({ ok: false, error: "Off Price offering not built yet." });
-    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
-    const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, master, removes: cfg.removes, overrides: cfg.overrides });
-    if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
-    const result = await postDraftToImporter(order);
-    if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
-    const buyerEmail = String(email || "").trim();
-    saveOrder({ ref: `${account.slug}-off-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail, units, subtotal, order })
-      .catch((e) => console.warn("offprice saveOrder failed:", e.message));
-    if (buyerEmail) logVisit(co, buyerEmail).catch(() => {}); // lead capture, same as the gate
-    res.json({ ok: true, draft_id: result.order?.id ?? null, units, subtotal, styles: order.items.length, account: account.name });
-  } catch (e) { res.status(500).json({ ok: false, error: String(e.message || e) }); }
-});
+registerOffPublicRoutes("off", "/api/offprice", "Off Price");
+registerOffPublicRoutes("offall", "/api/offall", "Off Price — All");
 
 // ---- admin: offering curation (adds/removes) ----
 app.get("/api/offering/full", adminAuth, async (_req, res) => {
@@ -722,37 +731,39 @@ app.get("/api/offering/full/master", adminAuth, async (_req, res) => {
   } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
 });
 
-// ---- admin: Off Price offering (frozen snapshot; remove or re-price styles) ----
-app.get("/api/offering/off", adminAuth, async (_req, res) => {
-  try { res.json(await getOffConfig()); }
-  catch (e) { res.status(500).json({ error: String(e.message || e) }); }
-});
-app.post("/api/offering/off", adminAuth, async (req, res) => {
-  try {
-    const saved = await setOffConfig({ removes: req.body?.removes, overrides: req.body?.overrides, order: req.body?.order });
-    res.json({ ok: true, saved });
-  } catch (e) { res.status(400).json({ ok: false, error: String(e.message || e) }); }
-});
-
-// Admin: the full Off Price snapshot (in the saved display order) with each
-// style's effective price and whether it's currently in the offering.
-app.get("/api/offering/off/master", adminAuth, async (_req, res) => {
-  try {
-    const master = readOffOffering();
-    const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {}, order: [] }));
-    const removeSet = new Set(cfg.removes);
-    const ordered = applyOrder(master.products || [], cfg.order);
-    const products = ordered.map((p) => ({
-      handle: p.handle, title: p.title, color: p.color, image: p.image, gid: p.gid, type: p.type,
-      msrp: p.msrp, compare_at: p.compare_at, current_price: p.current_price,
-      total_available: p.total_available,
-      off_price: p.off_price ?? null,
-      override: cfg.overrides[p.gid] ?? null,
-      in_offering: !removeSet.has(p.handle)
-    }));
-    res.json({ generated_at: master.generated_at || null, missing: !!master.missing, rule: master.rule || null, products, removes: cfg.removes, order: cfg.order });
-  } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
-});
+// ---- admin: Off Price offerings (frozen snapshots; remove/re-price/reorder) ----
+// Registered for both "off" (/api/offering/off) and "offall" (/api/offering/offall).
+function registerOffAdminRoutes(oid, base) {
+  app.get(base, adminAuth, async (_req, res) => {
+    try { res.json(await getOffConfig(oid)); }
+    catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+  });
+  app.post(base, adminAuth, async (req, res) => {
+    try {
+      const saved = await setOffConfig({ removes: req.body?.removes, overrides: req.body?.overrides, order: req.body?.order }, oid);
+      res.json({ ok: true, saved });
+    } catch (e) { res.status(400).json({ ok: false, error: String(e.message || e) }); }
+  });
+  app.get(`${base}/master`, adminAuth, async (_req, res) => {
+    try {
+      const master = readOffOffering(oid);
+      const cfg = await getOffConfig(oid).catch(() => ({ removes: [], overrides: {}, order: [] }));
+      const removeSet = new Set(cfg.removes);
+      const ordered = applyOrder(master.products || [], cfg.order);
+      const products = ordered.map((p) => ({
+        handle: p.handle, title: p.title, color: p.color, image: p.image, gid: p.gid, type: p.type,
+        msrp: p.msrp, compare_at: p.compare_at, current_price: p.current_price,
+        total_available: p.total_available,
+        off_price: p.off_price ?? null,
+        override: cfg.overrides[p.gid] ?? null,
+        in_offering: !removeSet.has(p.handle)
+      }));
+      res.json({ generated_at: master.generated_at || null, missing: !!master.missing, rule: master.rule || null, products, removes: cfg.removes, order: cfg.order });
+    } catch (e) { res.status(500).json({ error: String(e.message || e) }); }
+  });
+}
+registerOffAdminRoutes("off", "/api/offering/off");
+registerOffAdminRoutes("offall", "/api/offering/offall");
 
 // ---- admin: per-account pricing/entitlements ----
 app.get("/api/accounts-pricing", adminAuth, async (_req, res) => {

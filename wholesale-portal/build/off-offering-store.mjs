@@ -16,7 +16,11 @@
 // write is required for the offering to work out of the box.
 import { getAdminSetting, setAdminSetting } from "./admin-settings-store.mjs";
 
-const KEY = "offering:off";
+// Two off-price offerings share this store, keyed by id:
+//   "off"    → the curated in-season F26 selection (data/off-offering.json)
+//   "offall" → in-season off + all online marked-down styles (data/off-offering-all.json)
+const KEYS = { off: "offering:off", offall: "offering:offall" };
+const keyFor = (oid) => KEYS[oid] || KEYS.off;
 
 const dedupe = (arr) => [...new Set((Array.isArray(arr) ? arr : []).filter(Boolean).map(String))];
 
@@ -29,19 +33,19 @@ function normOverrides(o) {
   return out;
 }
 
-export async function getOffConfig() {
-  const c = (await getAdminSetting(KEY)) || {};
+export async function getOffConfig(oid = "off") {
+  const c = (await getAdminSetting(keyFor(oid))) || {};
   return { removes: dedupe(c.removes), overrides: normOverrides(c.overrides), order: dedupe(c.order) };
 }
 
 // Partial update: a field left undefined keeps its current value.
-export async function setOffConfig(patch = {}) {
-  const cur = await getOffConfig();
+export async function setOffConfig(patch = {}, oid = "off") {
+  const cur = await getOffConfig(oid);
   const next = {
     removes: patch.removes !== undefined ? dedupe(patch.removes) : cur.removes,
     overrides: patch.overrides !== undefined ? normOverrides(patch.overrides) : cur.overrides,
     order: patch.order !== undefined ? dedupe(patch.order) : cur.order
   };
-  await setAdminSetting(KEY, next);
+  await setAdminSetting(keyFor(oid), next);
   return next;
 }
