@@ -2,12 +2,19 @@
 // demand, FIFO by order age. Add-only — existing reservations are never
 // rebalanced (policy: wholesale-first, no scarcity arbitration).
 //
+// Keys: demand lines carry a Shopify variant id (from pd.variant for
+// pd-resolved lines, or directly for Shopify-only in-stock lines). pd stores
+// mostly bare-numeric ids while inventory_items.variant_id is a full GID, so
+// every comparison uses the numeric tail (regexp_replace(x,'^.*/','')).
+//
 // Double-count guard: only active on-hand reservations that are NOT yet
 // transferred subtract from Warehouse availability — once the transfer
 // executes, the Shopify Warehouse count drops by itself. Receipt-source
 // reservations never subtract (their units were pushed straight to the
 // Wholesale location at PO closeout and never sat in the Warehouse count).
 import { getPool } from "../pg.js";
+
+const tail = (id) => String(id).replace(/^.*\//, "");
 
 export async function sweepOnHandReservations() {
   const pool = getPool();
@@ -17,41 +24,46 @@ export async function sweepOnHandReservations() {
     // One sweep at a time, cluster-wide.
     await client.query(`SELECT pg_advisory_xact_lock(hashtext('wholesale_reserve_sweep'))`);
 
-    // Warehouse availability net of pending (untransferred) on-hand holds.
+    // Warehouse availability per open-demand Shopify variant (numeric tail),
+    // net of pending (untransferred) on-hand holds.
     const { rows: avail } = await client.query(
-      `SELECT pv.id AS variant_id,
+      `WITH demand_variants AS (
+         SELECT DISTINCT regexp_replace(shopify_variant_id, '^.*/', '') AS svid
+           FROM wholesale_open_demand_lines
+          WHERE shopify_variant_id IS NOT NULL
+       )
+       SELECT dv.svid,
               GREATEST(0, MAX(il.available)
                 - COALESCE((SELECT SUM(r.qty) FROM wholesale_reservations r
-                             WHERE r.variant_id = pv.id
+                             WHERE regexp_replace(r.shopify_variant_id, '^.*/', '') = dv.svid
                                AND r.source = 'on_hand'
                                AND r.released_at IS NULL
                                AND r.transferred_at IS NULL), 0))::int AS net_available
-         FROM wholesale_open_demand d
-         JOIN pd.variant pv ON pv.id = d.variant_id
-         JOIN public.inventory_items ii ON ii.variant_id = pv.shopify_variant_id::text
+         FROM demand_variants dv
+         JOIN public.inventory_items ii ON regexp_replace(ii.variant_id, '^.*/', '') = dv.svid
          JOIN public.inventory_levels il ON il.inventory_item_id = ii.inventory_item_id
                                         AND il.location_name = 'Warehouse'
-        WHERE pv.shopify_variant_id IS NOT NULL
-        GROUP BY pv.id`
+        GROUP BY dv.svid`
     );
-    const netByVariant = new Map(avail.map((r) => [String(r.variant_id), r.net_available]));
+    const netByVariant = new Map(avail.map((r) => [r.svid, r.net_available]));
 
     const { rows: demand } = await client.query(
-      `SELECT order_line_id, variant_id, open_qty
+      `SELECT order_line_id, variant_id, shopify_variant_id, open_qty
          FROM wholesale_open_demand_lines
+        WHERE shopify_variant_id IS NOT NULL
         ORDER BY order_created_at, order_line_id`
     );
 
     let reservedUnits = 0;
     for (const d of demand) {
-      const key = String(d.variant_id);
+      const key = tail(d.shopify_variant_id);
       const net = netByVariant.get(key) || 0;
       if (net <= 0) continue;
       const take = Math.min(net, d.open_qty);
       await client.query(
-        `INSERT INTO wholesale_reservations (order_line_id, variant_id, qty, source)
-         VALUES ($1, $2, $3, 'on_hand')`,
-        [d.order_line_id, d.variant_id, take]
+        `INSERT INTO wholesale_reservations (order_line_id, variant_id, shopify_variant_id, qty, source)
+         VALUES ($1, $2, $3, $4, 'on_hand')`,
+        [d.order_line_id, d.variant_id, d.shopify_variant_id, take]
       );
       netByVariant.set(key, net - take);
       reservedUnits += take;
