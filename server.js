@@ -1740,6 +1740,27 @@ async function renderPdfFromHtml(html, browser = null, pdfOptions = null) {
 // ----------------- Routes -----------------
 app.get("/api/debug/ping", (_req, res) => res.json({ ok: true, version: VERSION }));
 
+// Portal link directory, proxied from the buyer portal (which owns its URLs and
+// keyed links — gate bypass, curate). Auth to it reuses the shared secret: our
+// WHOLESALE_PASSWORD matches the portal's IMPORTER_PASSWORD.
+const PORTAL_BASE_URL = (process.env.PORTAL_BASE_URL || "https://yb-wholesale-portal.onrender.com").replace(/\/+$/, "");
+let portalLinksCache = null;
+let portalLinksCacheAt = 0;
+app.get("/api/portal-links", async (_req, res) => {
+  try {
+    if (portalLinksCache && Date.now() - portalLinksCacheAt < 5 * 60_000) return res.json(portalLinksCache);
+    const auth = Buffer.from(`importer:${process.env.WHOLESALE_PASSWORD || ""}`).toString("base64");
+    const r = await fetch(`${PORTAL_BASE_URL}/api/links`, { headers: { Authorization: `Basic ${auth}` } });
+    const json = await r.json().catch(() => ({}));
+    if (!r.ok) return res.status(502).json({ error: json.error || `Portal responded ${r.status}` });
+    portalLinksCache = json;
+    portalLinksCacheAt = Date.now();
+    res.json(json);
+  } catch (e) {
+    res.status(502).json({ error: String(e?.message || e) });
+  }
+});
+
 app.get("/api/locations", async (_req, res) => {
   try {
     const locations = await getAllLocations();

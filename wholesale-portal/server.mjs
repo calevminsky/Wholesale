@@ -189,6 +189,58 @@ app.get("/api/gate", (req, res) => {
   res.json({ ok: !!GATE_BYPASS_KEY && String(req.query.key || "") === GATE_BYPASS_KEY });
 });
 
+// ---- link directory (server-to-server; consumed by the importer's "Portal
+// Links" tab). Guarded by the shared importer secret (IMPORTER_PASSWORD ==
+// the importer's WHOLESALE_PASSWORD) because the response embeds keyed links
+// (gate bypass + curate). Keyed rows come back with url:null until their env
+// key is set, so the UI can show them as "not configured" instead of broken.
+app.get("/api/links", (req, res) => {
+  const secret = process.env.IMPORTER_PASSWORD || "";
+  const h = req.headers.authorization || "";
+  let ok = false;
+  if (secret && h.startsWith("Basic ")) {
+    const dec = Buffer.from(h.slice(6), "base64").toString("utf8");
+    ok = dec.slice(dec.indexOf(":") + 1) === secret;
+  }
+  if (!ok) return res.set("WWW-Authenticate", 'Basic realm="Portal Links"').status(401).json({ error: "Authentication required." });
+  const base = (process.env.PUBLIC_BASE_URL || `${req.headers["x-forwarded-proto"] || req.protocol}://${req.get("host")}`).replace(/\/+$/, "");
+  const secretNote = (key, name) => (key ? "Keyed link — treat as secret." : `Disabled — ${name} not set on the portal.`);
+  const offSection = (title, buyerPath, bypassSuffix, apiBase, adminPath) => ({
+    title,
+    links: [
+      { label: "Buyer link (direct)", url: `${base}${buyerPath}`, note: "No login — company + email collected at checkout." },
+      { label: "Buyer link (gate bypass)", url: GATE_BYPASS_KEY ? `${base}/season?bypass=${encodeURIComponent(GATE_BYPASS_KEY)}${bypassSuffix}` : null, note: secretNote(GATE_BYPASS_KEY, "GATE_BYPASS_KEY") },
+      { label: "Line sheet (PDF)", url: `${base}${apiBase}/linesheet.pdf` },
+      { label: "Line sheet (Excel)", url: `${base}${apiBase}/linesheet.xlsx` },
+      { label: "Admin — remove / re-price / reorder", url: `${base}${adminPath}`, note: "Password-gated." }
+    ]
+  });
+  res.json({
+    base,
+    sections: [
+      {
+        title: "Fall 2026 Pre-Order",
+        links: [
+          { label: "Buyer portal", url: `${base}/`, note: "Public — entry gate asks company + email. Per-account ?t= links still work and skip the gate." },
+          { label: "Line sheet (PDF)", url: `${base}/api/linesheet.pdf` },
+          { label: "Line sheet (Excel)", url: `${base}/api/linesheet.xlsx` },
+          { label: "Admin — off-price rules, ETAs, rebuild", url: `${base}/admin`, note: "Password-gated." },
+          { label: "Product removal (Emily's link)", url: CURATE_KEY ? `${base}/curate?key=${encodeURIComponent(CURATE_KEY)}` : null, note: secretNote(CURATE_KEY, "CURATE_KEY") }
+        ]
+      },
+      {
+        title: "In-Season · Full Price",
+        links: [
+          { label: "Buyer portal", url: `${base}/season`, note: "Email + password login — allowlist managed in the admin." },
+          { label: "Admin — users, pricing, curation", url: `${base}/admin/FP`, note: "Password-gated." }
+        ]
+      },
+      offSection("In-Season · Off Price", "/offprice", "", "/api/offprice", "/op/admin"),
+      offSection("In-Season · Off Price — All", "/offprice-all", "&o=offall", "/api/offall", "/op/admin/all")
+    ]
+  });
+});
+
 // ---- off-pricing API ----
 app.get("/api/off-pricing", (_req, res) => res.json({ ...loadOffPricing(), modes: OFF_MODES }));
 
