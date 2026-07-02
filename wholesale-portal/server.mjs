@@ -100,14 +100,27 @@ async function hiddenSet(force = false) {
 let _etaOverrides = {};
 function etaOverridesMap() { return _etaOverrides; }
 
-// Shared helper: apply hidden-product filter + ETA overrides, used by all three
-// buyer-facing catalog/linesheet endpoints so they all stay consistent.
+// Handles that live in an off-price offering snapshot. The F26 line sheet
+// excludes these so no style ever appears on both F26 and off-price. Snapshot-
+// based (no DB), so it stays in sync as the off-price snapshots are rebuilt.
+function offPriceHandleSet() {
+  const set = new Set();
+  for (const oid of ["off", "offall"]) {
+    for (const p of readOffOffering(oid).products || []) if (p.handle) set.add(p.handle);
+  }
+  return set;
+}
+
+// Shared helper: apply hidden-product filter + off-price exclusion + ETA
+// overrides, used by all buyer-facing F26 catalog/linesheet endpoints.
 async function catalogForBuyers() {
   const cat = readCatalog();
   const hide = await hiddenSet();
+  const offSet = offPriceHandleSet();
   const etas = etaOverridesMap();
   let products = cat.products || [];
   if (hide.size) products = products.filter((p) => !hide.has(p.handle));
+  if (offSet.size) products = products.filter((p) => !offSet.has(p.handle)); // never show off-price styles on F26
   if (Object.keys(etas).length) {
     products = products.map((p) => {
       const ov = etas[p.gid];
