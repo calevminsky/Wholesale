@@ -90,17 +90,20 @@ export async function createOrder(payload) {
     export_token = null,
     price_mismatches = []
   } = payload;
+  // 'portal' = buyer self-service (feeds the preorder-fulfillment ledger);
+  // 'importer' = real-time rep/upload drafts (immediate fill, ledger-exempt).
+  const origin = payload.origin === "portal" ? "portal" : "importer";
 
   const { rows } = await query(
     `INSERT INTO wholesale_orders
        (customer_id, line_sheet_id, name, notes, location_ids, items, source_filename,
-        export_token, price_mismatches)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+        export_token, price_mismatches, origin)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
      RETURNING id`,
     [
       customer_id, line_sheet_id, name, notes, location_ids,
       JSON.stringify(items), source_filename,
-      export_token, JSON.stringify(price_mismatches || [])
+      export_token, JSON.stringify(price_mismatches || []), origin
     ]
   );
   await afterItemsWrite(rows[0].id);

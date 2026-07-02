@@ -234,7 +234,10 @@ export async function postDraftToImporter(order) {
     res = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json", Authorization: `Basic ${auth}` },
-      body: JSON.stringify(order)
+      // origin:'portal' scopes the order into the preorder-fulfillment ledger
+      // (demand views / reservations / yb-reports dashboard). Importer-native
+      // real-time drafts stay origin:'importer' and are exempt.
+      body: JSON.stringify({ ...order, origin: "portal" })
     });
   } catch (e) {
     return { ok: false, status: 0, error: `Could not reach importer: ${e.message}` };
