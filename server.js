@@ -2874,4 +2874,20 @@ const port = process.env.PORT || 3000;
 app.listen(port, async () => {
   console.log(`Wholesale importer running on http://localhost:${port}`);
   await runMigrations();
+
+  // Hourly on-hand reservation sweep: catches inventory that arrived outside
+  // an order write (e.g. Shopify restocks) and any write-time sweep that failed.
+  if (pgAvailable()) {
+    const runSweep = async () => {
+      try {
+        const { sweepOnHandReservations } = await import("./src/orders/reserve.js");
+        const r = await sweepOnHandReservations();
+        if (r.reservedUnits > 0) console.log(`Wholesale sweep: reserved ${r.reservedUnits} units`);
+      } catch (e) {
+        console.error("Wholesale sweep failed:", e.message || e);
+      }
+    };
+    runSweep();
+    setInterval(runSweep, 60 * 60 * 1000);
+  }
 });

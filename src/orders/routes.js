@@ -5,6 +5,8 @@
 import { Router } from "express";
 import { pgAvailable } from "../pg.js";
 import * as db from "./db.js";
+import { syncOrderLines, invalidateSlugCache } from "./normalize.js";
+import { sweepOnHandReservations } from "./reserve.js";
 import * as customersDb from "../customers/db.js";
 import { parseOrderUpload } from "./parse-upload.js";
 import { getExportByToken } from "../linesheets/exports-db.js";
@@ -300,6 +302,28 @@ export function createOrdersRouter({
       const row = await db.duplicateOrder(id);
       if (!row) return res.status(404).json({ error: "Not found" });
       res.json({ order: row });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // Re-run item -> pd.variant normalization for one order (e.g. after a
+  // colorway gets its Shopify handle assigned) and re-sweep reservations.
+  r.post("/api/orders-draft/:id/renormalize", async (req, res) => {
+    const id = parseId(req.params.id);
+    if (id === null) return res.status(404).json({ error: "Not found" });
+    try {
+      invalidateSlugCache();
+      const result = await syncOrderLines(id);
+      if (!result) return res.status(404).json({ error: "Not found" });
+      const sweep = await sweepOnHandReservations();
+      res.json({ ok: true, ...result, sweep });
+    } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
+  });
+
+  // Reserve Warehouse stock against all open wholesale demand (FIFO, add-only,
+  // idempotent). Also runs after every order item write and hourly.
+  r.post("/api/wholesale/sweep", async (_req, res) => {
+    try {
+      res.json({ ok: true, ...(await sweepOnHandReservations()) });
     } catch (e) { res.status(500).json({ error: String(e?.message || e) }); }
   });
 

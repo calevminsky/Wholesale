@@ -414,6 +414,17 @@ app.post("/api/orders", async (req, res) => {
     saveOrder({ ref: base, accountName: account.name, buyerEmail: email, units, subtotal, order })
       .catch((e) => console.warn("saveOrder failed:", e.message));
 
+    // Persist to the importer (wholesale_orders) — the fulfillment system of
+    // record. Season/off paths already do this; the email stays a notification.
+    const importer = await postDraftToImporter(order);
+    let importerNote = "";
+    if (importer.ok) {
+      importerNote = `<p style="color:#666;font-size:12px">Importer draft #${importer.order?.id ?? "?"} created.</p>`;
+    } else {
+      console.warn("postDraftToImporter (in-stock) failed:", importer.error);
+      importerNote = `<p style="color:#b00;font-size:12px"><b>Warning:</b> this order did NOT reach the importer (${importer.error}). Import the attached CSV manually.</p>`;
+    }
+
     if (!process.env.MAILGUN_API_KEY || !process.env.MAILGUN_DOMAIN || !ORDER_FROM) {
       return res.status(503).json({ ok: false, error: "Order email isn't configured on the server (MAILGUN_API_KEY / MAILGUN_DOMAIN / ORDER_FROM)." });
     }
@@ -427,7 +438,7 @@ app.post("/api/orders", async (req, res) => {
       replyTo: email || undefined,
       subject: `New wholesale order — ${account.name} — ${units} units / $${subtotal}`,
       text: `New wholesale order from ${account.name}. ${units} units · $${subtotal}. CSV attached.`,
-      html: teamNotificationHtml({ order, units, subtotal, account, buyerEmail: email, ref: base }),
+      html: teamNotificationHtml({ order, units, subtotal, account, buyerEmail: email, ref: base }) + importerNote,
       attachments
     });
     if (sendReceipt && email) {

@@ -1,5 +1,19 @@
 // CRUD for wholesale_orders (drafts) and wholesale_order_previews (snapshots).
 import { query, getPool } from "../pg.js";
+import { syncOrderLines } from "./normalize.js";
+import { sweepOnHandReservations } from "./reserve.js";
+
+// Keep wholesale_order_lines + reservations in step with an order's items.
+// Best-effort: a ledger hiccup must never fail the order write itself
+// (the hourly sweep + /renormalize catch up).
+async function afterItemsWrite(orderId) {
+  try {
+    await syncOrderLines(orderId);
+    await sweepOnHandReservations();
+  } catch (e) {
+    console.error(`order ${orderId}: line normalization failed:`, e.message || e);
+  }
+}
 
 const ORDER_COLS = `
   o.id, o.status, o.customer_id, o.line_sheet_id, o.name, o.notes,
@@ -89,6 +103,7 @@ export async function createOrder(payload) {
       export_token, JSON.stringify(price_mismatches || [])
     ]
   );
+  await afterItemsWrite(rows[0].id);
   // Re-fetch with joined columns so the API shape stays consistent.
   return getOrder(rows[0].id);
 }
@@ -151,6 +166,7 @@ export async function updateOrder(id, payload) {
   } finally {
     client.release();
   }
+  if (payload.items !== undefined) await afterItemsWrite(id);
   return getOrder(id);
 }
 
@@ -213,6 +229,7 @@ export async function resolvePriceMismatches(id, strategy, ppuByHandle = {}) {
   } finally {
     client.release();
   }
+  await afterItemsWrite(id);
   return getOrder(id);
 }
 
@@ -222,6 +239,17 @@ export async function archiveOrder(id) {
       WHERE id = $1 AND archived_at IS NULL`,
     [id]
   );
+  if (rowCount > 0) {
+    // Free the units this order was holding. Released rows that were already
+    // transferred surface as "return to Warehouse" on the dashboard.
+    await query(
+      `UPDATE wholesale_reservations r SET released_at = NOW()
+        FROM wholesale_order_lines l
+       WHERE l.id = r.order_line_id AND l.order_id = $1
+         AND r.released_at IS NULL`,
+      [id]
+    );
+  }
   return rowCount > 0;
 }
 
@@ -256,6 +284,7 @@ export async function duplicateOrder(id) {
       ]
     );
     await client.query("COMMIT");
+    await afterItemsWrite(rows[0].id);
     return getOrder(rows[0].id);
   } catch (e) {
     await client.query("ROLLBACK");
