@@ -2903,6 +2903,21 @@ app.listen(port, async () => {
   if (pgAvailable()) {
     const runSweep = async () => {
       try {
+        // Self-heal: re-normalize orders whose items were edited outside this
+        // app's API (direct SQL, other tools) — their items JSONB is newer
+        // than their ledger lines.
+        const { syncOrderLines } = await import("./src/orders/normalize.js");
+        const { rows: stale } = await pgQuery(`
+          SELECT o.id FROM wholesale_orders o
+           WHERE o.archived_at IS NULL AND o.status IN ('draft','previewed')
+             AND o.updated_at > COALESCE(
+                   (SELECT MAX(l.updated_at) FROM wholesale_order_lines l WHERE l.order_id = o.id),
+                   'epoch'::timestamptz)`);
+        for (const s of stale) {
+          await syncOrderLines(s.id).catch((e) => console.error(`renormalize ${s.id} failed:`, e.message));
+        }
+        if (stale.length) console.log(`Wholesale self-heal: re-normalized ${stale.length} stale order(s)`);
+
         const { sweepOnHandReservations } = await import("./src/orders/reserve.js");
         const r = await sweepOnHandReservations();
         if (r.reservedUnits > 0) console.log(`Wholesale sweep: reserved ${r.reservedUnits} units`);
