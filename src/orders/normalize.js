@@ -35,12 +35,33 @@ async function getSlugMap(client) {
        JOIN pd.style s ON s.id = c.style_id`
   );
   const map = new Map();
+  const put = (slug, id) => { if (slug && !map.has(slug)) map.set(slug, id); };
   for (const r of rows) {
     if (r.shopify_handle) map.set(String(r.shopify_handle).trim(), r.id);
     const name = r.color ? `${String(r.style_name).trim()} (${String(r.color).trim()})` : String(r.style_name).trim();
-    const slug = slugify(name);
-    // shopify_handle wins over a slug collision from another colorway.
-    if (slug && !map.has(slug)) map.set(slug, r.id);
+    put(slugify(name), r.id);
+  }
+  // Historical names from pd's audit log: products get renamed after orders
+  // are placed (e.g. "Hallie Dress Long Sleeve" -> "Rosana Dress"), leaving
+  // order handles pointing at names that no longer exist. Map slugs of every
+  // OLD style name / colorway color to the same colorway. Current names were
+  // added first, so they always win a collision (name reuse).
+  const { rows: renames } = await client.query(`
+    SELECT c.id, al.old_row->>'name' AS old_style_name, c.color
+      FROM pd.audit_log al
+      JOIN pd.colorway c ON c.style_id = al.row_id
+     WHERE al.table_name = 'style' AND al.old_row->>'name' IS NOT NULL
+    UNION
+    SELECT c.id, s.name, al.old_row->>'color'
+      FROM pd.audit_log al
+      JOIN pd.colorway c ON c.id = al.row_id
+      JOIN pd.style s ON s.id = c.style_id
+     WHERE al.table_name = 'colorway' AND al.old_row->>'color' IS NOT NULL`);
+  for (const r of renames) {
+    const styleName = String(r.old_style_name || "").trim();
+    if (!styleName) continue;
+    const name = r.color ? `${styleName} (${String(r.color).trim()})` : styleName;
+    put(slugify(name), r.id);
   }
   slugCache = map;
   slugCacheAt = now;
