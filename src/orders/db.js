@@ -262,7 +262,7 @@ export async function duplicateOrder(id) {
   try {
     await client.query("BEGIN");
     const { rows: src } = await client.query(
-      `SELECT customer_id, line_sheet_id, name, notes, location_ids, items, source_filename
+      `SELECT customer_id, line_sheet_id, name, notes, location_ids, items, source_filename, origin
          FROM wholesale_orders WHERE id = $1 FOR UPDATE`,
       [id]
     );
@@ -273,8 +273,8 @@ export async function duplicateOrder(id) {
     const s = src[0];
     const { rows } = await client.query(
       `INSERT INTO wholesale_orders
-         (customer_id, line_sheet_id, name, notes, location_ids, items, source_filename)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+         (customer_id, line_sheet_id, name, notes, location_ids, items, source_filename, origin)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
        RETURNING id`,
       [
         s.customer_id,
@@ -283,7 +283,9 @@ export async function duplicateOrder(id) {
         s.notes,
         s.location_ids,
         s.items,
-        s.source_filename
+        s.source_filename,
+        // A duplicated portal order stays in the fulfillment ledger.
+        s.origin
       ]
     );
     await client.query("COMMIT");

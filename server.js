@@ -104,7 +104,9 @@ if (!ADMIN_TOKEN && !(CLIENT_ID && CLIENT_SECRET)) {
   process.exit(1);
 }
 
-const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL"];
+// OS included: portal orders can carry one-size items (size_qty.OS) — without
+// it here, allocation/submit would silently drop those units at ship time.
+const SIZES = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "OS"];
 const AUTO_TAGS = ["Wholesale", "Spreadsheet"];
 const DRAFT_LINE_ITEM_LIMIT = 499; // Shopify cap per draftOrderCreate/Update (raised to 499 in API 2025-07)
 
