@@ -2,6 +2,9 @@
 // One row per style/color: name, color, type, group, size range, MSRP,
 // wholesale, availability, and estimated delivery.
 const SIZE_ORDER = ["XXS", "XS", "S", "M", "L", "XL", "XXL", "OS"];
+// Match the portal's card order: types grouped Dress → Skirt → Top, unknowns last.
+const TYPE_ORDER = ["Dress", "Skirt", "Top"];
+const typeRank = (t) => { const i = TYPE_ORDER.indexOf(t); return i === -1 ? TYPE_ORDER.length : i; };
 
 function sizeRange(sizes) {
   const present = (sizes || []).map((s) => s.size).filter((s) => SIZE_ORDER.includes(s))
@@ -24,7 +27,7 @@ export function lineSheetRows(catalog, { defaultLeadDays = 14 } = {}) {
     .sort((a, b) => {
       const coreA = (a.class || "").toLowerCase() === "core" ? 1 : 0;
       const coreB = (b.class || "").toLowerCase() === "core" ? 1 : 0;
-      return coreA - coreB || (a.title || "").localeCompare(b.title || "");
+      return typeRank(a.type) - typeRank(b.type) || coreA - coreB || (a.title || "").localeCompare(b.title || "");
     })
     .map((p) => ({
       style: p.title || "",
