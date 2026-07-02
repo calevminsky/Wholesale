@@ -71,10 +71,16 @@ const searching = () => !!($("#prodSearch").value || "").trim();
 function renderProducts() {
   const q = ($("#prodSearch").value || "").toLowerCase();
   let list = store.products.filter((p) => `${p.title} ${p.color || ""}`.toLowerCase().includes(q));
-  if (store.onlyOut) list = list.filter((p) => store.removeSet.has(p.handle));
-  const drag = !searching() && !store.onlyOut; // reordering only on the full, unfiltered list
+  // Default view = products IN the offering; "Removed" view = the removed ones.
+  list = store.onlyOut
+    ? list.filter((p) => store.removeSet.has(p.handle))
+    : list.filter((p) => !store.removeSet.has(p.handle));
+  const removedCount = store.products.filter((p) => store.removeSet.has(p.handle)).length;
+  const drag = !searching() && !store.onlyOut; // reorder only in the in-offering view
   $("#searchDragHint").style.display = (searching() || store.onlyOut) ? "" : "none";
-  $("#prodCount").textContent = `${list.length} shown`;
+  $("#onlyOutBtn").textContent = store.onlyOut ? "← Back to offering" : `Removed (${removedCount})`;
+  $("#onlyOutBtn").classList.toggle("on", store.onlyOut);
+  $("#prodCount").textContent = store.onlyOut ? `${list.length} removed` : `${list.length} in offering`;
   $("#prodGrid").innerHTML = list.map((p) => {
     const inOff = !store.removeSet.has(p.handle);
     const sel = store.selected.has(p.handle);

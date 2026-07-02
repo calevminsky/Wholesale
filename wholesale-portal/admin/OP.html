@@ -86,15 +86,13 @@ input:focus{outline:none;border-color:var(--off)}
 
   <div class="panel">
     <h2>Off Price products</h2>
-    <p class="hint">Same cards buyers see. Every style is <b>In</b> by default — click <b>In/Out</b> on a card to hide it, or edit its price right on the card. Or <b>check off</b> several cards and use the bar to remove / re-price / reorder in bulk. Drag the ⠿ handle to reorder. Save applies immediately — no rebuild.</p>
+    <p class="hint">Same cards buyers see. Removing a card takes it out of this view (find it under <b>Removed</b> to restore). Edit a price right on the card, or <b>check off</b> several cards and use the bar to remove / re-price / reorder in bulk. Drag the ⠿ handle to reorder. <b>Hit Save changes</b> to publish — the buyer sheet updates immediately.</p>
     <div class="summary" id="summary"></div>
     <div class="toolbar2">
       <input id="prodSearch" type="search" placeholder="Search style or color…" autocomplete="off">
       <label class="muted" style="display:flex;align-items:center;gap:6px;font-size:13px"><input type="checkbox" id="selAll" style="width:16px;height:16px"> Select all shown</label>
       <span class="muted" id="prodCount"></span>
-      <div class="seg" style="display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden">
-        <button class="btn sm" id="onlyOutBtn" style="border:0;border-radius:0">Only “Out”</button>
-      </div>
+      <button class="btn sm" id="onlyOutBtn">Removed (0)</button>
       <button class="btn primary" id="saveBtn" style="margin-left:auto">Save changes</button>
       <span class="status" id="saveStatus"></span>
     </div>
