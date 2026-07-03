@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-07-02T12:07:41.567Z",
+  "fetched_at": "2026-07-03T12:07:35.838Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -125,14 +125,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7610325696609",
+      "handle": "amari-dress-dark-brown",
       "ship_cancel": "2026-06-30",
       "image": "data/preorder-img/361.jpg"
     },
@@ -154,8 +156,8 @@
         "XL",
         "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7610325991521",
+      "handle": "amari-dress-rose-pink",
       "ship_cancel": "2026-06-30",
       "image": "data/preorder-img/597.jpg"
     },
@@ -1301,27 +1303,6 @@
       "image": "data/preorder-img/1158.jpg"
     },
     {
-      "airtable_id": "1115",
-      "name": "Hallie Dress Long Sleeve (Brown Flower)",
-      "color": "Brown Flower",
-      "msrp": 148,
-      "status": null,
-      "type": "Dress",
-      "class": "Fashion",
-      "size_scale": null,
-      "sizes": [
-        "XS",
-        "S",
-        "M",
-        "L",
-        "XL"
-      ],
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/1115.jpg"
-    },
-    {
       "airtable_id": "168",
       "name": "Indra Skirt (Olive Green)",
       "color": "Olive Green",
@@ -1667,14 +1648,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7610322616417",
+      "handle": "jackie-skirt-brown",
       "ship_cancel": "2026-07-10",
       "image": "data/preorder-img/939.jpg"
     },
@@ -1688,14 +1671,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7610321272929",
+      "handle": "jackie-skirt-camel",
       "ship_cancel": "2026-07-10",
       "image": "data/preorder-img/100.jpg"
     },
@@ -1709,14 +1694,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7610322124897",
+      "handle": "jackie-skirt-rust",
       "ship_cancel": "2026-07-10",
       "image": "data/preorder-img/170.jpg"
     },
@@ -3285,6 +3272,27 @@
       "image": "data/preorder-img/888.jpg"
     },
     {
+      "airtable_id": "1115",
+      "name": "Rosana Dress (Brown Flower)",
+      "color": "Brown Flower",
+      "msrp": 148,
+      "status": null,
+      "type": "Dress",
+      "class": "Fashion",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": "2026-09-15",
+      "image": "data/preorder-img/1115.jpg"
+    },
+    {
       "airtable_id": "1085",
       "name": "Rossi Cardigan (Black)",
       "color": "Black",
@@ -3315,14 +3323,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7610327957601",
+      "handle": "sandra-dress-ivory-ground",
       "ship_cancel": "2026-07-22",
       "image": "data/preorder-img/537.jpg"
     },
