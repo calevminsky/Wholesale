@@ -237,23 +237,37 @@ export async function resolvePriceMismatches(id, strategy, ppuByHandle = {}) {
 }
 
 export async function archiveOrder(id) {
-  const { rowCount } = await query(
-    `UPDATE wholesale_orders SET archived_at = NOW()
-      WHERE id = $1 AND archived_at IS NULL`,
-    [id]
-  );
-  if (rowCount > 0) {
-    // Free the units this order was holding. Released rows that were already
-    // transferred surface as "return to Warehouse" on the dashboard.
-    await query(
-      `UPDATE wholesale_reservations r SET released_at = NOW()
-        FROM wholesale_order_lines l
-       WHERE l.id = r.order_line_id AND l.order_id = $1
-         AND r.released_at IS NULL`,
+  // One transaction: nothing ever revisits an archived order, so a crash
+  // between the two statements would pin its holds against Warehouse/Bogota
+  // availability forever.
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rowCount } = await client.query(
+      `UPDATE wholesale_orders SET archived_at = NOW()
+        WHERE id = $1 AND archived_at IS NULL`,
       [id]
     );
+    if (rowCount > 0) {
+      // Free the units this order was holding. Released rows that were already
+      // transferred surface as "return to Warehouse" on the dashboard.
+      await client.query(
+        `UPDATE wholesale_reservations r SET released_at = NOW()
+          FROM wholesale_order_lines l
+         WHERE l.id = r.order_line_id AND l.order_id = $1
+           AND r.released_at IS NULL`,
+        [id]
+      );
+    }
+    await client.query("COMMIT");
+    return rowCount > 0;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
   }
-  return rowCount > 0;
 }
 
 export async function duplicateOrder(id) {
@@ -400,16 +414,42 @@ export async function saveSubmitSnapshot(orderId, snapshot) {
 }
 
 export async function markSubmitted(orderId, { shopify_order_id, shopify_order_name }) {
-  const { rows } = await query(
-    `UPDATE wholesale_orders
-        SET status = 'submitted',
-            shopify_order_id = $2,
-            shopify_order_name = $3,
-            submitted_at = NOW(),
-            updated_at = NOW()
-      WHERE id = $1 AND status IN ('draft','previewed')
-      RETURNING id`,
-    [orderId, shopify_order_id, shopify_order_name || null]
-  );
-  return rows[0] || null;
+  const pool = getPool();
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
+    const { rows } = await client.query(
+      `UPDATE wholesale_orders
+          SET status = 'submitted',
+              shopify_order_id = $2,
+              shopify_order_name = $3,
+              submitted_at = NOW(),
+              updated_at = NOW()
+        WHERE id = $1 AND status IN ('draft','previewed')
+        RETURNING id`,
+      [orderId, shopify_order_id, shopify_order_name || null]
+    );
+    if (rows[0]) {
+      // Release UNtransferred holds: the submitted Shopify order drains stock
+      // from the order's locations directly, bypassing the hold — leaving it
+      // active would double-subtract from sweep availability forever.
+      // Transferred rows stay active: they are the record of units that went
+      // out through this order (releasing them would flag a bogus "return to
+      // Warehouse" on the dashboard).
+      await client.query(
+        `UPDATE wholesale_reservations r SET released_at = NOW()
+          FROM wholesale_order_lines l
+         WHERE l.id = r.order_line_id AND l.order_id = $1
+           AND r.released_at IS NULL AND r.transferred_at IS NULL`,
+        [orderId]
+      );
+    }
+    await client.query("COMMIT");
+    return rows[0] || null;
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
 }

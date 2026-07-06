@@ -12,9 +12,14 @@ ALTER TABLE wholesale_orders
 
 -- Backfill: portal-built orders tag every item with _sources like
 -- "(portal:slug)" / "(season:full:slug)" / "(season:off:slug)".
+-- Date-bounded to rows that predate this migration: migrations rerun on every
+-- boot, and portal posts stamp origin at insert now — without the bound, an
+-- operator deliberately reclassifying an order back to 'importer' would be
+-- silently re-flipped to 'portal' on the next deploy.
 UPDATE wholesale_orders
    SET origin = 'portal'
  WHERE origin = 'importer'
+   AND created_at < TIMESTAMPTZ '2026-07-03'
    AND (items::text LIKE '%(portal:%' OR items::text LIKE '%(season:%');
 
 -- The demand views (portal-only + Shopify fallback) are defined in

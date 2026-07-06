@@ -670,10 +670,12 @@ app.post("/api/season/orders", requireSeasonSession, async (req, res) => {
       const cfg = await getOffConfig().catch(() => ({ removes: [], overrides: {} }));
       const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, master: offMaster, removes: cfg.removes, overrides: cfg.overrides });
       if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
-      const result = await postDraftToImporter(order);
-      if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
-      saveOrder({ ref: `${account.slug}-off-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail: email, units, subtotal, order })
+      // Save to the portal's own log FIRST — an importer outage must never
+      // lose the order entirely (mirrors /api/orders).
+      await saveOrder({ ref: `${account.slug}-off-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail: email, units, subtotal, order })
         .catch((e) => console.warn("season(off) saveOrder failed:", e.message));
+      const result = await postDraftToImporter(order);
+      if (!result.ok) return res.status(502).json({ ok: false, error: `${result.error} — your order was recorded and our team will process it manually.` });
       return res.json({ ok: true, draft_id: result.order?.id ?? null, units, subtotal, styles: order.items.length, account: account.name });
     }
 
@@ -684,12 +686,13 @@ app.post("/api/season/orders", requireSeasonSession, async (req, res) => {
     const { order, units, subtotal } = buildSeasonOrder({ account, lines, notes, shipping, level: pricing.full_level, master });
     if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
 
-    const result = await postDraftToImporter(order);
-    if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
-
-    // Log to the portal's own order table too (best-effort, mirrors /api/orders).
-    saveOrder({ ref: `${account.slug}-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail: email, units, subtotal, order })
+    // Save to the portal's own log FIRST — an importer outage must never lose
+    // the order entirely (mirrors /api/orders).
+    await saveOrder({ ref: `${account.slug}-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail: email, units, subtotal, order })
       .catch((e) => console.warn("season saveOrder failed:", e.message));
+
+    const result = await postDraftToImporter(order);
+    if (!result.ok) return res.status(502).json({ ok: false, error: `${result.error} — your order was recorded and our team will process it manually.` });
 
     res.json({
       ok: true,
@@ -768,11 +771,13 @@ function registerOffPublicRoutes(oid, base, label) {
       const cfg = await getOffConfig(oid).catch(() => ({ removes: [], overrides: {}, order: [] }));
       const { order, units, subtotal } = buildOffOrder({ account, lines, notes, shipping, master, removes: cfg.removes, overrides: cfg.overrides });
       if (!order.items.length) return res.status(400).json({ ok: false, error: "Your cart had no orderable lines." });
-      const result = await postDraftToImporter(order);
-      if (!result.ok) return res.status(502).json({ ok: false, error: result.error });
       const buyerEmail = String(email || "").trim();
-      saveOrder({ ref: `${account.slug}-${oid}-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail, units, subtotal, order })
+      // Save to the portal's own log FIRST — an importer outage must never
+      // lose the order entirely (mirrors /api/orders).
+      await saveOrder({ ref: `${account.slug}-${oid}-${order.source_filename.match(/(\d{4}-\d{2}-\d{2})/)?.[1] || ""}`, accountName: account.name, buyerEmail, units, subtotal, order })
         .catch((e) => console.warn(`${oid} saveOrder failed:`, e.message));
+      const result = await postDraftToImporter(order);
+      if (!result.ok) return res.status(502).json({ ok: false, error: `${result.error} — your order was recorded and our team will process it manually.` });
       if (buyerEmail) logVisit(co, buyerEmail).catch(() => {});
       res.json({ ok: true, draft_id: result.order?.id ?? null, units, subtotal, styles: order.items.length, account: account.name });
     } catch (e) { res.status(500).json({ ok: false, error: String(e.message || e) }); }

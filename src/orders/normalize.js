@@ -79,8 +79,13 @@ let shopifyCacheAt = 0;
 async function getShopifyMap(client) {
   const now = Date.now();
   if (shopifyCache && now - shopifyCacheAt < SLUG_CACHE_MS) return shopifyCache;
+  // Two Shopify products can share a title (a relisted style gets a "-N"
+  // handle suffix). First row wins per (slug, size), so order newest product
+  // first — Shopify ids are monotonic, and the relisted product is the one
+  // actually being sold.
   const { rows } = await client.query(
-    `SELECT product_title, variant_title, variant_id FROM public.inventory_items`
+    `SELECT product_title, variant_title, variant_id FROM public.inventory_items
+      ORDER BY NULLIF(regexp_replace(variant_id, '\\D', '', 'g'), '')::numeric DESC NULLS LAST`
   );
   const map = new Map();
   for (const r of rows) {
@@ -252,8 +257,8 @@ export async function syncOrderLines(orderId) {
           );
           await client.query(
             `INSERT INTO wholesale_reservations
-               (order_line_id, variant_id, qty, source, po_id, created_at, transferred_at, released_at)
-             SELECT order_line_id, variant_id, $2, source, po_id, created_at, transferred_at, NOW()
+               (order_line_id, variant_id, shopify_variant_id, qty, source, po_id, created_at, from_location, transferred_at, released_at)
+             SELECT order_line_id, variant_id, shopify_variant_id, $2, source, po_id, created_at, from_location, transferred_at, NOW()
                FROM wholesale_reservations WHERE id = $1`,
             [r.id, excess]
           );
