@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-07-10T12:23:28.147Z",
+  "fetched_at": "2026-07-11T11:01:45.256Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -2001,6 +2001,27 @@
       "image": "data/preorder-img/373.jpg"
     },
     {
+      "airtable_id": "345",
+      "name": "Kinna Dress (Dark Grey)",
+      "color": "Dark Grey",
+      "msrp": 98,
+      "status": null,
+      "type": "Dress",
+      "class": "Fashion",
+      "size_scale": null,
+      "sizes": [
+        "XS",
+        "S",
+        "M",
+        "L",
+        "XL"
+      ],
+      "shopify_gid": null,
+      "handle": null,
+      "ship_cancel": "2026-09-25",
+      "image": "data/preorder-img/345.jpg"
+    },
+    {
       "airtable_id": "443",
       "name": "Larisa Dress (Brown)",
       "color": "Brown",
@@ -3247,21 +3268,6 @@
       "image": "data/preorder-img/875.jpg"
     },
     {
-      "airtable_id": "345",
-      "name": "PV-1302 (Dark Grey)",
-      "color": "Dark Grey",
-      "msrp": 98,
-      "status": null,
-      "type": "Dress",
-      "class": null,
-      "size_scale": null,
-      "sizes": null,
-      "shopify_gid": null,
-      "handle": null,
-      "ship_cancel": null,
-      "image": "data/preorder-img/345.jpg"
-    },
-    {
       "airtable_id": "13",
       "name": "Regina Dress (Burgundy)",
       "color": "Burgundy",
@@ -3271,14 +3277,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7623102693473",
+      "handle": "regina-dress-burgundy",
       "ship_cancel": "2026-08-08",
       "image": "data/preorder-img/13.jpg"
     },
@@ -3292,14 +3300,16 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
-      "shopify_gid": null,
-      "handle": null,
+      "shopify_gid": "gid://shopify/Product/7623102857313",
+      "handle": "regina-dress-navy",
       "ship_cancel": "2026-08-08",
       "image": "data/preorder-img/206.jpg"
     },
