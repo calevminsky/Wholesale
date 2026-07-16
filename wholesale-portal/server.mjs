@@ -335,6 +335,7 @@ app.get("/api/links", (req, res) => {
         title: "Spring 2027 Line Sheet (view only)",
         links: [
           { label: "Buyer link", url: `${base}/s27`, note: "View only, no ordering — entry gate asks company + email." },
+          { label: "Buyer link (gate bypass)", url: GATE_BYPASS_KEY ? `${base}/s27?bypass=${encodeURIComponent(GATE_BYPASS_KEY)}` : null, note: secretNote(GATE_BYPASS_KEY, "GATE_BYPASS_KEY") },
           { label: "Admin — refresh from PD", url: `${base}/admin`, note: "Password-gated (S27 line sheet panel)." }
         ]
       }
