@@ -1,8 +1,8 @@
 {
- "pulled": "2026-07-16T18:21:10.711Z",
+ "pulled": "2026-07-16T22:24:50.968Z",
  "season": "S27",
  "source": "pd",
- "count": 171,
+ "count": 216,
  "products": [
   {
    "id": 1444,
@@ -194,7 +194,7 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1389/image-1783964295415.jpg",
-   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1389/swatch-1784221289389.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1389/swatch-1784226246072.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -210,6 +210,19 @@
    "swatch": null,
    "fabric": null,
    "composition": "50% Cotton, 50% Polyester",
+   "collections": []
+  },
+  {
+   "id": 1555,
+   "name": "Hallie Dress",
+   "color": "Blue Pattern",
+   "type": "Dress",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1555/image-1784232674729.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1555/swatch-1784231684022.jpg",
+   "fabric": null,
+   "composition": null,
    "collections": []
   },
   {
@@ -252,32 +265,6 @@
    "collections": []
   },
   {
-   "id": 1547,
-   "name": "Karen Dress Long Sleeve",
-   "color": "Blue Pattern",
-   "type": "Dress",
-   "season": "S27",
-   "carry": false,
-   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1547/image-1784225135391.jpg",
-   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1547/swatch-1784224778177.jpg",
-   "fabric": null,
-   "composition": null,
-   "collections": []
-  },
-  {
-   "id": 1498,
-   "name": "Karen Dress Long Sleeve",
-   "color": "",
-   "type": "Dress",
-   "season": "S27",
-   "carry": false,
-   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1498/image-1784153570420.jpg",
-   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1498/swatch-1784141785465.jpg",
-   "fabric": null,
-   "composition": null,
-   "collections": []
-  },
-  {
    "id": 1507,
    "name": "Layla Dress",
    "color": "Blue Sage",
@@ -298,7 +285,7 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/740/image-1784127894563.jpg",
-   "swatch": null,
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/740/swatch-1784226414485.jpg",
    "fabric": "Woven",
    "composition": "100% POLYESTER",
    "collections": []
@@ -325,6 +312,32 @@
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1448/image-1784045633959.jpg",
    "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1448/swatch-1784146169630.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1551,
+   "name": "Leslie Dress",
+   "color": "Light Green",
+   "type": "Dress",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1551/image-1784228233333.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1551/swatch-1784227865235.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1552,
+   "name": "Leslie Dress",
+   "color": "Light Purple",
+   "type": "Dress",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1552/image-1784228725064.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1552/swatch-1784228394991.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -447,6 +460,19 @@
    "collections": []
   },
   {
+   "id": 1553,
+   "name": "Miri Dress",
+   "color": "Black Green",
+   "type": "Dress",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1553/image-1784231536541.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1553/swatch-1784229857718.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1519,
    "name": "Miri Dress",
    "color": "Navy Pattern",
@@ -462,12 +488,51 @@
   {
    "id": 1416,
    "name": "Nate Dress",
-   "color": "Penrose Dress",
+   "color": "Blue",
    "type": "Dress",
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1416/image-1784128940804.jpg",
-   "swatch": null,
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1416/swatch-1784231464559.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1579,
+   "name": "Nyla Dress",
+   "color": "Blue",
+   "type": "Dress",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1579/image-1784234818868.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1579/swatch-1784229955980.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1547,
+   "name": "Pario Dress",
+   "color": "Blue Pattern",
+   "type": "Dress",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1547/image-1784225135391.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1547/swatch-1784224778177.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1498,
+   "name": "Pario Dress",
+   "color": "",
+   "type": "Dress",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1498/image-1784153570420.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1498/swatch-1784141785465.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -558,7 +623,7 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1417/image-1784131177880.jpg",
-   "swatch": null,
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1417/swatch-1784231261341.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -792,7 +857,7 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1403/image-1783963574791.jpg",
-   "swatch": null,
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1403/swatch-1784226762175.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -845,6 +910,19 @@
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1435/image-1784041858479.jpg",
    "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1563,
+   "name": "Bessy Skirt",
+   "color": "Light Blue",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1563/image-1784235128200.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1563/swatch-1784229673575.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -923,6 +1001,45 @@
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1468/image-1784052226142.jpg",
    "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1549,
+   "name": "Dakota Skirt",
+   "color": "Grey Blue",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1549/image-1784229455852.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1549/swatch-1784228925650.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1550,
+   "name": "Dakota Skirt",
+   "color": "Ivory Blue",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1550/image-1784228613344.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1550/swatch-1784228004061.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1548,
+   "name": "Dakota Skirt",
+   "color": "Sage Pattern",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1548/image-1784231315369.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1548/swatch-1784228681412.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -1175,6 +1292,19 @@
    "collections": []
   },
   {
+   "id": 1593,
+   "name": "Kaitlin Skirt",
+   "color": "White",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/dev/development_id-343/reference-1783949574582.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1525,
    "name": "Kasey Skirt",
    "color": "Light Blue Pattern",
@@ -1195,7 +1325,7 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1398/image-1783963354652.jpg",
-   "swatch": null,
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1398/swatch-1784231116184.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -1312,7 +1442,7 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1450/image-1784143963775.jpg",
-   "swatch": null,
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1450/swatch-1784231561296.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -1326,6 +1456,32 @@
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1426/image-1784036776513.jpg",
    "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1561,
+   "name": "Leydis Skirt",
+   "color": "Pink Green",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1561/image-1784230654450.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1561/swatch-1784228999620.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1560,
+   "name": "Leydis Skirt",
+   "color": "Pink Khaki",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1560/image-1784230837157.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1560/swatch-1784229169919.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -1409,6 +1565,32 @@
    "collections": []
   },
   {
+   "id": 1559,
+   "name": "Lula Skirt",
+   "color": "Purple Mint",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1559/image-1784229913276.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1556,
+   "name": "Lula Skirt",
+   "color": "Sage Ivory",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1556/image-1784230486148.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1484,
    "name": "Madison Skirt",
    "color": "Blue Pattern",
@@ -1442,6 +1624,19 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1436/image-1784040067645.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1554,
+   "name": "Miri Skirt",
+   "color": "Green Blue",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1554/image-1784232908502.jpg",
    "swatch": null,
    "fabric": null,
    "composition": null,
@@ -1507,6 +1702,19 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1397/image-1783963326081.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1580,
+   "name": "Reizy Skirt",
+   "color": "Multi",
+   "type": "Skirt",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1580/image-1784233905319.jpg",
    "swatch": null,
    "fabric": null,
    "composition": null,
@@ -1734,6 +1942,32 @@
    "collections": []
   },
   {
+   "id": 1585,
+   "name": "Aliza Top",
+   "color": "Beige",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1585/image-1784231230387.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1586,
+   "name": "Aliza Top",
+   "color": "Pink",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1586/image-1784231265970.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1522,
    "name": "Anita Top",
    "color": "Light Blue",
@@ -1760,6 +1994,19 @@
    "collections": []
   },
   {
+   "id": 1589,
+   "name": "Ann Top",
+   "color": "Make to long sleeve",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1589/image-1784233887879.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1401,
    "name": "Anola Top",
    "color": "Ivory Blue",
@@ -1767,7 +2014,7 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1401/image-1783963284317.jpg",
-   "swatch": null,
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1401/swatch-1784231776771.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -1780,6 +2027,19 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1402/image-1783963565140.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1402/swatch-1784231065843.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1590,
+   "name": "Avigail Top",
+   "color": "Make it to long sleeve",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1590/image-1784233655736.jpg",
    "swatch": null,
    "fabric": null,
    "composition": null,
@@ -1799,6 +2059,19 @@
    "collections": []
   },
   {
+   "id": 1562,
+   "name": "Bessy Top",
+   "color": "Light Blue",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1562/image-1784231624792.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1562/swatch-1784229602188.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1432,
    "name": "Bette Top",
    "color": "Blue",
@@ -1806,6 +2079,32 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1432/image-1784038928015.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1584,
+   "name": "Bryna Top",
+   "color": "Light Mint",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1584/image-1784231139025.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1565,
+   "name": "Camero Top",
+   "color": "Ivory",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
    "swatch": null,
    "fabric": null,
    "composition": null,
@@ -1851,6 +2150,32 @@
    "collections": []
   },
   {
+   "id": 1567,
+   "name": "Clea Top",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1566,
+   "name": "Cornelia Top",
+   "color": "Light Blue",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1394,
    "name": "Dari Top",
    "color": "Blue Pattern",
@@ -1884,6 +2209,32 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1412/image-1783974649317.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1568,
+   "name": "Isla Cardigan",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1569,
+   "name": "Jane Cardigan",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
    "swatch": null,
    "fabric": null,
    "composition": null,
@@ -1942,6 +2293,71 @@
    "collections": []
   },
   {
+   "id": 1588,
+   "name": "Libby Cardigan",
+   "color": "White Blue",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1588/image-1784232190568.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1558,
+   "name": "Lula Top",
+   "color": "Purple Mint",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1558/image-1784229904346.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1558/swatch-1784229448381.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1557,
+   "name": "Lula Top",
+   "color": "Sage Ivory",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1557/image-1784230476646.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1557/swatch-1784229574262.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1570,
+   "name": "Lumi Top",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1564,
+   "name": "Mackey Top",
+   "color": "White",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1433,
    "name": "Marin Cardigan",
    "color": "White",
@@ -1968,6 +2384,32 @@
    "collections": []
   },
   {
+   "id": 1571,
+   "name": "Mel Top",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1587,
+   "name": "Mindy Cardigan",
+   "color": "Light Grey",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1587/image-1784231346975.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1470,
    "name": "Nella Top",
    "color": "",
@@ -1975,6 +2417,45 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1470/image-1784052386516.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1582,
+   "name": "Nomi Top",
+   "color": "Light Blue",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1582/image-1784230691735.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1581,
+   "name": "Nomi Top",
+   "color": "Light Peach",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1581/image-1784230662559.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1572,
+   "name": "Olly Top",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
    "swatch": null,
    "fabric": null,
    "composition": null,
@@ -2007,6 +2488,19 @@
    "collections": []
   },
   {
+   "id": 1573,
+   "name": "Paige Cardigan",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1404,
    "name": "Pamela Top",
    "color": "Navy",
@@ -2028,6 +2522,19 @@
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1537/image-1784224661278.jpg",
    "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1537/swatch-1784222683483.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1574,
+   "name": "Parker Top",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
    "fabric": null,
    "composition": null,
    "collections": []
@@ -2072,6 +2579,19 @@
    "collections": []
   },
   {
+   "id": 1575,
+   "name": "Priya Top",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
    "id": 1486,
    "name": "Raya Top",
    "color": "Green",
@@ -2079,6 +2599,45 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1486/image-1784210695268.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1578,
+   "name": "Raya Top",
+   "color": "Light Blue",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1578/image-1784234828489.jpg",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1578/swatch-1784229914423.jpg",
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1576,
+   "name": "Rena Top",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1577,
+   "name": "Renee Tee",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": null,
    "swatch": null,
    "fabric": null,
    "composition": null,
@@ -2105,6 +2664,32 @@
    "season": "S27",
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1315/image-1784041993499.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1583,
+   "name": "Sonya Top",
+   "color": "",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1583/image-1784230780804.jpg",
+   "swatch": null,
+   "fabric": null,
+   "composition": null,
+   "collections": []
+  },
+  {
+   "id": 1591,
+   "name": "Sorenzo Top",
+   "color": "Long Sleeve",
+   "type": "Top",
+   "season": "S27",
+   "carry": false,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1591/image-1784233614562.jpg",
    "swatch": null,
    "fabric": null,
    "composition": null,
@@ -2228,5 +2813,266 @@
    "collections": []
   }
  ],
- "looks": []
+ "looks": [
+  {
+   "id": 4,
+   "title": "Anita Set — Light Blue",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1522,
+    1523
+   ]
+  },
+  {
+   "id": 5,
+   "title": "Anita Set — Light Pink",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1520,
+    1521
+   ]
+  },
+  {
+   "id": 6,
+   "title": "Arisa Set — Green",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1402,
+    1403
+   ]
+  },
+  {
+   "id": 7,
+   "title": "Bette Set — Blue",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1432,
+    1431
+   ]
+  },
+  {
+   "id": 8,
+   "title": "Carmina Set — Blue",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1383,
+    1385
+   ]
+  },
+  {
+   "id": 9,
+   "title": "Carmina Set — Pink",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1382,
+    1384
+   ]
+  },
+  {
+   "id": 10,
+   "title": "Dari Set — Blue",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1394,
+    1395
+   ]
+  },
+  {
+   "id": 11,
+   "title": "Denver Set — Blue",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1184,
+    949
+   ]
+  },
+  {
+   "id": 12,
+   "title": "Ennis Set",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1414,
+    1415
+   ]
+  },
+  {
+   "id": 13,
+   "title": "Kelly Set — Rose Pink",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1500,
+    1502
+   ]
+  },
+  {
+   "id": 14,
+   "title": "Kelly Set — Sage Green",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1499,
+    1501
+   ]
+  },
+  {
+   "id": 15,
+   "title": "Lula Set — Purple Mint",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1558,
+    1559
+   ]
+  },
+  {
+   "id": 16,
+   "title": "Lula Set — Sage Ivory",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1557,
+    1556
+   ]
+  },
+  {
+   "id": 17,
+   "title": "Pamela Set — Navy",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1404,
+    1405
+   ]
+  },
+  {
+   "id": 18,
+   "title": "Tama Set — Black",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1488,
+    1491
+   ]
+  },
+  {
+   "id": 19,
+   "title": "Tama Set — Blue",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1487,
+    1490
+   ]
+  },
+  {
+   "id": 20,
+   "title": "Tama Set — Navy",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1489,
+    1492
+   ]
+  },
+  {
+   "id": 21,
+   "title": "Raya Top + Nyla Dress — Blue",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1578,
+    1579
+   ]
+  },
+  {
+   "id": 22,
+   "title": "Raya Top + Raya Dress — Green",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1486,
+    1485
+   ]
+  },
+  {
+   "id": 23,
+   "title": "Carson Top + Lisa Skirt",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1392,
+    1482
+   ]
+  },
+  {
+   "id": 24,
+   "title": "Kim Top + Kim Skirt — White",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1461,
+    1462
+   ]
+  },
+  {
+   "id": 25,
+   "title": "Nella Top + Nella Skirt",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1470,
+    1469
+   ]
+  },
+  {
+   "id": 26,
+   "title": "Tali Top + Christa Skirt",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1467,
+    1468
+   ]
+  },
+  {
+   "id": 27,
+   "title": "Tania Top + Vickie Skirt",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1481,
+    1393
+   ]
+  },
+  {
+   "id": 28,
+   "title": "Vickie Top + Gabbie Skirt",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1409,
+    1400
+   ]
+  },
+  {
+   "id": 29,
+   "title": "Zelma Top + Winne Skirt",
+   "notes": "",
+   "hero": null,
+   "members": [
+    1545,
+    1541
+   ]
+  }
+ ]
 }

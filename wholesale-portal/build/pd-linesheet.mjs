@@ -76,7 +76,13 @@ export async function fetchPdLinesheet(season = LINESHEET_SEASON) {
          SELECT c.id, s.name, c.color, s.type, c.season,
                 (COALESCE(c.season,'') <> $1) AS carry,
                 c.fabric_type, c.composition,
-                COALESCE(c.collections, '{}') AS collections,
+                -- Named line-sheet groupings (pd.collection, curated in yb-pd's
+                -- Collections page) — NOT colorway.collections, which is the
+                -- Shopify-tag label list.
+                COALESCE((SELECT array_agg(g.name ORDER BY g.position, lower(g.name))
+                            FROM pd.collection_colorway cc
+                            JOIN pd.collection g ON g.id = cc.collection_id
+                           WHERE cc.colorway_id = c.id), '{}') AS collections,
                 (SELECT a.source_url FROM pd.asset a
                   WHERE a.colorway_id = c.id AND a.kind = 'image' AND a.source_url IS NOT NULL
                   ORDER BY (a.source_url LIKE '%r2.dev%') DESC, a.id DESC LIMIT 1) AS img,
