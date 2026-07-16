@@ -205,6 +205,60 @@ app.post("/api/pd-linesheet/refresh", adminAuth, async (_req, res) => {
   }
 });
 
+// Print-size thumbnails for the S27 sheet. The browser can't downscale the R2
+// originals itself (the public bucket sends no CORS headers), so Print/PDF
+// swaps each image for this endpoint: fetch the original once, shrink it with
+// sharp to the requested width, cache in memory. Only URLs that appear in the
+// served snapshot are allowed — this is NOT an open image proxy.
+let _thumbAllowFor = null, _thumbAllow = new Set();
+function thumbAllowSet() {
+  if (_thumbAllowFor === _pdLinesheet && _thumbAllow.size) return _thumbAllow;
+  const s = new Set();
+  for (const p of _pdLinesheet?.products || []) {
+    if (p.img) s.add(p.img);
+    if (p.swatch) s.add(p.swatch);
+  }
+  for (const l of _pdLinesheet?.looks || []) if (l.hero) s.add(l.hero);
+  _thumbAllowFor = _pdLinesheet;
+  _thumbAllow = s;
+  return s;
+}
+const _thumbCache = new Map(); // `${src}|${w}` -> jpeg Buffer
+let _sharp = null;
+app.get("/api/img-thumb", async (req, res) => {
+  try {
+    // Cold boot: make sure the snapshot (and so the allowlist) is loaded.
+    if (!_pdLinesheet) {
+      const db = await getAdminSetting(LINESHEET_SETTING_KEY).catch(() => null);
+      _pdLinesheet = db || loadLinesheetFile();
+      _pdLinesheetAt = Date.now();
+    }
+    const src = String(req.query.src || "");
+    if (!thumbAllowSet().has(src)) return res.status(404).send("Not found");
+    const w = Math.min(Math.max(parseInt(req.query.w, 10) || 480, 64), 1200);
+    const key = `${src}|${w}`;
+    let buf = _thumbCache.get(key);
+    if (!buf) {
+      const r = await fetch(src);
+      if (!r.ok) return res.status(502).send("Image fetch failed");
+      _sharp ??= (await import("sharp")).default;
+      buf = await _sharp(Buffer.from(await r.arrayBuffer()))
+        .rotate()
+        .resize({ width: w, height: Math.round(w * 1.5), fit: "inside", withoutEnlargement: true })
+        .jpeg({ quality: 80 })
+        .toBuffer();
+      _thumbCache.set(key, buf);
+      // ~240 sheet images at 2 sizes tops; cap keeps a runaway client harmless.
+      if (_thumbCache.size > 700) _thumbCache.delete(_thumbCache.keys().next().value);
+    }
+    res.setHeader("Content-Type", "image/jpeg");
+    res.setHeader("Cache-Control", "public, max-age=86400");
+    res.send(buf);
+  } catch (e) {
+    res.status(500).send(String(e.message || e));
+  }
+});
+
 // ---- account resolution (buyer portal) ----
 // Returns ONLY the public-facing fields for a known token (name, slug,
 // customer_id). Never the email, and an unknown token reveals nothing — so the

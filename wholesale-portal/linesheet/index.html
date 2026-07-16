@@ -504,15 +504,37 @@ $("#oPer").addEventListener("change",tally);
 $("#oLooks")?.addEventListener("change",tally);
 
 // ---------- print (the whole collection, grouped like the screen) ----------
+// Every image in the PDF is a server-downscaled copy (/api/img-thumb) sized to
+// its print cell — the R2 originals are far bigger than a print cell needs —
+// and ALL of them are loaded (with a progress label on the button) before the
+// print dialog opens, so nothing comes out blank.
 const LAYOUT = {4:{cols:2,h:"3.45in"}, 6:{cols:2,h:"2.25in"}, 9:{cols:3,h:"2.18in"}, 12:{cols:3,h:"1.58in"}};
-function preload(urls){
-  return Promise.all(urls.map(u=>new Promise(res=>{
-    const im=new Image(); im.onload=im.onerror=()=>res(); im.src=u;
-    setTimeout(res,4500);
-  })));
+const thumb = (u,w)=>`/api/img-thumb?src=${encodeURIComponent(u)}&w=${w}`;
+function loadSheetImages(onProgress){
+  const imgs=[...document.querySelectorAll("#sheet img")];
+  const Q=[...imgs]; const total=imgs.length; let done=0;
+  const one=(src,ms)=>new Promise(res=>{
+    const im=new Image();
+    const t=setTimeout(()=>res(false),ms);
+    im.onload=()=>{clearTimeout(t);res(true)};
+    im.onerror=()=>{clearTimeout(t);res(false)};
+    im.src=src;
+  });
+  async function worker(){
+    while(Q.length){
+      const el=Q.shift();
+      const ok=await one(el.src,12000);
+      if(!ok && el.dataset.orig){ el.src=el.dataset.orig; await one(el.src,8000); } // thumb failed → full-size original
+      done++; onProgress(done,total);
+    }
+  }
+  return Promise.all(Array.from({length:8},worker));
 }
 $("#bPrint").addEventListener("click",async ()=>{
+  const btn=$("#bPrint");
+  if(btn.disabled) return;
   const per=+$("#oPer").value, {cols,h}=LAYOUT[per];
+  const wShot=cols===2?700:480; // ≈190dpi at the cell size
   const withSw=$("#oSw").checked;
   const withLooks=looks.length && $("#oLooks").checked;
   const on=items.slice().sort(sortFn);
@@ -526,6 +548,7 @@ $("#bPrint").addEventListener("click",async ()=>{
   });
   for(let k=0;k<lOn.length;k+=2) pages.push({kind:"looks",cat:"Looks",list:lOn.slice(k,k+2)});
   const total=pages.length;
+  const pimg=(u,w)=>`src="${esc(thumb(u,w))}" data-orig="${esc(u)}"`;
   $("#sheet").innerHTML = pages.map((p,n)=>`
     <section class="page">
       <div class="ph"><div class="l">Yakira Bella <em>— ${esc(title)}</em></div>
@@ -535,30 +558,33 @@ $("#bPrint").addEventListener("click",async ()=>{
       <div class="pgrid" style="grid-template-columns:repeat(${cols},1fr)">
         ${p.list.map(i=>`
           <div class="pcard">
-            <div class="pshot" style="height:${h}">${i.img?`<img src="${esc(i.img)}">`:""}</div>
+            <div class="pshot" style="height:${h}">${i.img?`<img ${pimg(i.img,wShot)}>`:""}</div>
             <div class="pcap">
-              ${withSw&&i.swatch?`<img class="psw" src="${esc(i.swatch)}">`:""}
+              ${withSw&&i.swatch?`<img class="psw" ${pimg(i.swatch,128)}>`:""}
               <div class="t"><div class="pnm">${esc(i.name)}</div><div class="pco">${esc(i.color)}</div></div>
             </div>
           </div>`).join("")}
       </div>` : `
       ${p.list.map(l=>`
         <div class="plook">
-          <div class="ph2">${l.hero?`<img src="${esc(l.hero)}">`
-            :`<div class="compose">${l.members.slice(0,4).map(m=>`<div>${m.img?`<img src="${esc(m.img)}">`:""}</div>`).join("")}</div>`}</div>
+          <div class="ph2">${l.hero?`<img ${pimg(l.hero,700)}>`
+            :`<div class="compose">${l.members.slice(0,4).map(m=>`<div>${m.img?`<img ${pimg(m.img,480)}>`:""}</div>`).join("")}</div>`}</div>
           <div>
             <div class="pln">${esc(l.title)}</div>
-            ${l.members.map(m=>`<div class="plm">${m.img?`<img src="${esc(m.img)}">`:""}<span>${esc(m.name)}${m.color?" — "+esc(m.color):""}</span></div>`).join("")}
+            ${l.members.map(m=>`<div class="plm">${m.img?`<img ${pimg(m.img,128)}>`:""}<span>${esc(m.name)}${m.color?" — "+esc(m.color):""}</span></div>`).join("")}
             ${l.notes?`<div class="pco" style="margin-top:6px">${esc(l.notes)}</div>`:""}
           </div>
         </div>`).join("")}`}
       <div class="pf"><span>Yakira Bella</span><span>Page ${n+1} of ${total}</span></div>
     </section>`).join("");
-  const urls=[];
-  if(withSw) on.forEach(i=>i.swatch&&urls.push(i.swatch));
-  lOn.forEach(l=>{ if(l.hero) urls.push(l.hero); l.members.forEach(m=>m.img&&urls.push(m.img)); });
-  if(urls.length) await preload([...new Set(urls)]);
-  window.print();
+  btn.disabled=true;
+  const label=btn.textContent;
+  try{
+    await loadSheetImages((d,t)=>{ btn.textContent=`Preparing… ${d}/${t}`; });
+    window.print();
+  } finally {
+    btn.disabled=false; btn.textContent=label;
+  }
 });
 
 boot();
