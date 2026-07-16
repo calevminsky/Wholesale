@@ -108,12 +108,16 @@ export async function fetchPdLinesheet(season = LINESHEET_SEASON) {
         [season]
       )
     ]);
+    // Placeholder colorways (no color named AND no photo yet — pd rows created
+    // ahead of a buy decision) are dropped: an empty "color TBD" card tells a
+    // buyer nothing. They appear automatically once a color or photo lands.
+    const rows = products.rows.filter((r) => webUrl(r.img) || String(r.color || "").trim());
     return {
       pulled: new Date().toISOString(),
       season,
       source: "pd",
-      count: products.rows.length,
-      products: products.rows.map((r) => ({
+      count: rows.length,
+      products: rows.map((r) => ({
         id: Number(r.id),
         name: NAME_OVERRIDE[r.id] || String(r.name || "").trim(),
         color: r.color ? String(r.color).trim() : "",

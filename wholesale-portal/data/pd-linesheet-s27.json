@@ -1,8 +1,8 @@
 {
- "pulled": "2026-07-16T22:24:50.968Z",
+ "pulled": "2026-07-16T22:46:04.619Z",
  "season": "S27",
  "source": "pd",
- "count": 216,
+ "count": 214,
  "products": [
   {
    "id": 1444,
@@ -2150,19 +2150,6 @@
    "collections": []
   },
   {
-   "id": 1567,
-   "name": "Clea Top",
-   "color": "",
-   "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
-   "swatch": null,
-   "fabric": null,
-   "composition": null,
-   "collections": []
-  },
-  {
    "id": 1566,
    "name": "Cornelia Top",
    "color": "Light Blue",
@@ -2215,29 +2202,29 @@
    "collections": []
   },
   {
-   "id": 1568,
+   "id": 908,
    "name": "Isla Cardigan",
-   "color": "",
+   "color": "Blue",
    "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
+   "season": "S26",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/908/image-859.png",
    "swatch": null,
    "fabric": null,
-   "composition": null,
+   "composition": "70% Viscose, 30% Nylon",
    "collections": []
   },
   {
-   "id": 1569,
+   "id": 460,
    "name": "Jane Cardigan",
-   "color": "",
+   "color": "Light Peach",
    "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
+   "season": "S26",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/460/image-429.jpg",
    "swatch": null,
-   "fabric": null,
-   "composition": null,
+   "fabric": "Knit",
+   "composition": "100% COTTON",
    "collections": []
   },
   {
@@ -2332,16 +2319,16 @@
    "collections": []
   },
   {
-   "id": 1570,
+   "id": 185,
    "name": "Lumi Top",
-   "color": "",
+   "color": "Light Pink",
    "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
+   "season": "S26",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/185/image-179.jpg",
    "swatch": null,
-   "fabric": null,
-   "composition": null,
+   "fabric": "Knit",
+   "composition": "47% RAYON 45% COTTON 8% SPANDEX",
    "collections": []
   },
   {
@@ -2381,19 +2368,6 @@
    "swatch": null,
    "fabric": "Woven",
    "composition": "100% TENCEL",
-   "collections": []
-  },
-  {
-   "id": 1571,
-   "name": "Mel Top",
-   "color": "",
-   "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
-   "swatch": null,
-   "fabric": null,
-   "composition": null,
    "collections": []
   },
   {
@@ -2449,16 +2423,16 @@
    "collections": []
   },
   {
-   "id": 1572,
+   "id": 220,
    "name": "Olly Top",
-   "color": "",
+   "color": "Coral",
    "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
+   "season": "S26",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/220/image-222.jpg",
    "swatch": null,
-   "fabric": null,
-   "composition": null,
+   "fabric": "Knit",
+   "composition": "95% RAYON 4% SPANDEX",
    "collections": []
   },
   {
@@ -2488,16 +2462,29 @@
    "collections": []
   },
   {
-   "id": 1573,
+   "id": 75,
    "name": "Paige Cardigan",
-   "color": "",
+   "color": "White",
    "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
+   "season": "Core",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/75/image-77.jpg",
    "swatch": null,
-   "fabric": null,
-   "composition": null,
+   "fabric": "Knit",
+   "composition": "SHELL : 63% RAYON,37% NYLON;\nLINING:95% POLYESTER 5% SPANDEX",
+   "collections": []
+  },
+  {
+   "id": 199,
+   "name": "Paige Top",
+   "color": "Light Aqua",
+   "type": "Top",
+   "season": "Core",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/199/image-200.jpg",
+   "swatch": null,
+   "fabric": "Knit",
+   "composition": "SHELL : 63% RAYON,37% NYLON;\nLINING:95% POLYESTER 5% SPANDEX",
    "collections": []
   },
   {
@@ -2522,19 +2509,6 @@
    "carry": false,
    "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1537/image-1784224661278.jpg",
    "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1537/swatch-1784222683483.jpg",
-   "fabric": null,
-   "composition": null,
-   "collections": []
-  },
-  {
-   "id": 1574,
-   "name": "Parker Top",
-   "color": "",
-   "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
-   "swatch": null,
    "fabric": null,
    "composition": null,
    "collections": []
@@ -2579,14 +2553,14 @@
    "collections": []
   },
   {
-   "id": 1575,
+   "id": 1072,
    "name": "Priya Top",
-   "color": "",
+   "color": "Beige",
    "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
-   "swatch": null,
+   "season": "F26",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1072/image-1015.png",
+   "swatch": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1072/swatch-1012.jpg",
    "fabric": null,
    "composition": null,
    "collections": []
@@ -2618,29 +2592,29 @@
    "collections": []
   },
   {
-   "id": 1576,
+   "id": 1055,
    "name": "Rena Top",
-   "color": "",
+   "color": "Baby Blue",
    "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
+   "season": "Core",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/1055/image-995.jpg",
    "swatch": null,
-   "fabric": null,
-   "composition": null,
+   "fabric": "Knit",
+   "composition": "46% COTTON 46% RAYON 8% SPANDEX",
    "collections": []
   },
   {
-   "id": 1577,
+   "id": 779,
    "name": "Renee Tee",
-   "color": "",
+   "color": "Yellow",
    "type": "Top",
-   "season": "S27",
-   "carry": false,
-   "img": null,
+   "season": "S26",
+   "carry": true,
+   "img": "https://pub-674012f67605473fa5308ad6bbc9d72f.r2.dev/colorway/779/image-737.jpg",
    "swatch": null,
-   "fabric": null,
-   "composition": null,
+   "fabric": "Knit",
+   "composition": "62% Polyester, 34% Cotton, 4% Spandex",
    "collections": []
   },
   {
@@ -3072,6 +3046,26 @@
    "members": [
     1545,
     1541
+   ]
+  },
+  {
+   "id": 30,
+   "title": "Porzia Set — Navy Pattern",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1513,
+    1463
+   ]
+  },
+  {
+   "id": 31,
+   "title": "Porzia Set — White Pattern",
+   "notes": "Sold as separates — designed to be worn together.",
+   "hero": null,
+   "members": [
+    1512,
+    1464
    ]
   }
  ]
