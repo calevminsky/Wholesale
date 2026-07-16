@@ -72,8 +72,6 @@ select.pill{height:32px;padding:0 11px;border:1px solid var(--rule);background:v
   display:flex;align-items:center;justify-content:center;padding:10px;position:relative;cursor:zoom-in}
 .shot img.main{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
 .noimg{font-size:11px;color:var(--muted);text-align:center;letter-spacing:.04em;cursor:default}
-.badge{position:absolute;top:7px;right:7px;font-size:9px;letter-spacing:.09em;text-transform:uppercase;
-  padding:2px 6px;border-radius:2px;background:var(--carry-tint);color:var(--carry);font-weight:600}
 .swatch-chip{position:absolute;bottom:8px;right:8px;width:34px;height:34px;border-radius:50%;
   border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.28);overflow:hidden;padding:0;background:#eee}
 .swatch-chip img{width:100%;height:100%;object-fit:cover;display:block}
@@ -215,6 +213,12 @@ select.pill{height:32px;padding:0 11px;border:1px solid var(--rule);background:v
   </div>
   <select class="pill" id="fType"><option value="">All categories</option></select>
   <select class="pill" id="fColl" hidden><option value="">All collections</option></select>
+  <select class="pill" id="fSort" title="Sort styles">
+    <option value="name">Name A–Z</option>
+    <option value="name_desc">Name Z–A</option>
+    <option value="newest">Newest first</option>
+    <option value="color">By color</option>
+  </select>
   <span class="spacer"></span>
   <span class="seg-label" id="segLabel" hidden>Group</span>
   <div class="seg" id="segGroup" hidden>
@@ -341,7 +345,7 @@ async function resolveIdentity(){
 
 // ---------- data ----------
 let items = [], looks = [], byId = new Map(), allColls = [];
-const state = {tab:"products", q:"", type:"", coll:"", group:"type"};
+const state = {tab:"products", q:"", type:"", coll:"", group:"type", sort:"name"};
 
 async function boot(){
   resolveIdentity();
@@ -392,7 +396,15 @@ function visible(){
     return true;
   });
 }
-const sortFn = (a,b)=> (ORDER[a.type]||9)-(ORDER[b.type]||9) || a.name.localeCompare(b.name) || a.color.localeCompare(b.color);
+// Category order (Dresses → Skirts → Tops) always leads; the sort control
+// orders styles *within* each group.
+const SORTS = {
+  name:      (a,b)=> a.name.localeCompare(b.name) || a.color.localeCompare(b.color),
+  name_desc: (a,b)=> b.name.localeCompare(a.name) || a.color.localeCompare(b.color),
+  newest:    (a,b)=> b.id - a.id,
+  color:     (a,b)=> a.color.localeCompare(b.color) || a.name.localeCompare(b.name)
+};
+const sortFn = (a,b)=> (ORDER[a.type]||9)-(ORDER[b.type]||9) || (SORTS[state.sort]||SORTS.name)(a,b);
 function groupsOf(list){
   if(state.group==="none") return [["All styles", list]];
   if(state.group==="coll"){
@@ -428,9 +440,9 @@ function card(i){
   const tags = state.group!=="coll" && i.colls.length
       ? `<div>${i.colls.map(c=>`<span class="tag">${esc(c)}</span>`).join("")}</div>` : "";
   return `<article class="card" data-id="${i.id}">
-    <div class="shot" ${i.img?`data-zoom="${i.id}"`:""}>${shot}${i.carry?`<span class="badge" title="Carryover style">${esc(i.season||"Carryover")}</span>`:""}${sw}</div>
+    <div class="shot" ${i.img?`data-zoom="${i.id}"`:""}>${shot}${sw}</div>
     <div class="body"><div class="nm">${esc(i.name)}</div>
-      <div class="co">${esc(i.color)||"<em style='color:var(--muted)'>color TBD</em>"}</div>${tags}</div>
+      <div class="co">${esc(i.color)}</div>${tags}</div>
   </article>`;
 }
 
@@ -500,6 +512,7 @@ $$("#segGroup button").forEach(b=>b.addEventListener("click",()=>{
 $("#q").addEventListener("input",e=>{state.q=e.target.value;render()});
 $("#fType").addEventListener("change",e=>{state.type=e.target.value;render()});
 $("#fColl").addEventListener("change",e=>{state.coll=e.target.value;render()});
+$("#fSort").addEventListener("change",e=>{state.sort=e.target.value;render()});
 $("#oPer").addEventListener("change",tally);
 $("#oLooks")?.addEventListener("change",tally);
 
