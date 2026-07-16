@@ -34,6 +34,7 @@ import {
   getUserForAuth, listUsers, upsertUser, deleteUser, updateLastLogin
 } from "./build/auth-store.mjs";
 import { listCustomers } from "./build/customers-store.mjs";
+import { fetchPdLinesheet, loadLinesheetFile, LINESHEET_SETTING_KEY } from "./build/pd-linesheet.mjs";
 // Mailgun — called via the REST API directly (no extra package needed in Node 18+).
 async function sendMail({ from, to, replyTo, subject, text, html, attachments = [] }) {
   const key = process.env.MAILGUN_API_KEY;
@@ -165,6 +166,45 @@ app.get(["/season", "/season/"], (_req, res) => res.sendFile(path.join(__dirname
 app.get(["/offprice", "/offprice/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
 app.get(["/offprice-all", "/offprice-all/"], (_req, res) => res.sendFile(path.join(__dirname, "season", "index.html")));
 
+// ---- S27 view-only line sheet (no ordering) ----
+// Buyer page: same soft entry gate as the F26 portal (company + email).
+// Data comes from pd via the admin "refresh" button; the snapshot lives in
+// Postgres (wholesale_portal_settings) so it survives redeploys, with the
+// committed data/pd-linesheet-s27.json as first-boot seed.
+app.get(["/s27", "/s27/"], (_req, res) => res.sendFile(path.join(__dirname, "linesheet", "index.html")));
+
+let _pdLinesheet = null, _pdLinesheetAt = 0;
+app.get("/api/pd-linesheet", async (_req, res) => {
+  try {
+    if (!_pdLinesheet || Date.now() - _pdLinesheetAt > 60_000) {
+      const db = await getAdminSetting(LINESHEET_SETTING_KEY).catch(() => null);
+      _pdLinesheet = db || loadLinesheetFile() || _pdLinesheet;
+      _pdLinesheetAt = Date.now();
+    }
+    if (!_pdLinesheet) return res.status(503).json({ error: "The line sheet hasn't been built yet — refresh it from /admin." });
+    res.json(_pdLinesheet);
+  } catch (e) {
+    res.status(500).json({ error: String(e.message || e) });
+  }
+});
+
+app.post("/api/pd-linesheet/refresh", adminAuth, async (_req, res) => {
+  try {
+    const snap = await fetchPdLinesheet();
+    await setAdminSetting(LINESHEET_SETTING_KEY, snap);
+    _pdLinesheet = snap;
+    _pdLinesheetAt = Date.now();
+    res.json({
+      ok: true, pulled: snap.pulled, count: snap.count,
+      carry: snap.products.filter((p) => p.carry).length,
+      swatches: snap.products.filter((p) => p.swatch).length,
+      looks: snap.looks.length
+    });
+  } catch (e) {
+    res.status(500).json({ ok: false, error: String(e.message || e) });
+  }
+});
+
 // ---- account resolution (buyer portal) ----
 // Returns ONLY the public-facing fields for a known token (name, slug,
 // customer_id). Never the email, and an unknown token reveals nothing — so the
@@ -236,7 +276,14 @@ app.get("/api/links", (req, res) => {
         ]
       },
       offSection("In-Season · Off Price", "/offprice", "", "/api/offprice", "/op/admin"),
-      offSection("In-Season · Off Price — All", "/offprice-all", "&o=offall", "/api/offall", "/op/admin/all")
+      offSection("In-Season · Off Price — All", "/offprice-all", "&o=offall", "/api/offall", "/op/admin/all"),
+      {
+        title: "Spring 2027 Line Sheet (view only)",
+        links: [
+          { label: "Buyer link", url: `${base}/s27`, note: "View only, no ordering — entry gate asks company + email." },
+          { label: "Admin — refresh from PD", url: `${base}/admin`, note: "Password-gated (S27 line sheet panel)." }
+        ]
+      }
     ]
   });
 });

@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Yakira Bella — Spring 2027 Line Sheet</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F5F4F1; --card:#FFF; --ink:#16181C; --ink-soft:#5C5E5A;
+  --muted:#8B8C86; --rule:#DFDCD4; --rule-soft:#ECEAE4;
+  --sel:#1E3A5C; --carry:#8A6438; --carry-tint:#F5EDE2; --warn:#A33A2A;
+  --serif:"Instrument Serif",Georgia,"Times New Roman",serif;
+  --sans:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--sans);background:var(--paper);color:var(--ink);font-size:14px;line-height:1.45;padding-bottom:76px}
+button,input,select{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+:focus-visible{outline:2px solid var(--sel);outline-offset:2px}
+a{color:var(--sel)}
+
+/* masthead */
+.mast{border-bottom:1px solid var(--rule);background:var(--card);padding:20px 26px 0}
+.mast-row{display:flex;align-items:baseline;justify-content:space-between;gap:20px;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-size:30px;line-height:1}
+.brand em{font-style:italic;color:var(--ink-soft)}
+.acct{font-size:12px;color:var(--muted)}
+.acct b{color:var(--ink)}
+.acct a{cursor:pointer;text-decoration:underline}
+.tabs{display:flex;gap:2px;margin-top:14px}
+.tab{padding:9px 16px 11px;font-size:13px;font-weight:500;color:var(--muted);border-bottom:2px solid transparent}
+.tab .b{display:inline-block;min-width:20px;text-align:center;font-size:11px;background:var(--rule-soft);
+  border-radius:9px;padding:1px 6px;margin-left:5px;color:var(--ink-soft)}
+.tab.on{color:var(--ink);border-bottom-color:var(--ink)}
+
+/* toolbar */
+.bar{position:sticky;top:0;z-index:40;background:rgba(245,244,241,.94);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--rule);padding:10px 26px;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.field{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--rule);
+  border-radius:2px;padding:0 9px;height:32px}
+.field input{border:none;background:none;width:170px;outline:none}
+.field svg{opacity:.4;flex:none}
+select.pill{height:32px;padding:0 11px;border:1px solid var(--rule);background:var(--card);
+  border-radius:2px;font-size:13px;white-space:nowrap}
+.seg{display:flex;border:1px solid var(--rule);border-radius:2px;overflow:hidden;height:32px}
+.seg button{padding:0 12px;font-size:13px;background:var(--card);border-right:1px solid var(--rule)}
+.seg button:last-child{border-right:none}
+.seg button.on{background:var(--ink);color:#fff}
+.seg-label{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);margin-right:-2px}
+.spacer{flex:1 1 auto}
+.count{font-size:12px;color:var(--muted)}
+.count b{color:var(--ink);font-weight:600}
+.hint{font-size:12px;color:var(--muted);padding:14px 26px 0}
+
+/* grid */
+.wrap{padding:18px 26px 40px;max-width:1560px;margin:0 auto}
+.grp{margin-bottom:34px}
+.grp-h{display:flex;align-items:center;gap:12px;margin:0 0 14px}
+.grp-h h2{font-family:var(--serif);font-size:22px;font-weight:400}
+.grp-h .rule{flex:1;height:1px;background:var(--rule)}
+.grp-h .n{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(212px,1fr));gap:16px}
+
+.card{background:var(--card);border:1px solid var(--rule);border-radius:2px;overflow:hidden;
+  display:flex;flex-direction:column;position:relative}
+.shot{aspect-ratio:3/4;flex:none;min-height:0;overflow:hidden;
+  background:#fff;border-bottom:1px solid var(--rule-soft);
+  display:flex;align-items:center;justify-content:center;padding:10px;position:relative;cursor:zoom-in}
+.shot img.main{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
+.noimg{font-size:11px;color:var(--muted);text-align:center;letter-spacing:.04em;cursor:default}
+.badge{position:absolute;top:7px;right:7px;font-size:9px;letter-spacing:.09em;text-transform:uppercase;
+  padding:2px 6px;border-radius:2px;background:var(--carry-tint);color:var(--carry);font-weight:600}
+.swatch-chip{position:absolute;bottom:8px;right:8px;width:34px;height:34px;border-radius:50%;
+  border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.28);overflow:hidden;padding:0;background:#eee}
+.swatch-chip img{width:100%;height:100%;object-fit:cover;display:block}
+.swatch-chip:hover{transform:scale(1.12)}
+.body{padding:10px 11px 12px;flex:1 0 auto;min-height:62px}
+.nm{font-family:var(--serif);font-size:17px;line-height:1.2}
+.co{font-size:12px;color:var(--ink-soft);margin-top:1px}
+.tag{display:inline-block;font-size:10px;letter-spacing:.05em;color:var(--muted);margin-top:4px;
+  border:1px solid var(--rule-soft);border-radius:2px;padding:1px 5px;margin-right:4px}
+
+/* looks */
+.looks-empty{max-width:560px;margin:70px auto;text-align:center;color:var(--ink-soft)}
+.looks-empty h3{font-family:var(--serif);font-size:24px;font-weight:400;color:var(--ink);margin-bottom:8px}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:20px}
+.look{background:var(--card);border:1px solid var(--rule);border-radius:2px;overflow:hidden;position:relative}
+.look .hero{aspect-ratio:4/5;flex:none;min-height:0;overflow:hidden;background:#fff;
+  border-bottom:1px solid var(--rule-soft);display:flex;align-items:center;justify-content:center;padding:10px}
+.look .hero img{max-width:100%;max-height:100%;object-fit:contain}
+.look .hero .compose{display:grid;grid-template-columns:1fr 1fr;gap:6px;width:100%;height:100%}
+.look .hero .compose div{display:flex;align-items:center;justify-content:center;overflow:hidden}
+.look .hero .compose img{max-width:100%;max-height:100%;object-fit:contain}
+.look .lbody{padding:11px 12px 13px}
+.look .members{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.look .members span{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-soft);
+  border:1px solid var(--rule-soft);border-radius:2px;padding:2px 7px 2px 2px}
+.look .members img{width:22px;height:28px;object-fit:contain;background:#fff}
+
+/* lightbox */
+.lb{position:fixed;inset:0;z-index:100;background:rgba(20,21,24,.82);display:none;
+  align-items:center;justify-content:center;padding:30px}
+.lb.open{display:flex}
+.lb .panel{background:var(--card);border-radius:3px;max-width:min(560px,92vw);max-height:88vh;
+  overflow:auto;padding:18px;text-align:center}
+.lb img{max-width:100%;max-height:62vh;display:block;margin:0 auto}
+.lb .cap{margin-top:12px}
+.lb .cap .nm{font-size:19px}
+.lb .cap .fab{font-size:12px;color:var(--ink-soft);margin-top:3px}
+.lb .close{position:absolute;top:18px;right:22px;color:#fff;font-size:26px;line-height:1}
+
+/* rail */
+.rail{position:fixed;left:0;right:0;bottom:0;z-index:50;background:var(--ink);color:#EDEBE6;
+  padding:11px 26px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.rail .stat{font-size:12px;color:#9A9C97}
+.rail .stat b{color:#fff;font-weight:600;font-size:14px}
+.rail .divider{width:1px;height:22px;background:#33363B}
+.rail button{height:32px;padding:0 13px;border-radius:2px;font-size:13px;border:1px solid #3A3D42;color:#EDEBE6}
+.rail button:hover{border-color:#7B7E83}
+.rail button.print{background:#EDEBE6;color:var(--ink);border-color:#EDEBE6;font-weight:600}
+.rail label{display:flex;align-items:center;gap:5px;font-size:12px;color:#9A9C97;cursor:pointer}
+.rail input[type=checkbox]{accent-color:#EDEBE6}
+.rail select{height:32px;background:#22252A;border:1px solid #3A3D42;color:#EDEBE6;border-radius:2px;padding:0 6px}
+.pulled{font-size:10px;color:#6E706C;letter-spacing:.05em}
+
+/* entry gate */
+.gate{position:fixed;inset:0;z-index:200;background:rgba(20,21,24,.55);backdrop-filter:blur(7px);
+  display:none;align-items:center;justify-content:center;padding:20px}
+.gate.show{display:flex}
+.gatesheet{background:var(--card);max-width:420px;width:100%;border-radius:4px;
+  box-shadow:0 28px 80px rgba(20,21,24,.35);padding:36px 34px 32px}
+.gatelogo{font-family:var(--serif);font-size:16px;color:var(--carry);margin-bottom:14px}
+.gatesheet h2{font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.25;margin:0 0 10px}
+.gatesheet>p{color:var(--muted);font-size:13.5px;line-height:1.6;margin:0 0 20px}
+.gatesheet .gfield{margin-top:10px}
+.gatesheet .gfield input{width:100%;font-size:15px;padding:11px 12px;border:1px solid var(--rule);
+  border-radius:2px;background:var(--card);outline:none}
+.gatesheet .gfield input:focus{border-color:var(--sel)}
+.gateerr{color:var(--warn);font-size:12.5px;font-weight:600;min-height:16px;margin-top:8px}
+.gatego{width:100%;margin-top:16px;padding:13px;font-size:15px;font-weight:600;
+  background:var(--ink);color:#fff;border-radius:2px}
+
+/* load / error states */
+.loadmsg{max-width:560px;margin:70px auto;text-align:center;color:var(--ink-soft)}
+.loadmsg h3{font-family:var(--serif);font-size:24px;font-weight:400;color:var(--ink);margin-bottom:8px}
+
+/* print */
+.sheet{display:none}
+@media print{
+  @page{size:letter portrait;margin:.45in .5in .5in}
+  body{background:#fff;padding:0}
+  .mast,.bar,.wrap,.rail,.hint,.lb,.gate{display:none !important}
+  .sheet{display:block}
+  .page{page-break-after:always;break-after:page}
+  .page:last-child{page-break-after:auto;break-after:auto}
+  .ph{display:flex;align-items:flex-end;justify-content:space-between;
+    border-bottom:1.5px solid #16181C;padding-bottom:6px;margin-bottom:16px}
+  .ph .l{font-family:var(--serif);font-size:22px;line-height:1}
+  .ph .l em{font-style:italic;color:#5C5E5A}
+  .ph .r{font-size:9px;letter-spacing:.11em;text-transform:uppercase;color:#5C5E5A;text-align:right}
+  .pcat{font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#5C5E5A;margin:0 0 10px}
+  .pgrid{display:grid;gap:16px}
+  .pcard{break-inside:avoid;page-break-inside:avoid;display:flex;flex-direction:column}
+  .pshot{background:#fff;border:.5pt solid #DFDCD4;display:flex;align-items:center;justify-content:center;
+    padding:4pt;margin-bottom:6px;flex:none;min-height:0;overflow:hidden}
+  .pshot img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain}
+  .pcap{display:flex;align-items:center;justify-content:center;gap:7px}
+  .pcap .t{text-align:center}
+  .pnm{font-family:var(--serif);font-size:13px;line-height:1.2}
+  .pco{font-size:9.5px;color:#5C5E5A;margin-top:1px}
+  .psw{width:.32in;height:.32in;border:.5pt solid #C9C6BE;border-radius:2px;object-fit:cover;flex:none}
+  .plook{break-inside:avoid;page-break-inside:avoid;display:grid;grid-template-columns:2.9in 1fr;gap:.25in;
+    border:.5pt solid #DFDCD4;padding:.16in;margin-bottom:.25in}
+  .plook .ph2{height:3.6in;display:flex;align-items:center;justify-content:center;background:#fff}
+  .plook .ph2 img{max-width:100%;max-height:100%;object-fit:contain}
+  .plook .ph2 .compose{display:grid;grid-template-columns:1fr 1fr;gap:.08in;width:100%;height:100%}
+  .plook .ph2 .compose div{display:flex;align-items:center;justify-content:center;overflow:hidden}
+  .plook .ph2 .compose img{max-width:100%;max-height:100%;object-fit:contain}
+  .plook .pln{font-family:var(--serif);font-size:16px;margin-bottom:6px}
+  .plook .plm{display:flex;align-items:center;gap:6px;font-size:10px;color:#3E403C;margin-bottom:5px}
+  .plook .plm img{width:.42in;height:.55in;object-fit:contain;border:.5pt solid #ECEAE4;background:#fff}
+  .pf{position:fixed;bottom:.16in;left:.5in;right:.5in;display:flex;justify-content:space-between;
+    font-size:8px;letter-spacing:.08em;text-transform:uppercase;color:#8B8C86;
+    border-top:.5pt solid #DFDCD4;padding-top:4px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none !important;transform:none !important}}
+@media (max-width:640px){
+  .mast,.bar,.wrap{padding-left:14px;padding-right:14px}
+  .rail{padding-left:14px;padding-right:14px;gap:8px}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-row">
+    <div class="brand">Yakira Bella <em>— Spring 2027</em></div>
+    <div class="acct" id="acctLine"></div>
+  </div>
+  <nav class="tabs" id="tabsNav" hidden>
+    <button class="tab on" data-tab="products">Products <span class="b" id="nProd"></span></button>
+    <button class="tab" data-tab="looks">Looks <span class="b" id="nLooks"></span></button>
+  </nav>
+</header>
+
+<div class="bar" id="barProducts">
+  <div class="field">
+    <svg width="13" height="13" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="7" cy="7" r="4.5"/><path d="M10.5 10.5 14 14"/></svg>
+    <input id="q" type="search" placeholder="Search style or color">
+  </div>
+  <select class="pill" id="fType"><option value="">All categories</option></select>
+  <select class="pill" id="fColl" hidden><option value="">All collections</option></select>
+  <span class="spacer"></span>
+  <span class="seg-label" id="segLabel" hidden>Group</span>
+  <div class="seg" id="segGroup" hidden>
+    <button data-g="type" class="on">Category</button>
+    <button data-g="coll">Collection</button>
+    <button data-g="none">None</button>
+  </div>
+  <span class="count" id="cnt"></span>
+</div>
+
+<p class="hint" id="hintP">Tap the fabric dot on a card to see the real swatch. Tap a photo to enlarge it.</p>
+<main class="wrap" id="grid"><div class="loadmsg"><h3>Loading the collection…</h3></div></main>
+<main class="wrap" id="looksWrap" hidden></main>
+
+<div class="rail">
+  <span class="stat"><b id="rN">0</b> styles</span>
+  <span class="stat" id="rLooksStat" hidden><b id="rL">0</b> looks</span>
+  <div class="divider"></div>
+  <label>Per page
+    <select id="oPer"><option>4</option><option>6</option><option selected>9</option><option>12</option></select>
+  </label>
+  <label><input type="checkbox" id="oSw" checked> Swatches</label>
+  <label id="oLooksLbl" hidden><input type="checkbox" id="oLooks" checked> Looks pages</label>
+  <span class="spacer"></span>
+  <span class="pulled">Updated <span id="pulled"></span></span>
+  <button class="print" id="bPrint">Print / PDF</button>
+</div>
+
+<div class="lb" id="lb" role="dialog" aria-modal="true">
+  <button class="close" aria-label="Close">×</button>
+  <div class="panel">
+    <img id="lbImg" alt="">
+    <div class="cap"><div class="nm" id="lbNm"></div><div class="fab" id="lbFab"></div></div>
+  </div>
+</div>
+
+<!-- entry gate: identify with store/company + email (same as the F26 portal) -->
+<div class="gate" id="gateOverlay">
+  <div class="gatesheet">
+    <div class="gatelogo">Yakira Bella</div>
+    <h2>Welcome to our Spring 2027 collection</h2>
+    <p>We're so glad you're here — just tell us a little about yourself and we'll get you right in.</p>
+    <div class="gfield"><input id="gateCompany" type="text" autocomplete="organization" placeholder="Your boutique's name"></div>
+    <div class="gfield"><input id="gateEmail" type="email" autocomplete="email" inputmode="email" placeholder="Your email address"></div>
+    <div class="gateerr" id="gateErr"></div>
+    <button class="gatego" id="gateGo">View the collection</button>
+  </div>
+</div>
+
+<div class="sheet" id="sheet"></div>
+
+<script>
+(() => {
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+const esc = s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const ORDER = {Dress:1, Skirt:2, Top:3};
+const PLURAL = {Dress:"Dresses", Skirt:"Skirts", Top:"Tops"};
+const plural = t => PLURAL[t] || t + "s";
+
+// ---------- entry gate (shared identity with the F26 portal) ----------
+const IDENTITY_KEY = "yb_portal_identity";
+const slugify = s => String(s||"").toLowerCase().replace(/['"]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"") || "guest";
+const loadIdentity = () => { try { return JSON.parse(localStorage.getItem(IDENTITY_KEY)); } catch { return null; } };
+const saveIdentity = o => { try { localStorage.setItem(IDENTITY_KEY, JSON.stringify(o)); } catch {} };
+const clearIdentity = () => { try { localStorage.removeItem(IDENTITY_KEY); } catch {} };
+let account = { name: "Guest", email: "" };
+
+function logVisit(){
+  if (!account.email) return;
+  try {
+    fetch("/api/visit", { method:"POST", headers:{ "Content-Type":"application/json" }, keepalive:true,
+      body: JSON.stringify({ company: account.name, email: account.email }) }).catch(()=>{});
+  } catch {}
+}
+function showAccount(){
+  hideGate();
+  $("#acctLine").innerHTML = `Viewing as <b>${esc(account.name)}</b> · <a id="changeId">not you?</a>`;
+  $("#changeId")?.addEventListener("click", () => { clearIdentity(); showGate(); });
+  logVisit();
+}
+function showGate(){
+  const id = loadIdentity();
+  if (id) { $("#gateCompany").value = id.company || ""; $("#gateEmail").value = id.email || ""; }
+  $("#gateErr").textContent = "";
+  $("#gateOverlay").classList.add("show");
+  setTimeout(() => $("#gateCompany").focus(), 60);
+}
+function hideGate(){ $("#gateOverlay").classList.remove("show"); }
+function gateSubmit(){
+  const company = $("#gateCompany").value.trim();
+  const email = $("#gateEmail").value.trim();
+  if (company.length < 2) { $("#gateErr").textContent = "Please enter your store or company name."; $("#gateCompany").focus(); return; }
+  if (!/.+@.+\..+/.test(email)) { $("#gateErr").textContent = "Please enter a valid email address."; $("#gateEmail").focus(); return; }
+  saveIdentity({ company, email });
+  account = { name: company, email };
+  showAccount();
+}
+$("#gateGo").addEventListener("click", gateSubmit);
+["gateCompany","gateEmail"].forEach(id =>
+  document.getElementById(id).addEventListener("keydown", e => { if (e.key === "Enter") gateSubmit(); }));
+
+// Who's viewing? saved identity > per-account ?t= token > secret bypass link > entry gate.
+async function resolveIdentity(){
+  const params = new URLSearchParams(location.search);
+  const id = loadIdentity();
+  if (id && id.company && id.email) { account = { name: id.company, email: id.email }; showAccount(); return; }
+  const token = params.get("t") || "";
+  if (token) {
+    try {
+      const j = await (await fetch(`/api/account?token=${encodeURIComponent(token)}`, { cache:"no-store" })).json();
+      if (j.account) { account = { name: j.account.name, email: "" }; showAccount(); return; }
+    } catch {}
+  }
+  const bypass = params.get("bypass") || "";
+  if (bypass) {
+    try {
+      const g = await (await fetch(`/api/gate?key=${encodeURIComponent(bypass)}`, { cache:"no-store" })).json();
+      if (g.ok) { account = { name: (params.get("as")||"").trim() || "Guest", email: "" }; showAccount(); return; }
+    } catch {}
+  }
+  showGate();
+}
+
+// ---------- data ----------
+let items = [], looks = [], byId = new Map(), allColls = [];
+const state = {tab:"products", q:"", type:"", coll:"", group:"type"};
+
+async function boot(){
+  resolveIdentity();
+  let PD;
+  try {
+    const res = await fetch("/api/pd-linesheet", { cache:"no-store" });
+    PD = await res.json();
+    if (!res.ok) throw new Error(PD.error || "unavailable");
+  } catch (e) {
+    $("#grid").innerHTML = `<div class="loadmsg"><h3>The line sheet isn't available right now</h3><p>Please refresh the page in a moment.</p></div>`;
+    return;
+  }
+  items = (PD.products||[]).map(r=>({
+    id:+r.id, name:r.name, color:r.color||"", type:r.type||"Other",
+    season:r.season, carry:!!r.carry,
+    img:r.img||null, swatch:r.swatch||null,
+    colls:(r.collections||[]).filter(Boolean),
+    fabric:[r.fabric,r.composition].filter(Boolean).join(" · ")
+  }));
+  byId = new Map(items.map(i=>[i.id,i]));
+  looks = (PD.looks||[]).map(l=>({
+    id:+l.id, title:l.title, notes:l.notes||"",
+    hero:l.hero||null,
+    members:(l.members||[]).map(m=>byId.get(+m)).filter(Boolean)
+  }));
+  allColls = [...new Set(items.flatMap(i=>i.colls))].sort();
+
+  $("#pulled").textContent = new Date(PD.pulled).toLocaleDateString("en-US",{month:"short",day:"numeric"});
+  $("#nProd").textContent = items.length;
+  $("#nLooks").textContent = looks.length;
+  if (looks.length){ $("#tabsNav").hidden=false; $("#rLooksStat").hidden=false; $("#oLooksLbl").hidden=false; }
+  [...new Set(items.map(i=>i.type))].sort((a,b)=>(ORDER[a]||9)-(ORDER[b]||9))
+    .forEach(t=>$("#fType").insertAdjacentHTML("beforeend",`<option value="${esc(t)}">${esc(plural(t))}</option>`));
+  if (allColls.length){
+    $("#fColl").hidden = false; $("#segLabel").hidden = false; $("#segGroup").hidden = false;
+    allColls.forEach(c=>$("#fColl").insertAdjacentHTML("beforeend",`<option>${esc(c)}</option>`));
+  }
+  render();
+}
+
+// ---------- filtering / grouping ----------
+function visible(){
+  const q = state.q.toLowerCase().trim();
+  return items.filter(i=>{
+    if(state.type && i.type!==state.type) return false;
+    if(state.coll && !i.colls.includes(state.coll)) return false;
+    if(q && !(i.name+" "+i.color).toLowerCase().includes(q)) return false;
+    return true;
+  });
+}
+const sortFn = (a,b)=> (ORDER[a.type]||9)-(ORDER[b.type]||9) || a.name.localeCompare(b.name) || a.color.localeCompare(b.color);
+function groupsOf(list){
+  if(state.group==="none") return [["All styles", list]];
+  if(state.group==="coll"){
+    const g = {};
+    list.forEach(i=>{
+      const ks = i.colls.length ? i.colls : ["Unassigned"];
+      ks.forEach(k=>(g[k] ||= []).push(i));
+    });
+    return Object.keys(g).sort((a,b)=> (a==="Unassigned")-(b==="Unassigned") || a.localeCompare(b)).map(k=>[k,g[k]]);
+  }
+  const g = {};
+  list.forEach(i=>(g[i.type] ||= []).push(i));
+  return Object.keys(g).sort((a,b)=>(ORDER[a]||9)-(ORDER[b]||9)).map(k=>[plural(k),g[k]]);
+}
+
+// ---------- render: products ----------
+function render(){
+  const vis = visible().sort(sortFn);
+  $("#grid").innerHTML = groupsOf(vis).map(([label,list])=>`
+    <section class="grp">
+      <div class="grp-h"><h2>${esc(label)}</h2><span class="rule"></span>
+        <span class="n">${list.length} style${list.length===1?"":"s"}</span></div>
+      <div class="grid">${list.map(card).join("")}</div>
+    </section>`).join("") || `<p class="hint" style="padding:40px 0">Nothing matches that filter.</p>`;
+  $("#cnt").innerHTML = `<b>${vis.length}</b> of ${items.length} styles`;
+  tally();
+}
+function card(i){
+  const shot = i.img ? `<img class="main" src="${esc(i.img)}" alt="${esc(i.name+" "+i.color)}" loading="lazy">`
+                     : `<span class="noimg">Photo coming soon</span>`;
+  const sw = i.swatch ? `<button class="swatch-chip" data-sw="${i.id}" title="View fabric swatch" aria-label="View fabric swatch">
+      <img src="${esc(i.swatch)}" alt="" loading="lazy"></button>` : "";
+  const tags = state.group!=="coll" && i.colls.length
+      ? `<div>${i.colls.map(c=>`<span class="tag">${esc(c)}</span>`).join("")}</div>` : "";
+  return `<article class="card" data-id="${i.id}">
+    <div class="shot" ${i.img?`data-zoom="${i.id}"`:""}>${shot}${i.carry?`<span class="badge" title="Carryover style">${esc(i.season||"Carryover")}</span>`:""}${sw}</div>
+    <div class="body"><div class="nm">${esc(i.name)}</div>
+      <div class="co">${esc(i.color)||"<em style='color:var(--muted)'>color TBD</em>"}</div>${tags}</div>
+  </article>`;
+}
+
+// ---------- render: looks ----------
+function renderLooks(){
+  if(!looks.length){
+    $("#looksWrap").innerHTML = `<div class="looks-empty"><h3>No looks yet</h3></div>`;
+    return;
+  }
+  $("#looksWrap").innerHTML = `<div class="lgrid">` + looks.map(l=>{
+    const hero = l.hero ? `<img src="${esc(l.hero)}" alt="${esc(l.title)}">`
+      : `<div class="compose">${l.members.slice(0,4).map(m=>`<div>${m.img?`<img src="${esc(m.img)}">`:""}</div>`).join("")}</div>`;
+    return `<article class="look">
+      <div class="hero">${hero}</div>
+      <div class="lbody"><div class="nm">${esc(l.title)}</div>
+        ${l.notes?`<div class="co">${esc(l.notes)}</div>`:""}
+        <div class="members">${l.members.map(m=>`<span>${m.img?`<img src="${esc(m.img)}">`:""}${esc(m.name)}</span>`).join("")}</div>
+      </div></article>`;
+  }).join("") + `</div>`;
+}
+
+// ---------- tally ----------
+function tally(){
+  const per = +$("#oPer").value;
+  $("#rN").textContent = items.length;
+  $("#rL").textContent = looks.length;
+  const buckets = groupsOf(items.slice().sort(sortFn));
+  let pages = buckets.reduce((s,[,list])=>s+Math.ceil(list.length/per),0);
+  if(looks.length && $("#oLooks").checked) pages += Math.ceil(looks.length/2);
+}
+
+// ---------- events ----------
+$$(".tab").forEach(t=>t.addEventListener("click",()=>{
+  state.tab = t.dataset.tab;
+  $$(".tab").forEach(x=>x.classList.toggle("on",x===t));
+  const p = state.tab==="products";
+  $("#barProducts").hidden=!p;
+  $("#grid").hidden=!p; $("#hintP").hidden=!p; $("#looksWrap").hidden=p;
+  if(!p) renderLooks();
+}));
+document.addEventListener("click",e=>{
+  const swBtn = e.target.closest("[data-sw]");
+  if(swBtn){ e.stopPropagation(); openSwatch(byId.get(+swBtn.dataset.sw)); return; }
+  const zoom = e.target.closest("[data-zoom]");
+  if(zoom){ openZoom(byId.get(+zoom.dataset.zoom)); return; }
+});
+function openSwatch(i){
+  $("#lbImg").src = i.swatch; $("#lbImg").alt = "Fabric swatch — "+i.name;
+  $("#lbNm").textContent = i.name + (i.color?" — "+i.color:"");
+  $("#lbFab").textContent = i.fabric || "";
+  $("#lb").classList.add("open");
+}
+function openZoom(i){
+  $("#lbImg").src = i.img; $("#lbImg").alt = i.name+" "+i.color;
+  $("#lbNm").textContent = i.name + (i.color?" — "+i.color:"");
+  $("#lbFab").textContent = i.fabric || "";
+  $("#lb").classList.add("open");
+}
+$("#lb").addEventListener("click",e=>{ if(!e.target.closest(".panel")) $("#lb").classList.remove("open"); });
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") $("#lb").classList.remove("open"); });
+
+$$("#segGroup button").forEach(b=>b.addEventListener("click",()=>{
+  state.group=b.dataset.g;
+  $$("#segGroup button").forEach(x=>x.classList.toggle("on",x===b));
+  render();
+}));
+$("#q").addEventListener("input",e=>{state.q=e.target.value;render()});
+$("#fType").addEventListener("change",e=>{state.type=e.target.value;render()});
+$("#fColl").addEventListener("change",e=>{state.coll=e.target.value;render()});
+$("#oPer").addEventListener("change",tally);
+$("#oLooks")?.addEventListener("change",tally);
+
+// ---------- print (the whole collection, grouped like the screen) ----------
+const LAYOUT = {4:{cols:2,h:"3.45in"}, 6:{cols:2,h:"2.25in"}, 9:{cols:3,h:"2.18in"}, 12:{cols:3,h:"1.58in"}};
+function preload(urls){
+  return Promise.all(urls.map(u=>new Promise(res=>{
+    const im=new Image(); im.onload=im.onerror=()=>res(); im.src=u;
+    setTimeout(res,4500);
+  })));
+}
+$("#bPrint").addEventListener("click",async ()=>{
+  const per=+$("#oPer").value, {cols,h}=LAYOUT[per];
+  const withSw=$("#oSw").checked;
+  const withLooks=looks.length && $("#oLooks").checked;
+  const on=items.slice().sort(sortFn);
+  const lOn=withLooks?looks:[];
+  if(!on.length) return;
+  const title="Spring 2027 Collection";
+  const buckets=groupsOf(on);
+  const pages=[];
+  buckets.forEach(([cat,list])=>{
+    for(let k=0;k<list.length;k+=per) pages.push({kind:"products",cat,list:list.slice(k,k+per)});
+  });
+  for(let k=0;k<lOn.length;k+=2) pages.push({kind:"looks",cat:"Looks",list:lOn.slice(k,k+2)});
+  const total=pages.length;
+  $("#sheet").innerHTML = pages.map((p,n)=>`
+    <section class="page">
+      <div class="ph"><div class="l">Yakira Bella <em>— ${esc(title)}</em></div>
+        <div class="r">Wholesale line sheet</div></div>
+      ${p.cat && (state.group!=="none"||p.kind==="looks")?`<div class="pcat">${esc(p.cat)}</div>`:""}
+      ${p.kind==="products" ? `
+      <div class="pgrid" style="grid-template-columns:repeat(${cols},1fr)">
+        ${p.list.map(i=>`
+          <div class="pcard">
+            <div class="pshot" style="height:${h}">${i.img?`<img src="${esc(i.img)}">`:""}</div>
+            <div class="pcap">
+              ${withSw&&i.swatch?`<img class="psw" src="${esc(i.swatch)}">`:""}
+              <div class="t"><div class="pnm">${esc(i.name)}</div><div class="pco">${esc(i.color)}</div></div>
+            </div>
+          </div>`).join("")}
+      </div>` : `
+      ${p.list.map(l=>`
+        <div class="plook">
+          <div class="ph2">${l.hero?`<img src="${esc(l.hero)}">`
+            :`<div class="compose">${l.members.slice(0,4).map(m=>`<div>${m.img?`<img src="${esc(m.img)}">`:""}</div>`).join("")}</div>`}</div>
+          <div>
+            <div class="pln">${esc(l.title)}</div>
+            ${l.members.map(m=>`<div class="plm">${m.img?`<img src="${esc(m.img)}">`:""}<span>${esc(m.name)}${m.color?" — "+esc(m.color):""}</span></div>`).join("")}
+            ${l.notes?`<div class="pco" style="margin-top:6px">${esc(l.notes)}</div>`:""}
+          </div>
+        </div>`).join("")}`}
+      <div class="pf"><span>Yakira Bella</span><span>Page ${n+1} of ${total}</span></div>
+    </section>`).join("");
+  const urls=[];
+  if(withSw) on.forEach(i=>i.swatch&&urls.push(i.swatch));
+  lOn.forEach(l=>{ if(l.hero) urls.push(l.hero); l.members.forEach(m=>m.img&&urls.push(m.img)); });
+  if(urls.length) await preload([...new Set(urls)]);
+  window.print();
+});
+
+boot();
+})();
+</script>
+</body>
+</html>

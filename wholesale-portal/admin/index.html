@@ -79,6 +79,15 @@ input[type=date].set{border-color:var(--accent);background:var(--accent-soft);fo
   </div>
 
   <div class="panel">
+    <h2>Spring 2027 line sheet (view only)</h2>
+    <p class="hint">The buyer-facing S27 line sheet at <a href="/s27" target="_blank" style="color:var(--accent)">/s27</a> — photos &amp; fabric swatches straight from PD, no ordering. Refresh re-pulls all S27 styles (plus carryovers tagged “wholesale S27” in PD) and goes live immediately.</p>
+    <div class="bar">
+      <button class="btn go" id="lsRefresh">Refresh from PD</button>
+      <span class="status" id="lsStatus"></span>
+    </div>
+  </div>
+
+  <div class="panel">
     <h2>Default off-price rule</h2>
     <p class="hint">Applies to every <span class="pill">Off price</span> style except those with a per-style override below. Full-price styles are always 50% of MSRP and aren’t affected here.</p>
     <div class="ruleRow">

@@ -205,6 +205,23 @@
     }
   }
 
+  // S27 view-only line sheet: re-pull products/photos/swatches from pd.
+  // The snapshot is stored in Postgres, so it's durable and live right away.
+  async function refreshLinesheet() {
+    const btn = $("#lsRefresh"), st = $("#lsStatus");
+    btn.disabled = true; st.textContent = "Refreshing from PD…"; st.className = "status";
+    try {
+      const res = await fetch("/api/pd-linesheet/refresh", { method: "POST", headers: { "Content-Type": "application/json" }, body: "{}" });
+      const j = await res.json();
+      if (!res.ok || !j.ok) { st.textContent = "Failed: " + (j.error || res.status); st.className = "status err"; }
+      else {
+        st.textContent = `Live — ${j.count} styles (${j.carry} carryover, ${j.swatches} with swatches${j.looks ? `, ${j.looks} looks` : ""}).`;
+        st.className = "status ok";
+      }
+    } catch (e) { st.textContent = "Error: " + e.message; st.className = "status err"; }
+    finally { btn.disabled = false; }
+  }
+
   // Durable resync: triggers the GitHub Action (re-pull + rebuild + commit).
   async function resync() {
     const btn = $("#resync"), st = $("#resyncStatus");
@@ -220,6 +237,7 @@
 
   function wire() {
     $("#resync").addEventListener("click", resync);
+    $("#lsRefresh").addEventListener("click", refreshLinesheet);
     $("#mode").addEventListener("change", (e) => { rule.mode = e.target.value; syncValVisibility(); renderRows(); });
     $("#value").addEventListener("input", (e) => { rule.value = Number(e.target.value) || 0; renderRows(); });
     let t; $("#search").addEventListener("input", () => { clearTimeout(t); t = setTimeout(renderRows, 120); });
