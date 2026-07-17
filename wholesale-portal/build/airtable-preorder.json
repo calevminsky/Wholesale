@@ -1,5 +1,5 @@
 {
-  "fetched_at": "2026-07-16T11:37:10.170Z",
+  "fetched_at": "2026-07-17T11:19:26.417Z",
   "source": "pd.colorway_wholesale",
   "seasons": [
     "F26"
@@ -1255,11 +1255,13 @@
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
+        "XXS",
         "XS",
         "S",
         "M",
         "L",
-        "XL"
+        "XL",
+        "XXL"
       ],
       "shopify_gid": "gid://shopify/Product/7612735815777",
       "handle": "grazia-dress-black",
@@ -1589,7 +1591,7 @@
       "status": null,
       "type": "Top",
       "class": "Fashion",
-      "size_scale": null,
+      "size_scale": "alpha",
       "sizes": [
         "XS",
         "S",
@@ -3225,7 +3227,7 @@
       "color": "Dark Blue",
       "msrp": 78,
       "status": null,
-      "type": "Top",
+      "type": "Skirt",
       "class": "Fashion",
       "size_scale": null,
       "sizes": [
