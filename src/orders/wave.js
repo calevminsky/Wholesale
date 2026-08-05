@@ -105,6 +105,7 @@ export async function submitWave({
   plan,
   submitAllocationToShopify,
   getAllLocations,
+  activateInventoryAtLocation, // (inventoryItemIds, locationId) — FO moves fail on unstocked locations
   getCustomerShopifyId, // async (customer_id) -> gid | null
   orderIds = null       // restrict to these wholesale_orders ids
 }) {
@@ -121,6 +122,18 @@ export async function submitWave({
        FROM public.inventory_items
       WHERE regexp_replace(variant_id, '^.*/', '') = ANY($1::text[])`, [svids]);
   const invItemByVariant = new Map(items.map((r) => [r.svid, r.inventory_item_id]));
+
+  // Some wave variants have never been stocked at Wholesale — the in-season
+  // pipeline never needed activation (it only moves fulfillment where stock
+  // already sits), but wave moves would fail on them.
+  if (activateInventoryAtLocation) {
+    const targetIds = orderIds
+      ? plan.filter((o) => orderIds.includes(o.order_id))
+      : plan;
+    const allItemIds = [...new Set(targetIds.flatMap((o) =>
+      o.lines.map((l) => invItemByVariant.get(tail(l.shopify_variant_id))).filter(Boolean)))];
+    await activateInventoryAtLocation(allItemIds, whlId);
+  }
 
   const results = [];
   for (const o of plan) {
@@ -161,7 +174,7 @@ export async function submitWave({
       customer: o.order_name,
       notes: `Wave 1 of portal preorder draft #${o.order_id}`,
       uploadFileName: `wave-${o.order_id}.xlsx`,
-      report: { requestedSeen: [] },
+      report: { requestedSeen: o.lines.map((l) => ({ handle: l.handle, size: l.size, requestedQty: l.qty })) },
       reserveHours: 0,
       customerId,
       ignoreDestinationCap: true,

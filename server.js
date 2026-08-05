@@ -2881,6 +2881,7 @@ app.use(createOrdersRouter({
   submitAllocationToShopify,
   sendEmailWithAttachments,
   getAllLocations,
+  activateInventoryAtLocation,
   renderPdfFromHtml
 }));
 

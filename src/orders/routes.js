@@ -42,6 +42,7 @@ export function createOrdersRouter({
   submitAllocationToShopify,
   sendEmailWithAttachments,
   getAllLocations,
+  activateInventoryAtLocation,
   renderPdfFromHtml
 } = {}) {
   const r = Router();
@@ -481,24 +482,29 @@ export function createOrdersRouter({
         plan,
         submitAllocationToShopify,
         getAllLocations,
+        activateInventoryAtLocation,
         getCustomerShopifyId: async (customerId) => {
           const c = await customersDb.getCustomer(customerId);
           return c?.shopify_id || null;
         },
         orderIds
       });
-      let emailStatus = null;
-      const attachments = results.flatMap((r2) => r2.attachments || []);
-      if (sendEmailWithAttachments && attachments.length) {
-        try {
-          const names = results.map((r2) => `${r2.order_name} → ${r2.shopify_order_name}`).join("\n");
-          emailStatus = await sendEmailWithAttachments({
-            subject: `Wholesale Preorder Wave — ${results.length} order(s)`,
-            text: `Wave orders created:\n${names}\n\nUnits: ${results.reduce((s, x) => s + x.units, 0)}`,
-            attachments
-          });
-        } catch (e) {
-          emailStatus = { error: String(e?.message || e) };
+      // One email per order — the combined attachments (image-bearing
+      // workbooks) can exceed mail size limits.
+      const emailStatus = [];
+      if (sendEmailWithAttachments) {
+        for (const r2 of results) {
+          if (!r2.attachments?.length) continue;
+          try {
+            const s = await sendEmailWithAttachments({
+              subject: `Wholesale Preorder Wave ${r2.shopify_order_name || ""} — ${r2.order_name}`,
+              text: `Wave order created: ${r2.order_name} → ${r2.shopify_order_name}\nUnits: ${r2.units}  Amount: $${r2.amount.toFixed(2)}`,
+              attachments: r2.attachments
+            });
+            emailStatus.push({ order_id: r2.order_id, ok: true, status: s });
+          } catch (e) {
+            emailStatus.push({ order_id: r2.order_id, error: String(e?.message || e) });
+          }
         }
       }
       res.json({
