@@ -406,7 +406,7 @@ async function inventoryAdjustQuantities({ changes, reason = "movement_created" 
 }
 
 // Draft create with Wholesale tag + priceOverride + optional reserveInventoryUntil
-async function draftOrderCreate({ lineItems, reserveHours, customerId = null }) {
+async function draftOrderCreate({ lineItems, reserveHours, customerId = null, extraTags = [] }) {
   const reserveUntilIso =
     reserveHours && Number(reserveHours) > 0
       ? new Date(Date.now() + Number(reserveHours) * 3600_000).toISOString()
@@ -424,7 +424,7 @@ async function draftOrderCreate({ lineItems, reserveHours, customerId = null }) 
   `;
 
   const input = {
-    tags: AUTO_TAGS,
+    tags: [...AUTO_TAGS, ...extraTags],
     lineItems: lineItems.map(li => ({
       variantId: li.variantId,
       quantity: li.quantity,
@@ -557,7 +557,8 @@ async function enforceFulfillmentLocationsRebalance({
   orderId,
   allocationPlan,           // Map(variantId -> { inventoryItemId, allocations:[{locationId, qty}] })
   allowedLocationIds,       // allowed set
-  drainOrderLocationIds     // ordering preference
+  drainOrderLocationIds,    // ordering preference
+  ignoreDestinationCap = false // wave submits: pin fulfillment to a location past its available count
 }) {
   const moveLog = [];
   const blocked = [];
@@ -569,6 +570,10 @@ async function enforceFulfillmentLocationsRebalance({
   const destRemain = new Map(); // inventoryItemId::locationId -> remaining cap to move INTO
 
   async function getDestRemainMonotonic(inventoryItemId, locationId) {
+    // Wave orders deliberately commit delivered-not-yet-counted units at the
+    // Wholesale location, driving available negative until count-in — the
+    // in-season cap would block exactly those moves.
+    if (ignoreDestinationCap) return Number.MAX_SAFE_INTEGER;
     const key = `${inventoryItemId}::${locationId}`;
     const live = Math.max(0, Number(await getAvailableAtLocation(inventoryItemId, locationId)) || 0);
 
@@ -2111,7 +2116,9 @@ async function submitAllocationToShopify({
   uploadFileName,
   report,
   reserveHours = 48,
-  customerId = null   // Shopify customer GID — links the order to the customer account
+  customerId = null,  // Shopify customer GID — links the order to the customer account
+  ignoreDestinationCap = false, // wave submits (see enforceFulfillmentLocationsRebalance)
+  extraTags = []
 }) {
   if (!Array.isArray(draftLineItems) || draftLineItems.length === 0) {
     throw new Error("Nothing fulfillable from selected locations. No order created.");
@@ -2137,7 +2144,8 @@ async function submitAllocationToShopify({
       const draft = await draftOrderCreate({
         lineItems: chunk,
         reserveHours: Number(reserveHours),
-        customerId
+        customerId,
+        extraTags
       });
       const order = await draftOrderComplete(draft.id);
       await waitForFulfillmentOrders(order.id);
@@ -2147,7 +2155,8 @@ async function submitAllocationToShopify({
         orderId: order.id,
         allocationPlan: chunkAllocationPlan,
         allowedLocationIds,
-        drainOrderLocationIds: allowedLocationIds
+        drainOrderLocationIds: allowedLocationIds,
+        ignoreDestinationCap
       });
 
       if (rebalance.blocked.length > 0) {
@@ -2157,7 +2166,8 @@ async function submitAllocationToShopify({
           orderId: order.id,
           allocationPlan: chunkAllocationPlan,
           allowedLocationIds,
-          drainOrderLocationIds: allowedLocationIds
+          drainOrderLocationIds: allowedLocationIds,
+          ignoreDestinationCap
         });
         rebalance = {
           moveLog: [...rebalance.moveLog, ...retry.moveLog],

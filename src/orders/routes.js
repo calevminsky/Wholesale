@@ -11,6 +11,8 @@ import * as customersDb from "../customers/db.js";
 import { parseOrderUpload } from "./parse-upload.js";
 import { getExportByToken } from "../linesheets/exports-db.js";
 import { buildDraftOrderHtml } from "./draft-order-template.js";
+import { computeWavePlan, submitWave } from "./wave.js";
+import { getPool } from "../pg.js";
 import { buildAllocationReportHtml } from "./allocation-report-template.js";
 import { buildPickListHtml } from "./pick-list-template.js";
 
@@ -451,6 +453,64 @@ export function createOrdersRouter({
     }
   });
 
+  // ------- wave submit (partial fulfillment of portal preorder drafts) -------
+  // Plan is read-only: per draft, the currently-fulfillable slice (active
+  // reservations + FIFO take of delivered-not-counted PO units, minus prior
+  // waves). Submit creates one Shopify order per planned draft at the
+  // Wholesale location and records it in wholesale_wave_orders; the draft
+  // stays open so remaining demand keeps feeding receiving.
+  r.get("/api/orders-wave/plan", async (_req, res) => {
+    try {
+      const plan = await computeWavePlan();
+      const units = plan.reduce((s, o) => s + o.units, 0);
+      const amount = plan.reduce((s, o) => s + o.amount, 0);
+      res.json({ plan, totals: { orders: plan.length, units, amount } });
+    } catch (e) {
+      res.status(500).json({ error: String(e?.message || e) });
+    }
+  });
+
+  r.post("/api/orders-wave/submit", async (req, res) => {
+    if (!submitAllocationToShopify) {
+      return res.status(500).json({ error: "Submission helpers not wired into orders router." });
+    }
+    try {
+      const orderIds = Array.isArray(req.body?.orderIds) ? req.body.orderIds.map(Number) : null;
+      const plan = await computeWavePlan();
+      const results = await submitWave({
+        plan,
+        submitAllocationToShopify,
+        getAllLocations,
+        getCustomerShopifyId: async (customerId) => {
+          const c = await customersDb.getCustomer(customerId);
+          return c?.shopify_id || null;
+        },
+        orderIds
+      });
+      let emailStatus = null;
+      const attachments = results.flatMap((r2) => r2.attachments || []);
+      if (sendEmailWithAttachments && attachments.length) {
+        try {
+          const names = results.map((r2) => `${r2.order_name} → ${r2.shopify_order_name}`).join("\n");
+          emailStatus = await sendEmailWithAttachments({
+            subject: `Wholesale Preorder Wave — ${results.length} order(s)`,
+            text: `Wave orders created:\n${names}\n\nUnits: ${results.reduce((s, x) => s + x.units, 0)}`,
+            attachments
+          });
+        } catch (e) {
+          emailStatus = { error: String(e?.message || e) };
+        }
+      }
+      res.json({
+        ok: true,
+        results: results.map(({ attachments: _a, orderResults: _o, ...rest }) => rest),
+        emailStatus
+      });
+    } catch (e) {
+      res.status(500).json({ error: String(e?.message || e) });
+    }
+  });
+
   // ------- submit draft to Shopify -------
   // Re-runs allocation (in case inventory changed since the last preview), then
   // creates the Shopify order(s). Marks the draft as 'submitted' on success.
@@ -466,6 +526,15 @@ export function createOrdersRouter({
       if (order.archived_at) return res.status(409).json({ error: "Order is archived." });
       if (order.status === "submitted") {
         return res.status(409).json({ error: "Already submitted.", shopify_order_id: order.shopify_order_id });
+      }
+      // Wave-submitted drafts must not also go through the full submit — the
+      // wave orders already committed (part of) these units in Shopify.
+      const { rows: waves } = await getPool().query(
+        `SELECT shopify_order_name FROM wholesale_wave_orders WHERE order_id = $1`, [id]);
+      if (waves.length) {
+        return res.status(409).json({
+          error: `This draft has wave order(s) in Shopify (${waves.map((w) => w.shopify_order_name).join(", ")}) — submitting it in full would double-order those units.`
+        });
       }
       if (!Array.isArray(order.location_ids) || order.location_ids.length === 0) {
         return res.status(400).json({ error: "Pick at least one location before submitting." });
