@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-10T11:05:02.084Z",
+  "generated_at": "2026-08-11T10:47:49.736Z",
   "offering": "full",
   "offer": "INSEASON",
   "currency": "USD",
@@ -22,8 +22,8 @@
     "gid://shopify/Location/33027424353"
   ],
   "counts": {
-    "discovered": 344,
-    "products": 344,
+    "discovered": 348,
+    "products": 348,
     "dropped_no_inventory": 0,
     "dropped_no_variants": 0,
     "dropped_no_msrp": 0
@@ -44,7 +44,7 @@
       "compare_at": 42,
       "current_price": 19.99,
       "unit_cost": 7.5,
-      "total_available": 38,
+      "total_available": 37,
       "sizes": [
         {
           "size": "S",
@@ -59,7 +59,7 @@
         {
           "size": "L",
           "sku": "S5-TK-522-PK000-00Q-L",
-          "available": 17
+          "available": 16
         },
         {
           "size": "XL",
@@ -200,7 +200,7 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 13.59,
-      "total_available": 124,
+      "total_available": 115,
       "sizes": [
         {
           "size": "XXS",
@@ -210,22 +210,22 @@
         {
           "size": "XS",
           "sku": "03029-XS",
-          "available": 36
+          "available": 33
         },
         {
           "size": "S",
           "sku": "03029-S",
-          "available": 26
+          "available": 23
         },
         {
           "size": "M",
           "sku": "03029-M",
-          "available": 12
+          "available": 10
         },
         {
           "size": "L",
           "sku": "03029-L",
-          "available": 13
+          "available": 12
         },
         {
           "size": "XL",
@@ -249,12 +249,12 @@
       "compare_at": 118,
       "current_price": 118,
       "unit_cost": 27.85,
-      "total_available": 67,
+      "total_available": 66,
       "sizes": [
         {
           "size": "XS",
           "sku": "03131-53-XS",
-          "available": 18
+          "available": 17
         },
         {
           "size": "S",
@@ -293,7 +293,7 @@
       "compare_at": 118,
       "current_price": 118,
       "unit_cost": 27.85,
-      "total_available": 66,
+      "total_available": 65,
       "sizes": [
         {
           "size": "XS",
@@ -303,7 +303,7 @@
         {
           "size": "S",
           "sku": "S6-DK-623-BL1128-53L-S",
-          "available": 22
+          "available": 21
         },
         {
           "size": "M",
@@ -337,12 +337,12 @@
       "compare_at": 118,
       "current_price": 118,
       "unit_cost": 27.85,
-      "total_available": 73,
+      "total_available": 72,
       "sizes": [
         {
           "size": "XS",
           "sku": "03205-53-XS",
-          "available": 22
+          "available": 21
         },
         {
           "size": "S",
@@ -381,7 +381,7 @@
       "compare_at": 138,
       "current_price": 138,
       "unit_cost": 27.85,
-      "total_available": 49,
+      "total_available": 48,
       "sizes": [
         {
           "size": "XS",
@@ -396,7 +396,7 @@
         {
           "size": "M",
           "sku": "S6-DW-003-BL960-53S-M",
-          "available": 5
+          "available": 4
         },
         {
           "size": "L",
@@ -425,12 +425,12 @@
       "compare_at": 148,
       "current_price": 39.99,
       "unit_cost": 28.85,
-      "total_available": 19,
+      "total_available": 18,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-003-OR892-53S-XS",
-          "available": 16
+          "available": 15
         },
         {
           "size": "S",
@@ -499,6 +499,50 @@
       ]
     },
     {
+      "product_id": "7538218827873",
+      "gid": "gid://shopify/Product/7538218827873",
+      "handle": "allison-dress-pink-white",
+      "title": "Allison Dress (Pink White)",
+      "color": "Pink White",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Allison Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/allison-dress-pink-white-dress-yakira-bella-7478457.jpg?v=1780369029",
+      "msrp": 168,
+      "compare_at": 168,
+      "current_price": 99.99,
+      "unit_cost": 47.85,
+      "total_available": 60,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-DW-720-PK000-37L-XS",
+          "available": 16
+        },
+        {
+          "size": "S",
+          "sku": "S6-DW-720-PK000-37L-S",
+          "available": 21
+        },
+        {
+          "size": "M",
+          "sku": "S6-DW-720-PK000-37L-M",
+          "available": 14
+        },
+        {
+          "size": "L",
+          "sku": "S6-DW-720-PK000-37L-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "S6-DW-720-PK000-37L-XL",
+          "available": 3
+        }
+      ]
+    },
+    {
       "product_id": "7538218762337",
       "gid": "gid://shopify/Product/7538218762337",
       "handle": "allison-dress-white-blue",
@@ -513,7 +557,7 @@
       "compare_at": 168,
       "current_price": 54.99,
       "unit_cost": 47.85,
-      "total_available": 13,
+      "total_available": 12,
       "sizes": [
         {
           "size": "XS",
@@ -538,7 +582,7 @@
         {
           "size": "XL",
           "sku": "S6-DW-720-WH000-37L-XL",
-          "available": 2
+          "available": 1
         }
       ]
     },
@@ -557,7 +601,7 @@
       "compare_at": 88,
       "current_price": 14.99,
       "unit_cost": 28.35,
-      "total_available": 24,
+      "total_available": 23,
       "sizes": [
         {
           "size": "XS",
@@ -572,7 +616,7 @@
         {
           "size": "M",
           "sku": "F5-TK-561-BK000-00L-M",
-          "available": 3
+          "available": 2
         },
         {
           "size": "L",
@@ -689,32 +733,32 @@
       "compare_at": 108,
       "current_price": 108,
       "unit_cost": 25.5,
-      "total_available": 92,
+      "total_available": 84,
       "sizes": [
         {
           "size": "XS",
           "sku": "03018-54-XS",
-          "available": 29
+          "available": 27
         },
         {
           "size": "S",
           "sku": "03018-54-S",
-          "available": 27
+          "available": 25
         },
         {
           "size": "M",
           "sku": "03018-54-M",
-          "available": 19
+          "available": 17
         },
         {
           "size": "L",
           "sku": "03018-54-L",
-          "available": 7
+          "available": 6
         },
         {
           "size": "XL",
           "sku": "03018-54-XL",
-          "available": 10
+          "available": 9
         }
       ]
     },
@@ -1041,12 +1085,12 @@
       "compare_at": 68,
       "current_price": 49.99,
       "unit_cost": 24.85,
-      "total_available": 22,
+      "total_available": 21,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-677-BL000-36N-XS",
-          "available": 15
+          "available": 14
         },
         {
           "size": "S",
@@ -1085,12 +1129,12 @@
       "compare_at": 98,
       "current_price": 98,
       "unit_cost": 27.85,
-      "total_available": 69,
+      "total_available": 66,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-DK-400-BK000-48L-XS",
-          "available": 22
+          "available": 20
         },
         {
           "size": "S",
@@ -1110,7 +1154,7 @@
         {
           "size": "XL",
           "sku": "S5-DK-400-BK000-48L-XL",
-          "available": 8
+          "available": 7
         }
       ]
     },
@@ -1173,27 +1217,27 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 20,
-      "total_available": 55,
+      "total_available": 45,
       "sizes": [
         {
           "size": "XS",
           "sku": "03068-36-XS",
-          "available": 14
+          "available": 12
         },
         {
           "size": "S",
           "sku": "03068-36-S",
-          "available": 17
+          "available": 13
         },
         {
           "size": "M",
           "sku": "03068-36-M",
-          "available": 11
+          "available": 8
         },
         {
           "size": "L",
           "sku": "03068-36-L",
-          "available": 6
+          "available": 5
         },
         {
           "size": "XL",
@@ -1217,32 +1261,32 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 20,
-      "total_available": 111,
+      "total_available": 94,
       "sizes": [
         {
           "size": "XS",
           "sku": "03070-36-XS",
-          "available": 32
+          "available": 27
         },
         {
           "size": "S",
           "sku": "03070-36-S",
-          "available": 32
+          "available": 27
         },
         {
           "size": "M",
           "sku": "03070-36-M",
-          "available": 24
+          "available": 20
         },
         {
           "size": "L",
           "sku": "03070-36-L",
-          "available": 11
+          "available": 10
         },
         {
           "size": "XL",
           "sku": "03070-36-XL",
-          "available": 12
+          "available": 10
         }
       ]
     },
@@ -1261,27 +1305,27 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 19.85,
-      "total_available": 54,
+      "total_available": 45,
       "sizes": [
         {
           "size": "XS",
           "sku": "03067-XS",
-          "available": 14
+          "available": 11
         },
         {
           "size": "S",
           "sku": "03067-S",
-          "available": 16
+          "available": 14
         },
         {
           "size": "M",
           "sku": "03067-M",
-          "available": 11
+          "available": 8
         },
         {
           "size": "L",
           "sku": "03067-L",
-          "available": 6
+          "available": 5
         },
         {
           "size": "XL",
@@ -1305,32 +1349,32 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 19.85,
-      "total_available": 110,
+      "total_available": 93,
       "sizes": [
         {
           "size": "XS",
           "sku": "03069-XS",
-          "available": 30
+          "available": 26
         },
         {
           "size": "S",
           "sku": "03069-S",
-          "available": 34
+          "available": 29
         },
         {
           "size": "M",
           "sku": "03069-M",
-          "available": 23
+          "available": 19
         },
         {
           "size": "L",
           "sku": "03069-L",
-          "available": 11
+          "available": 9
         },
         {
           "size": "XL",
           "sku": "03069-XL",
-          "available": 12
+          "available": 10
         }
       ]
     },
@@ -1349,7 +1393,7 @@
       "compare_at": 98,
       "current_price": 98,
       "unit_cost": 24.95,
-      "total_available": 105,
+      "total_available": 104,
       "sizes": [
         {
           "size": "XS",
@@ -1369,7 +1413,7 @@
         {
           "size": "L",
           "sku": "S6-SW-571-BL000-41N-L",
-          "available": 12
+          "available": 11
         },
         {
           "size": "XL",
@@ -1437,7 +1481,7 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 27.35,
-      "total_available": 128,
+      "total_available": 127,
       "sizes": [
         {
           "size": "XS",
@@ -1452,7 +1496,7 @@
         {
           "size": "M",
           "sku": "S6-TK-611-DB000-00L-M",
-          "available": 20
+          "available": 19
         },
         {
           "size": "L",
@@ -1745,12 +1789,12 @@
       "compare_at": 54,
       "current_price": 9.99,
       "unit_cost": 14.2,
-      "total_available": 30,
+      "total_available": 29,
       "sizes": [
         {
           "size": "XS",
           "sku": "F4-TS-255-BR000-00L-XS",
-          "available": 24
+          "available": 23
         },
         {
           "size": "S",
@@ -1882,12 +1926,12 @@
       "compare_at": 168,
       "current_price": 168,
       "unit_cost": 28.85,
-      "total_available": 84,
+      "total_available": 83,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-093-BK1043-50S-XS",
-          "available": 26
+          "available": 25
         },
         {
           "size": "S",
@@ -1926,7 +1970,7 @@
       "compare_at": 148,
       "current_price": 148,
       "unit_cost": 21.85,
-      "total_available": 50,
+      "total_available": 48,
       "sizes": [
         {
           "size": "XXS",
@@ -1936,7 +1980,7 @@
         {
           "size": "XS",
           "sku": "S6-DW-093-BL864-50S-XS",
-          "available": 22
+          "available": 21
         },
         {
           "size": "S",
@@ -1946,7 +1990,7 @@
         {
           "size": "M",
           "sku": "S6-DW-093-BL864-50S-M",
-          "available": 7
+          "available": 6
         },
         {
           "size": "L",
@@ -1975,7 +2019,7 @@
       "compare_at": 178,
       "current_price": 178,
       "unit_cost": 35.85,
-      "total_available": 137,
+      "total_available": 136,
       "sizes": [
         {
           "size": "XXS",
@@ -1995,7 +2039,7 @@
         {
           "size": "M",
           "sku": "S6-DW-093-BL1038-50Q-M",
-          "available": 22
+          "available": 21
         },
         {
           "size": "L",
@@ -2024,7 +2068,7 @@
       "compare_at": 148,
       "current_price": 59.99,
       "unit_cost": 28.85,
-      "total_available": 9,
+      "total_available": 7,
       "sizes": [
         {
           "size": "XXS",
@@ -2044,7 +2088,7 @@
         {
           "size": "M",
           "sku": "S6-DW-093-GR973-50S-M",
-          "available": 1
+          "available": 0
         },
         {
           "size": "L",
@@ -2054,7 +2098,7 @@
         {
           "size": "XL",
           "sku": "S6-DW-093-GR973-50S-XL",
-          "available": 2
+          "available": 1
         }
       ]
     },
@@ -2073,7 +2117,7 @@
       "compare_at": 148,
       "current_price": 59.99,
       "unit_cost": 28.85,
-      "total_available": 22,
+      "total_available": 20,
       "sizes": [
         {
           "size": "XS",
@@ -2083,7 +2127,7 @@
         {
           "size": "S",
           "sku": "S6-DW-093-RD000-50Q-S",
-          "available": 7
+          "available": 6
         },
         {
           "size": "M",
@@ -2093,7 +2137,7 @@
         {
           "size": "L",
           "sku": "S6-DW-093-RD000-50Q-L",
-          "available": 2
+          "available": 1
         },
         {
           "size": "XL",
@@ -2117,7 +2161,7 @@
       "compare_at": 138,
       "current_price": 138,
       "unit_cost": 27.85,
-      "total_available": 140,
+      "total_available": 138,
       "sizes": [
         {
           "size": "XXS",
@@ -2127,12 +2171,12 @@
         {
           "size": "XS",
           "sku": "S5-DW-093-BL000-50S-XS",
-          "available": 49
+          "available": 48
         },
         {
           "size": "S",
           "sku": "S5-DW-093-BL000-50S-S",
-          "available": 37
+          "available": 36
         },
         {
           "size": "M",
@@ -2210,7 +2254,7 @@
       "compare_at": 54,
       "current_price": 54,
       "unit_cost": 12,
-      "total_available": 69,
+      "total_available": 67,
       "sizes": [
         {
           "size": "XS",
@@ -2220,7 +2264,7 @@
         {
           "size": "S",
           "sku": "F5-SK-581-BK000-36N-S",
-          "available": 34
+          "available": 32
         },
         {
           "size": "M",
@@ -2347,7 +2391,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 19.85,
-      "total_available": 36,
+      "total_available": 34,
       "sizes": [
         {
           "size": "XS",
@@ -2357,12 +2401,12 @@
         {
           "size": "S",
           "sku": "S4-TS-085-BL000-00L-S",
-          "available": 12
+          "available": 11
         },
         {
           "size": "M",
           "sku": "S4-TS-085-BL000-00L-M",
-          "available": 7
+          "available": 6
         },
         {
           "size": "L",
@@ -2479,7 +2523,7 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 16,
-      "total_available": 52,
+      "total_available": 49,
       "sizes": [
         {
           "size": "XS",
@@ -2499,12 +2543,12 @@
         {
           "size": "L",
           "sku": "03016-36-L",
-          "available": 6
+          "available": 4
         },
         {
           "size": "XL",
           "sku": "03016-36-XL",
-          "available": 6
+          "available": 5
         }
       ]
     },
@@ -2523,7 +2567,7 @@
       "compare_at": 78,
       "current_price": 34.99,
       "unit_cost": 24.5,
-      "total_available": 43,
+      "total_available": 42,
       "sizes": [
         {
           "size": "XS",
@@ -2538,7 +2582,7 @@
         {
           "size": "M",
           "sku": "S6-SW-426-PK000-36N-M",
-          "available": 8
+          "available": 7
         },
         {
           "size": "L",
@@ -2567,7 +2611,7 @@
       "compare_at": 78,
       "current_price": 34.99,
       "unit_cost": 24.5,
-      "total_available": 3,
+      "total_available": 2,
       "sizes": [
         {
           "size": "XS",
@@ -2592,7 +2636,7 @@
         {
           "size": "XL",
           "sku": "S6-SW-426-LB000-36N-XL",
-          "available": 1
+          "available": 0
         }
       ]
     },
@@ -2685,6 +2729,94 @@
       ]
     },
     {
+      "product_id": "7621814091873",
+      "gid": "gid://shopify/Product/7621814091873",
+      "handle": "camellia-dress-black",
+      "title": "Camellia Dress (Black)",
+      "color": "Black",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": "Camellia Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/camellia-dress-black-dress-yakira-bella-4989020.jpg?v=1786392072",
+      "msrp": 118,
+      "compare_at": 118,
+      "current_price": 118,
+      "unit_cost": 25.85,
+      "total_available": 70,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03065-53-XS",
+          "available": 22
+        },
+        {
+          "size": "S",
+          "sku": "03065-53-S",
+          "available": 21
+        },
+        {
+          "size": "M",
+          "sku": "03065-53-M",
+          "available": 15
+        },
+        {
+          "size": "L",
+          "sku": "03065-53-L",
+          "available": 4
+        },
+        {
+          "size": "XL",
+          "sku": "03065-53-XL",
+          "available": 8
+        }
+      ]
+    },
+    {
+      "product_id": "7621816254561",
+      "gid": "gid://shopify/Product/7621816254561",
+      "handle": "camellia-dress-brown",
+      "title": "Camellia Dress (Brown)",
+      "color": "Brown",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": "Camellia Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/camellia-dress-brown-dress-yakira-bella-2956952.jpg?v=1786392071",
+      "msrp": 118,
+      "compare_at": 118,
+      "current_price": 118,
+      "unit_cost": 25.85,
+      "total_available": 74,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03066-53-XS",
+          "available": 22
+        },
+        {
+          "size": "S",
+          "sku": "03066-53-S",
+          "available": 22
+        },
+        {
+          "size": "M",
+          "sku": "03066-53-M",
+          "available": 17
+        },
+        {
+          "size": "L",
+          "sku": "03066-53-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "03066-53-XL",
+          "available": 7
+        }
+      ]
+    },
+    {
       "product_id": "7621815894113",
       "gid": "gid://shopify/Product/7621815894113",
       "handle": "camellia-dress-sage",
@@ -2699,32 +2831,32 @@
       "compare_at": 118,
       "current_price": 118,
       "unit_cost": 25.85,
-      "total_available": 116,
+      "total_available": 96,
       "sizes": [
         {
           "size": "XS",
           "sku": "03064-53-XS",
-          "available": 33
+          "available": 27
         },
         {
           "size": "S",
           "sku": "03064-53-S",
-          "available": 32
+          "available": 28
         },
         {
           "size": "M",
           "sku": "03064-53-M",
-          "available": 25
+          "available": 21
         },
         {
           "size": "L",
           "sku": "03064-53-L",
-          "available": 13
+          "available": 11
         },
         {
           "size": "XL",
           "sku": "03064-53-XL",
-          "available": 13
+          "available": 9
         }
       ]
     },
@@ -2787,7 +2919,7 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": null,
-      "total_available": 144,
+      "total_available": 129,
       "sizes": [
         {
           "size": "XXS",
@@ -2797,22 +2929,22 @@
         {
           "size": "XS",
           "sku": "03026-XS",
-          "available": 45
+          "available": 40
         },
         {
           "size": "S",
           "sku": "03026-S",
-          "available": 30
+          "available": 25
         },
         {
           "size": "M",
           "sku": "03026-M",
-          "available": 14
+          "available": 11
         },
         {
           "size": "L",
           "sku": "03026-L",
-          "available": 14
+          "available": 12
         },
         {
           "size": "XL",
@@ -2836,7 +2968,7 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 11.59,
-      "total_available": 93,
+      "total_available": 92,
       "sizes": [
         {
           "size": "XXS",
@@ -2856,7 +2988,7 @@
         {
           "size": "M",
           "sku": "03027-M",
-          "available": 10
+          "available": 9
         },
         {
           "size": "L",
@@ -2885,32 +3017,32 @@
       "compare_at": 118,
       "current_price": 118,
       "unit_cost": 27.85,
-      "total_available": 77,
+      "total_available": 62,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-702-BK967-54L-XS",
-          "available": 16
+          "available": 13
         },
         {
           "size": "S",
           "sku": "S6-DK-702-BK967-54L-S",
-          "available": 18
+          "available": 13
         },
         {
           "size": "M",
           "sku": "S6-DK-702-BK967-54L-M",
-          "available": 16
+          "available": 13
         },
         {
           "size": "L",
           "sku": "S6-DK-702-BK967-54L-L",
-          "available": 15
+          "available": 13
         },
         {
           "size": "XL",
           "sku": "S6-DK-702-BK967-54L-XL",
-          "available": 12
+          "available": 10
         }
       ]
     },
@@ -2973,12 +3105,12 @@
       "compare_at": 58,
       "current_price": 9.99,
       "unit_cost": 15.54,
-      "total_available": 42,
+      "total_available": 41,
       "sizes": [
         {
           "size": "XS",
           "sku": "F4-TS-254-BK000-00L-XS",
-          "available": 27
+          "available": 26
         },
         {
           "size": "S",
@@ -3017,17 +3149,17 @@
       "compare_at": 58,
       "current_price": 9.99,
       "unit_cost": 15.54,
-      "total_available": 89,
+      "total_available": 86,
       "sizes": [
         {
           "size": "XS",
           "sku": "F4-TS-254-BL000-00L-XS",
-          "available": 52
+          "available": 51
         },
         {
           "size": "S",
           "sku": "F4-TS-254-BL000-00L-S",
-          "available": 31
+          "available": 30
         },
         {
           "size": "M",
@@ -3037,7 +3169,7 @@
         {
           "size": "L",
           "sku": "F4-TS-254-BL000-00L-L",
-          "available": 1
+          "available": 0
         },
         {
           "size": "XL",
@@ -3149,32 +3281,32 @@
       "compare_at": 128,
       "current_price": 128,
       "unit_cost": 28.85,
-      "total_available": 118,
+      "total_available": 107,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-538-BK909-53L-XS",
-          "available": 40
+          "available": 37
         },
         {
           "size": "S",
           "sku": "S6-DW-538-BK909-53L-S",
-          "available": 38
+          "available": 35
         },
         {
           "size": "M",
           "sku": "S6-DW-538-BK909-53L-M",
-          "available": 19
+          "available": 17
         },
         {
           "size": "L",
           "sku": "S6-DW-538-BK909-53L-L",
-          "available": 13
+          "available": 12
         },
         {
           "size": "XL",
           "sku": "S6-DW-538-BK909-53L-XL",
-          "available": 8
+          "available": 6
         }
       ]
     },
@@ -3193,7 +3325,7 @@
       "compare_at": 148,
       "current_price": 79.99,
       "unit_cost": 28.85,
-      "total_available": 61,
+      "total_available": 59,
       "sizes": [
         {
           "size": "XS",
@@ -3203,7 +3335,7 @@
         {
           "size": "S",
           "sku": "S6-DW-538-PL1056-53L-S",
-          "available": 24
+          "available": 23
         },
         {
           "size": "M",
@@ -3213,7 +3345,7 @@
         {
           "size": "L",
           "sku": "S6-DW-538-PL1056-53L-L",
-          "available": 4
+          "available": 3
         },
         {
           "size": "XL",
@@ -3325,7 +3457,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 20.85,
-      "total_available": 9,
+      "total_available": 8,
       "sizes": [
         {
           "size": "XS",
@@ -3335,7 +3467,7 @@
         {
           "size": "S",
           "sku": "S5-SW-107-OW000-33N-S",
-          "available": 5
+          "available": 4
         },
         {
           "size": "M",
@@ -3418,7 +3550,7 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 20.85,
-      "total_available": 35,
+      "total_available": 33,
       "sizes": [
         {
           "size": "XXS",
@@ -3428,7 +3560,7 @@
         {
           "size": "XS",
           "sku": "S5-SW-107-WH000-33N-XS",
-          "available": 19
+          "available": 18
         },
         {
           "size": "S",
@@ -3438,7 +3570,7 @@
         {
           "size": "M",
           "sku": "S5-SW-107-WH000-33N-M",
-          "available": 3
+          "available": 2
         },
         {
           "size": "L",
@@ -3467,7 +3599,7 @@
       "compare_at": 88,
       "current_price": 24.99,
       "unit_cost": 27.85,
-      "total_available": 21,
+      "total_available": 20,
       "sizes": [
         {
           "size": "XS",
@@ -3477,7 +3609,7 @@
         {
           "size": "S",
           "sku": "F5-TK-563-BK000-00L-S",
-          "available": 6
+          "available": 5
         },
         {
           "size": "M",
@@ -3511,7 +3643,7 @@
       "compare_at": 88,
       "current_price": 24.99,
       "unit_cost": 27.85,
-      "total_available": 11,
+      "total_available": 9,
       "sizes": [
         {
           "size": "XS",
@@ -3521,7 +3653,7 @@
         {
           "size": "S",
           "sku": "F5-TK-563-BY000-00L-S",
-          "available": 4
+          "available": 3
         },
         {
           "size": "M",
@@ -3536,7 +3668,7 @@
         {
           "size": "XL",
           "sku": "F5-TK-563-BY000-00L-XL",
-          "available": 1
+          "available": 0
         }
       ]
     },
@@ -3555,32 +3687,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 22.85,
-      "total_available": 97,
+      "total_available": 89,
       "sizes": [
         {
           "size": "XS",
           "sku": "03014-XS",
-          "available": 29
+          "available": 27
         },
         {
           "size": "S",
           "sku": "03014-S",
-          "available": 29
+          "available": 27
         },
         {
           "size": "M",
           "sku": "03014-M",
-          "available": 20
+          "available": 18
         },
         {
           "size": "L",
           "sku": "03014-L",
-          "available": 9
+          "available": 8
         },
         {
           "size": "XL",
           "sku": "03014-XL",
-          "available": 10
+          "available": 9
         }
       ]
     },
@@ -3599,7 +3731,7 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 22.85,
-      "total_available": 72,
+      "total_available": 71,
       "sizes": [
         {
           "size": "XS",
@@ -3609,7 +3741,7 @@
         {
           "size": "S",
           "sku": "03013-S",
-          "available": 19
+          "available": 18
         },
         {
           "size": "M",
@@ -3687,12 +3819,12 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 25.85,
-      "total_available": 91,
+      "total_available": 90,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-TW-460-BK000-00L-XS",
-          "available": 23
+          "available": 22
         },
         {
           "size": "S",
@@ -4259,32 +4391,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 21.85,
-      "total_available": 119,
+      "total_available": 101,
       "sizes": [
         {
           "size": "XS",
           "sku": "03076-33-XS",
-          "available": 34
+          "available": 32
         },
         {
           "size": "S",
           "sku": "03076-33-S",
-          "available": 36
+          "available": 32
         },
         {
           "size": "M",
           "sku": "03076-33-M",
-          "available": 24
+          "available": 16
         },
         {
           "size": "L",
           "sku": "03076-33-L",
-          "available": 12
+          "available": 9
         },
         {
           "size": "XL",
           "sku": "03076-33-XL",
-          "available": 13
+          "available": 12
         }
       ]
     },
@@ -4303,7 +4435,7 @@
       "compare_at": 98,
       "current_price": 98,
       "unit_cost": 25.5,
-      "total_available": 59,
+      "total_available": 58,
       "sizes": [
         {
           "size": "XS",
@@ -4313,7 +4445,7 @@
         {
           "size": "S",
           "sku": "S6-SW-614-BL903-36N-S",
-          "available": 21
+          "available": 20
         },
         {
           "size": "M",
@@ -4449,12 +4581,12 @@
       "compare_at": 78,
       "current_price": 19.99,
       "unit_cost": 16,
-      "total_available": 6,
+      "total_available": 5,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-682-BK000-51S-XS",
-          "available": 6
+          "available": 5
         },
         {
           "size": "S",
@@ -4611,50 +4743,6 @@
       ]
     },
     {
-      "product_id": "7520841629793",
-      "gid": "gid://shopify/Product/7520841629793",
-      "handle": "ember-skirt-20-white-copy",
-      "title": "Ember Skirt 25\" (White)",
-      "color": "White",
-      "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Ember Skirt",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/ember-skirt-25-white-skirt-yakira-bella-2699237.jpg?v=1779830186",
-      "msrp": 78,
-      "compare_at": 78,
-      "current_price": 59.99,
-      "unit_cost": 23.85,
-      "total_available": 7,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "S6-SW-728-WH000-25N-XS",
-          "available": 0
-        },
-        {
-          "size": "S",
-          "sku": "S6-SW-728-WH000-25N-S",
-          "available": 1
-        },
-        {
-          "size": "M",
-          "sku": "S6-SW-728-WH000-25N-M",
-          "available": 2
-        },
-        {
-          "size": "L",
-          "sku": "S6-SW-728-WH000-25N-L",
-          "available": 1
-        },
-        {
-          "size": "XL",
-          "sku": "S6-SW-728-WH000-25N-XL",
-          "available": 3
-        }
-      ]
-    },
-    {
       "product_id": "7538219221089",
       "gid": "gid://shopify/Product/7538219221089",
       "handle": "emma-skirt-navy",
@@ -4757,12 +4845,12 @@
       "compare_at": 168,
       "current_price": 69.99,
       "unit_cost": 49.85,
-      "total_available": 48,
+      "total_available": 46,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-740-PK000-53S-XS",
-          "available": 19
+          "available": 18
         },
         {
           "size": "S",
@@ -4782,7 +4870,7 @@
         {
           "size": "XL",
           "sku": "S6-DW-740-PK000-53S-XL",
-          "available": 2
+          "available": 1
         }
       ]
     },
@@ -4845,7 +4933,7 @@
       "compare_at": 58,
       "current_price": 29.99,
       "unit_cost": 24.85,
-      "total_available": 48,
+      "total_available": 47,
       "sizes": [
         {
           "size": "XS",
@@ -4860,7 +4948,7 @@
         {
           "size": "M",
           "sku": "S5-TW-492-BL000-00S-M",
-          "available": 6
+          "available": 5
         },
         {
           "size": "L",
@@ -4889,27 +4977,27 @@
       "compare_at": 108,
       "current_price": 108,
       "unit_cost": 25.85,
-      "total_available": 100,
+      "total_available": 93,
       "sizes": [
         {
           "size": "XS",
           "sku": "03050-XS",
-          "available": 35
+          "available": 33
         },
         {
           "size": "S",
           "sku": "03050-S",
-          "available": 36
+          "available": 34
         },
         {
           "size": "M",
           "sku": "03050-M",
-          "available": 19
+          "available": 17
         },
         {
           "size": "L",
           "sku": "03050-L",
-          "available": 10
+          "available": 9
         },
         {
           "size": "XL",
@@ -4933,7 +5021,7 @@
       "compare_at": 148,
       "current_price": 29.99,
       "unit_cost": 28.85,
-      "total_available": 31,
+      "total_available": 29,
       "sizes": [
         {
           "size": "XS",
@@ -4943,7 +5031,7 @@
         {
           "size": "S",
           "sku": "S6-DW-615-OW900-54S-S",
-          "available": 8
+          "available": 7
         },
         {
           "size": "M",
@@ -4958,7 +5046,7 @@
         {
           "size": "XL",
           "sku": "S6-DW-615-OW900-54S-XL",
-          "available": 2
+          "available": 1
         }
       ]
     },
@@ -5109,32 +5197,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 17.57,
-      "total_available": 121,
+      "total_available": 111,
       "sizes": [
         {
           "size": "XS",
           "sku": "03138-36-XS",
-          "available": 35
+          "available": 33
         },
         {
           "size": "S",
           "sku": "03138-36-S",
-          "available": 33
+          "available": 30
         },
         {
           "size": "M",
           "sku": "03138-36-M",
-          "available": 25
+          "available": 22
         },
         {
           "size": "L",
           "sku": "03138-36-L",
-          "available": 14
+          "available": 13
         },
         {
           "size": "XL",
           "sku": "03138-36-XL",
-          "available": 14
+          "available": 13
         }
       ]
     },
@@ -5153,32 +5241,32 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 24.35,
-      "total_available": 91,
+      "total_available": 80,
       "sizes": [
         {
           "size": "XS",
           "sku": "03204-21-XS",
-          "available": 26
+          "available": 24
         },
         {
           "size": "S",
           "sku": "03204-21-S",
-          "available": 27
+          "available": 24
         },
         {
           "size": "M",
           "sku": "03204-21-M",
-          "available": 19
+          "available": 17
         },
         {
           "size": "L",
           "sku": "03204-21-L",
-          "available": 10
+          "available": 8
         },
         {
           "size": "XL",
           "sku": "03204-21-XL",
-          "available": 9
+          "available": 7
         }
       ]
     },
@@ -5197,7 +5285,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 24.35,
-      "total_available": 68,
+      "total_available": 63,
       "sizes": [
         {
           "size": "XS",
@@ -5207,7 +5295,7 @@
         {
           "size": "S",
           "sku": "03179-21-S",
-          "available": 21
+          "available": 18
         },
         {
           "size": "M",
@@ -5217,7 +5305,7 @@
         {
           "size": "L",
           "sku": "03179-21-L",
-          "available": 7
+          "available": 5
         },
         {
           "size": "XL",
@@ -5241,12 +5329,12 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 25.85,
-      "total_available": 47,
+      "total_available": 46,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-776-BL000-00L-XS",
-          "available": 21
+          "available": 20
         },
         {
           "size": "S",
@@ -5373,32 +5461,32 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 24.35,
-      "total_available": 93,
+      "total_available": 83,
       "sizes": [
         {
           "size": "XS",
           "sku": "03164-21-XS",
-          "available": 27
+          "available": 24
         },
         {
           "size": "S",
           "sku": "03164-21-S",
-          "available": 28
+          "available": 25
         },
         {
           "size": "M",
           "sku": "03164-21-M",
-          "available": 18
+          "available": 16
         },
         {
           "size": "L",
           "sku": "03164-21-L",
-          "available": 10
+          "available": 9
         },
         {
           "size": "XL",
           "sku": "03164-21-XL",
-          "available": 10
+          "available": 9
         }
       ]
     },
@@ -5637,7 +5725,7 @@
       "compare_at": 54,
       "current_price": 54,
       "unit_cost": 17.85,
-      "total_available": 81,
+      "total_available": 78,
       "sizes": [
         {
           "size": "XS",
@@ -5647,7 +5735,7 @@
         {
           "size": "S",
           "sku": "S6-TK-415-KH000-00S-S",
-          "available": 25
+          "available": 23
         },
         {
           "size": "M",
@@ -5657,7 +5745,7 @@
         {
           "size": "L",
           "sku": "S6-TK-415-KH000-00S-L",
-          "available": 8
+          "available": 7
         },
         {
           "size": "XL",
@@ -5681,7 +5769,7 @@
       "compare_at": 42,
       "current_price": 14.99,
       "unit_cost": 10.75,
-      "total_available": 26,
+      "total_available": 25,
       "sizes": [
         {
           "size": "XS",
@@ -5701,7 +5789,7 @@
         {
           "size": "L",
           "sku": "S4-TK-169-MU000-00L-L",
-          "available": 7
+          "available": 6
         },
         {
           "size": "XL",
@@ -5887,6 +5975,50 @@
       ]
     },
     {
+      "product_id": "7634594791521",
+      "gid": "gid://shopify/Product/7634594791521",
+      "handle": "juliana-dress-black-pink",
+      "title": "Juliana Dress (Black Pink)",
+      "color": "Black Pink",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": "Juliana Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/juliana-dress-black-pink-dress-yakira-bella-5257150.jpg?v=1786392072",
+      "msrp": 128,
+      "compare_at": 128,
+      "current_price": 128,
+      "unit_cost": 27.85,
+      "total_available": 56,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03167-54-XS",
+          "available": 20
+        },
+        {
+          "size": "S",
+          "sku": "03167-54-S",
+          "available": 19
+        },
+        {
+          "size": "M",
+          "sku": "03167-54-M",
+          "available": 11
+        },
+        {
+          "size": "L",
+          "sku": "03167-54-L",
+          "available": 3
+        },
+        {
+          "size": "XL",
+          "sku": "03167-54-XL",
+          "available": 3
+        }
+      ]
+    },
+    {
       "product_id": "7417912623201",
       "gid": "gid://shopify/Product/7417912623201",
       "handle": "juliana-dress-blue",
@@ -5901,22 +6033,22 @@
       "compare_at": 128,
       "current_price": 49.99,
       "unit_cost": 27.85,
-      "total_available": 73,
+      "total_available": 68,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-595-BL856-54L-XS",
-          "available": 28
+          "available": 27
         },
         {
           "size": "S",
           "sku": "S6-DK-595-BL856-54L-S",
-          "available": 19
+          "available": 17
         },
         {
           "size": "M",
           "sku": "S6-DK-595-BL856-54L-M",
-          "available": 10
+          "available": 8
         },
         {
           "size": "L",
@@ -5945,32 +6077,32 @@
       "compare_at": 128,
       "current_price": 128,
       "unit_cost": 26.85,
-      "total_available": 137,
+      "total_available": 116,
       "sizes": [
         {
           "size": "XS",
           "sku": "03048-54-XS",
-          "available": 40
+          "available": 34
         },
         {
           "size": "S",
           "sku": "03048-54-S",
-          "available": 44
+          "available": 38
         },
         {
           "size": "M",
           "sku": "03048-54-M",
-          "available": 29
+          "available": 25
         },
         {
           "size": "L",
           "sku": "03048-54-L",
-          "available": 13
+          "available": 11
         },
         {
           "size": "XL",
           "sku": "03048-54-XL",
-          "available": 11
+          "available": 8
         }
       ]
     },
@@ -6033,32 +6165,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 24.85,
-      "total_available": 138,
+      "total_available": 127,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-546-BK975-36N-XS",
-          "available": 43
+          "available": 40
         },
         {
           "size": "S",
           "sku": "S6-SW-546-BK975-36N-S",
-          "available": 43
+          "available": 40
         },
         {
           "size": "M",
           "sku": "S6-SW-546-BK975-36N-M",
-          "available": 28
+          "available": 25
         },
         {
           "size": "L",
           "sku": "S6-SW-546-BK975-36N-L",
-          "available": 15
+          "available": 14
         },
         {
           "size": "XL",
           "sku": "S6-SW-546-BK975-36N-XL",
-          "available": 9
+          "available": 8
         }
       ]
     },
@@ -6121,7 +6253,7 @@
       "compare_at": 48,
       "current_price": 48,
       "unit_cost": 15.8,
-      "total_available": 55,
+      "total_available": 54,
       "sizes": [
         {
           "size": "XS",
@@ -6141,7 +6273,7 @@
         {
           "size": "L",
           "sku": "S6-SK-417-OR000-20N-L",
-          "available": 5
+          "available": 4
         },
         {
           "size": "XL",
@@ -6429,7 +6561,7 @@
       "compare_at": 48,
       "current_price": 24.99,
       "unit_cost": 15.8,
-      "total_available": 46,
+      "total_available": 45,
       "sizes": [
         {
           "size": "XS",
@@ -6454,7 +6586,7 @@
         {
           "size": "XL",
           "sku": "S5-SK-418-LB000-23N-XL",
-          "available": 7
+          "available": 6
         }
       ]
     },
@@ -6473,7 +6605,7 @@
       "compare_at": 48,
       "current_price": 24.99,
       "unit_cost": 15.8,
-      "total_available": 16,
+      "total_available": 15,
       "sizes": [
         {
           "size": "XS",
@@ -6498,7 +6630,7 @@
         {
           "size": "XL",
           "sku": "S5-SK-418-YL000-23N-XL",
-          "available": 2
+          "available": 1
         }
       ]
     },
@@ -6605,22 +6737,22 @@
       "compare_at": 48,
       "current_price": 48,
       "unit_cost": 15.8,
-      "total_available": 160,
+      "total_available": 64,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-416-DB000-00L-XS",
-          "available": 86
+          "available": 53
         },
         {
           "size": "S",
           "sku": "S6-TK-416-DB000-00L-S",
-          "available": 32
+          "available": 0
         },
         {
           "size": "M",
           "sku": "S6-TK-416-DB000-00L-M",
-          "available": 21
+          "available": 1
         },
         {
           "size": "L",
@@ -6630,51 +6762,7 @@
         {
           "size": "XL",
           "sku": "S6-TK-416-DB000-00L-XL",
-          "available": 20
-        }
-      ]
-    },
-    {
-      "product_id": "7293789012065",
-      "gid": "gid://shopify/Product/7293789012065",
-      "handle": "karla-top-light-blue",
-      "title": "Karla Top (Light Blue)",
-      "color": "Light Blue",
-      "type": "Top",
-      "class": "Core",
-      "style_name": "Karla Top",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/karla-top-light-blue-top-yakira-bella-513244.jpg?v=1745374255",
-      "msrp": 48,
-      "compare_at": 48,
-      "current_price": 24.99,
-      "unit_cost": 18,
-      "total_available": 4,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "S5-TK-416-LB000-00L-XS",
-          "available": 0
-        },
-        {
-          "size": "S",
-          "sku": "S5-TK-416-LB000-00L-S",
-          "available": 1
-        },
-        {
-          "size": "M",
-          "sku": "S5-TK-416-LB000-00L-M",
-          "available": 1
-        },
-        {
-          "size": "L",
-          "sku": "S5-TK-416-LB000-00L-L",
-          "available": 0
-        },
-        {
-          "size": "XL",
-          "sku": "S5-TK-416-LB000-00L-XL",
-          "available": 2
+          "available": 9
         }
       ]
     },
@@ -6811,46 +6899,134 @@
       ]
     },
     {
-      "product_id": "7492658888801",
-      "gid": "gid://shopify/Product/7492658888801",
-      "handle": "lana-dress-beige-pink",
-      "title": "Lana Dress (Beige/Pink)",
-      "color": "Beige/Pink",
+      "product_id": "7634595020897",
+      "gid": "gid://shopify/Product/7634595020897",
+      "handle": "kerry-dress-dark-brown",
+      "title": "Kerry Dress (Dark Brown)",
+      "color": "Dark Brown",
       "type": "Dress",
-      "class": "Banger",
-      "style_name": "Lana Dress",
+      "class": "Fashion",
+      "style_name": "Kerry Dress",
       "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lana-dress-beigepink-dress-yakira-bella-1221783.jpg?v=1772156361",
-      "msrp": 118,
-      "compare_at": 118,
-      "current_price": 39.99,
-      "unit_cost": 29.85,
-      "total_available": 9,
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kerry-dress-dark-brown-dress-yakira-bella-9076694.jpg?v=1786392071",
+      "msrp": 98,
+      "compare_at": 98,
+      "current_price": 98,
+      "unit_cost": 26.95,
+      "total_available": 114,
       "sizes": [
         {
           "size": "XS",
-          "sku": "S6-DW-665-PK000-52S-XS",
-          "available": 3
+          "sku": "03171-54-XS",
+          "available": 31
         },
         {
           "size": "S",
-          "sku": "S6-DW-665-PK000-52S-S",
-          "available": 3
+          "sku": "03171-54-S",
+          "available": 34
         },
         {
           "size": "M",
-          "sku": "S6-DW-665-PK000-52S-M",
-          "available": 1
+          "sku": "03171-54-M",
+          "available": 23
         },
         {
           "size": "L",
-          "sku": "S6-DW-665-PK000-52S-L",
-          "available": 1
+          "sku": "03171-54-L",
+          "available": 13
         },
         {
           "size": "XL",
-          "sku": "S6-DW-665-PK000-52S-XL",
-          "available": 1
+          "sku": "03171-54-XL",
+          "available": 13
+        }
+      ]
+    },
+    {
+      "product_id": "7621744951393",
+      "gid": "gid://shopify/Product/7621744951393",
+      "handle": "kiera-dress-black-plaid",
+      "title": "Kiera Dress (Black Plaid)",
+      "color": "Black Plaid",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Kiera Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kiera-dress-black-plaid-dress-yakira-bella-1678366.jpg?v=1786392071",
+      "msrp": 128,
+      "compare_at": 128,
+      "current_price": 128,
+      "unit_cost": 25.37,
+      "total_available": 92,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03037-XS",
+          "available": 29
+        },
+        {
+          "size": "S",
+          "sku": "03037-S",
+          "available": 27
+        },
+        {
+          "size": "M",
+          "sku": "03037-M",
+          "available": 18
+        },
+        {
+          "size": "L",
+          "sku": "03037-L",
+          "available": 9
+        },
+        {
+          "size": "XL",
+          "sku": "03037-XL",
+          "available": 9
+        }
+      ]
+    },
+    {
+      "product_id": "7621744722017",
+      "gid": "gid://shopify/Product/7621744722017",
+      "handle": "kiera-dress-brown-plaid",
+      "title": "Kiera Dress (Brown Plaid)",
+      "color": "Brown Plaid",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Kiera Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kiera-dress-brown-plaid-dress-yakira-bella-6967611.jpg?v=1786392071",
+      "msrp": 128,
+      "compare_at": 128,
+      "current_price": 128,
+      "unit_cost": 25.37,
+      "total_available": 100,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03036-XS",
+          "available": 28
+        },
+        {
+          "size": "S",
+          "sku": "03036-S",
+          "available": 32
+        },
+        {
+          "size": "M",
+          "sku": "03036-M",
+          "available": 20
+        },
+        {
+          "size": "L",
+          "sku": "03036-L",
+          "available": 10
+        },
+        {
+          "size": "XL",
+          "sku": "03036-XL",
+          "available": 10
         }
       ]
     },
@@ -6869,7 +7045,7 @@
       "compare_at": 38,
       "current_price": 19.99,
       "unit_cost": 15.5,
-      "total_available": 25,
+      "total_available": 24,
       "sizes": [
         {
           "size": "XS",
@@ -6884,7 +7060,7 @@
         {
           "size": "M",
           "sku": "S5-TK-503-BK000-00S-M",
-          "available": 1
+          "available": 0
         },
         {
           "size": "L",
@@ -6957,7 +7133,7 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 23.85,
-      "total_available": 47,
+      "total_available": 46,
       "sizes": [
         {
           "size": "XS",
@@ -6967,7 +7143,7 @@
         {
           "size": "S",
           "sku": "F5-SW-449-BK805-37N-S",
-          "available": 18
+          "available": 17
         },
         {
           "size": "M",
@@ -7001,32 +7177,32 @@
       "compare_at": 88,
       "current_price": 59.99,
       "unit_cost": 24.85,
-      "total_available": 86,
+      "total_available": 72,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-449-BK1006-37N-XS",
-          "available": 29
+          "available": 24
         },
         {
           "size": "S",
           "sku": "S6-SW-449-BK1006-37N-S",
-          "available": 29
+          "available": 26
         },
         {
           "size": "M",
           "sku": "S6-SW-449-BK1006-37N-M",
-          "available": 16
+          "available": 13
         },
         {
           "size": "L",
           "sku": "S6-SW-449-BK1006-37N-L",
-          "available": 6
+          "available": 4
         },
         {
           "size": "XL",
           "sku": "S6-SW-449-BK1006-37N-XL",
-          "available": 6
+          "available": 5
         }
       ]
     },
@@ -7045,7 +7221,7 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 23.85,
-      "total_available": 138,
+      "total_available": 137,
       "sizes": [
         {
           "size": "XS",
@@ -7065,7 +7241,7 @@
         {
           "size": "L",
           "sku": "S6-SW-449-GR1077-37N-L",
-          "available": 17
+          "available": 16
         },
         {
           "size": "XL",
@@ -7089,7 +7265,7 @@
       "compare_at": 88,
       "current_price": 39.99,
       "unit_cost": 23.85,
-      "total_available": 61,
+      "total_available": 59,
       "sizes": [
         {
           "size": "XS",
@@ -7099,7 +7275,7 @@
         {
           "size": "S",
           "sku": "F5-SW-449-BL837-36N-S",
-          "available": 17
+          "available": 16
         },
         {
           "size": "M",
@@ -7109,7 +7285,7 @@
         {
           "size": "L",
           "sku": "F5-SW-449-BL837-36N-L",
-          "available": 9
+          "available": 8
         },
         {
           "size": "XL",
@@ -7177,32 +7353,32 @@
       "compare_at": null,
       "current_price": 118,
       "unit_cost": 28.85,
-      "total_available": 96,
+      "total_available": 88,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-779-PK1123-53L-XS",
-          "available": 28
+          "available": 26
         },
         {
           "size": "S",
           "sku": "S6-DW-779-PK1123-53L-S",
-          "available": 28
+          "available": 26
         },
         {
           "size": "M",
           "sku": "S6-DW-779-PK1123-53L-M",
-          "available": 18
+          "available": 16
         },
         {
           "size": "L",
           "sku": "S6-DW-779-PK1123-53L-L",
-          "available": 11
+          "available": 10
         },
         {
           "size": "XL",
           "sku": "S6-DW-779-PK1123-53L-XL",
-          "available": 11
+          "available": 10
         }
       ]
     },
@@ -7221,7 +7397,7 @@
       "compare_at": 98,
       "current_price": 98,
       "unit_cost": 21.85,
-      "total_available": 74,
+      "total_available": 73,
       "sizes": [
         {
           "size": "XS",
@@ -7231,7 +7407,7 @@
         {
           "size": "S",
           "sku": "03015-46-S",
-          "available": 22
+          "available": 21
         },
         {
           "size": "M",
@@ -7333,32 +7509,32 @@
       "compare_at": 128,
       "current_price": 128,
       "unit_cost": 27.85,
-      "total_available": 79,
+      "total_available": 68,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-566-BL000-54L-XS",
-          "available": 25
+          "available": 22
         },
         {
           "size": "S",
           "sku": "S6-DW-566-BL000-54L-S",
-          "available": 27
+          "available": 24
         },
         {
           "size": "M",
           "sku": "S6-DW-566-BL000-54L-M",
-          "available": 12
+          "available": 9
         },
         {
           "size": "L",
           "sku": "S6-DW-566-BL000-54L-L",
-          "available": 11
+          "available": 10
         },
         {
           "size": "XL",
           "sku": "S6-DW-566-BL000-54L-XL",
-          "available": 4
+          "available": 3
         }
       ]
     },
@@ -7377,32 +7553,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 21.85,
-      "total_available": 60,
+      "total_available": 48,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-539-BK863-36N-XS",
-          "available": 29
+          "available": 26
         },
         {
           "size": "S",
           "sku": "S6-SW-539-BK863-36N-S",
-          "available": 21
+          "available": 17
         },
         {
           "size": "M",
           "sku": "S6-SW-539-BK863-36N-M",
-          "available": 6
+          "available": 3
         },
         {
           "size": "L",
           "sku": "S6-SW-539-BK863-36N-L",
-          "available": 1
+          "available": 0
         },
         {
           "size": "XL",
           "sku": "S6-SW-539-BK863-36N-XL",
-          "available": 3
+          "available": 2
         }
       ]
     },
@@ -7602,12 +7778,12 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 21.85,
-      "total_available": 87,
+      "total_available": 86,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-539-BL852-36N-XS",
-          "available": 29
+          "available": 28
         },
         {
           "size": "S",
@@ -7646,7 +7822,7 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 21.85,
-      "total_available": 69,
+      "total_available": 68,
       "sizes": [
         {
           "size": "XS",
@@ -7661,7 +7837,7 @@
         {
           "size": "M",
           "sku": "S6-SW-539-OW862-36N-M",
-          "available": 13
+          "available": 12
         },
         {
           "size": "L",
@@ -7690,7 +7866,7 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 21.85,
-      "total_available": 45,
+      "total_available": 44,
       "sizes": [
         {
           "size": "XS",
@@ -7710,7 +7886,7 @@
         {
           "size": "L",
           "sku": "S6-SW-539-BL943-36N-L",
-          "available": 4
+          "available": 3
         },
         {
           "size": "XL",
@@ -7964,12 +8140,12 @@
       "compare_at": 88,
       "current_price": 59.99,
       "unit_cost": 26.85,
-      "total_available": 11,
+      "total_available": 10,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-137-W998-37S-XS",
-          "available": 6
+          "available": 5
         },
         {
           "size": "S",
@@ -7990,50 +8166,6 @@
           "size": "XL",
           "sku": "S6-DW-137-W998-37S-XL",
           "available": 1
-        }
-      ]
-    },
-    {
-      "product_id": "7487614025825",
-      "gid": "gid://shopify/Product/7487614025825",
-      "handle": "lottie-skirt-green-white",
-      "title": "Lottie Skirt (Green White)",
-      "color": "Green White",
-      "type": "Skirt",
-      "class": "Fashion",
-      "style_name": "Lottie Skirt",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lottie-skirt-green-white-skirt-yakira-bella-7560328.jpg?v=1772063371",
-      "msrp": 98,
-      "compare_at": 98,
-      "current_price": 49.99,
-      "unit_cost": 24.85,
-      "total_available": 4,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "S6-SW-543-GR964-36N-XS",
-          "available": 1
-        },
-        {
-          "size": "S",
-          "sku": "S6-SW-543-GR964-36N-S",
-          "available": 0
-        },
-        {
-          "size": "M",
-          "sku": "S6-SW-543-GR964-36N-M",
-          "available": 0
-        },
-        {
-          "size": "L",
-          "sku": "S6-SW-543-GR964-36N-L",
-          "available": 0
-        },
-        {
-          "size": "XL",
-          "sku": "S6-SW-543-GR964-36N-XL",
-          "available": 3
         }
       ]
     },
@@ -8228,7 +8360,7 @@
       "compare_at": 54,
       "current_price": 54,
       "unit_cost": 17.25,
-      "total_available": 156,
+      "total_available": 155,
       "sizes": [
         {
           "size": "XS",
@@ -8253,7 +8385,7 @@
         {
           "size": "XL",
           "sku": "S6-TK-675-BL000-00L-XL",
-          "available": 15
+          "available": 14
         }
       ]
     },
@@ -8580,7 +8712,7 @@
       "compare_at": 148,
       "current_price": 148,
       "unit_cost": 27.35,
-      "total_available": 40,
+      "total_available": 38,
       "sizes": [
         {
           "size": "XS",
@@ -8590,7 +8722,7 @@
         {
           "size": "S",
           "sku": "S6-DK-593-BK930-54L-S",
-          "available": 19
+          "available": 17
         },
         {
           "size": "M",
@@ -8605,6 +8737,50 @@
         {
           "size": "XL",
           "sku": "S6-DK-593-BK930-54L-XL",
+          "available": 4
+        }
+      ]
+    },
+    {
+      "product_id": "7634571984993",
+      "gid": "gid://shopify/Product/7634571984993",
+      "handle": "mariella-dress-black-green",
+      "title": "Mariella Dress (Black Green)",
+      "color": "Black Green",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Mariella Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/mariella-dress-black-green-dress-yakira-bella-4831081.jpg?v=1786392071",
+      "msrp": 128,
+      "compare_at": 128,
+      "current_price": 128,
+      "unit_cost": 27.35,
+      "total_available": 76,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03163-54-XS",
+          "available": 28
+        },
+        {
+          "size": "S",
+          "sku": "03163-54-S",
+          "available": 26
+        },
+        {
+          "size": "M",
+          "sku": "03163-54-M",
+          "available": 15
+        },
+        {
+          "size": "L",
+          "sku": "03163-54-L",
+          "available": 3
+        },
+        {
+          "size": "XL",
+          "sku": "03163-54-XL",
           "available": 4
         }
       ]
@@ -8668,7 +8844,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 16.5,
-      "total_available": 77,
+      "total_available": 75,
       "sizes": [
         {
           "size": "XS",
@@ -8693,7 +8869,7 @@
         {
           "size": "XL",
           "sku": "F5-TK-557-BK000-00L-XL",
-          "available": 7
+          "available": 5
         }
       ]
     },
@@ -8800,32 +8976,32 @@
       "compare_at": 94,
       "current_price": 94,
       "unit_cost": 22.85,
-      "total_available": 109,
+      "total_available": 101,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-726-OR000-33N-XS",
-          "available": 33
+          "available": 31
         },
         {
           "size": "S",
           "sku": "S6-SW-726-OR000-33N-S",
-          "available": 29
+          "available": 27
         },
         {
           "size": "M",
           "sku": "S6-SW-726-OR000-33N-M",
-          "available": 23
+          "available": 21
         },
         {
           "size": "L",
           "sku": "S6-SW-726-OR000-33N-L",
-          "available": 12
+          "available": 11
         },
         {
           "size": "XL",
           "sku": "S6-SW-726-OR000-33N-XL",
-          "available": 12
+          "available": 11
         }
       ]
     },
@@ -8844,32 +9020,32 @@
       "compare_at": 94,
       "current_price": 94,
       "unit_cost": 22.85,
-      "total_available": 104,
+      "total_available": 96,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-726-GR000-33N-XS",
-          "available": 34
+          "available": 32
         },
         {
           "size": "S",
           "sku": "S6-SW-726-GR000-33N-S",
-          "available": 30
+          "available": 28
         },
         {
           "size": "M",
           "sku": "S6-SW-726-GR000-33N-M",
-          "available": 20
+          "available": 18
         },
         {
           "size": "L",
           "sku": "S6-SW-726-GR000-33N-L",
-          "available": 9
+          "available": 8
         },
         {
           "size": "XL",
           "sku": "S6-SW-726-GR000-33N-XL",
-          "available": 11
+          "available": 10
         }
       ]
     },
@@ -8976,32 +9152,32 @@
       "compare_at": 44,
       "current_price": 44,
       "unit_cost": 8.85,
-      "total_available": 92,
+      "total_available": 83,
       "sizes": [
         {
           "size": "XS",
           "sku": "03100-XS",
-          "available": 28
+          "available": 26
         },
         {
           "size": "S",
           "sku": "03100-S",
-          "available": 27
+          "available": 25
         },
         {
           "size": "M",
           "sku": "03100-M",
-          "available": 19
+          "available": 16
         },
         {
           "size": "L",
           "sku": "03100-L",
-          "available": 9
+          "available": 8
         },
         {
           "size": "XL",
           "sku": "03100-XL",
-          "available": 9
+          "available": 8
         }
       ]
     },
@@ -9064,76 +9240,32 @@
       "compare_at": 44,
       "current_price": 44,
       "unit_cost": 8.85,
-      "total_available": 92,
+      "total_available": 83,
       "sizes": [
         {
           "size": "XS",
           "sku": "03101-XS",
-          "available": 27
+          "available": 25
         },
         {
           "size": "S",
           "sku": "03101-S",
-          "available": 28
+          "available": 26
         },
         {
           "size": "M",
           "sku": "03101-M",
-          "available": 19
+          "available": 17
         },
         {
           "size": "L",
           "sku": "03101-L",
-          "available": 9
+          "available": 7
         },
         {
           "size": "XL",
           "sku": "03101-XL",
-          "available": 9
-        }
-      ]
-    },
-    {
-      "product_id": "7621823725665",
-      "gid": "gid://shopify/Product/7621823725665",
-      "handle": "medina-top-dark-brown",
-      "title": "Medina Top (Dark Brown)",
-      "color": "Dark Brown",
-      "type": "Top",
-      "class": "Fashion",
-      "style_name": "Medina Top",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/medina-top-dark-brown-top-yakira-bella-9352868.jpg?v=1786143970",
-      "msrp": 68,
-      "compare_at": 68,
-      "current_price": 68,
-      "unit_cost": 22.85,
-      "total_available": 119,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "03053-XS",
-          "available": 36
-        },
-        {
-          "size": "S",
-          "sku": "03053-S",
-          "available": 35
-        },
-        {
-          "size": "M",
-          "sku": "03053-M",
-          "available": 24
-        },
-        {
-          "size": "L",
-          "sku": "03053-L",
-          "available": 12
-        },
-        {
-          "size": "XL",
-          "sku": "03053-XL",
-          "available": 12
+          "available": 8
         }
       ]
     },
@@ -9196,7 +9328,7 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 24.85,
-      "total_available": 71,
+      "total_available": 70,
       "sizes": [
         {
           "size": "XS",
@@ -9206,7 +9338,7 @@
         {
           "size": "S",
           "sku": "03011-S",
-          "available": 17
+          "available": 16
         },
         {
           "size": "M",
@@ -9284,32 +9416,32 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": null,
-      "total_available": 159,
+      "total_available": 142,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-606-BL000-36N-XS",
-          "available": 50
+          "available": 45
         },
         {
           "size": "S",
           "sku": "S6-SW-606-BL000-36N-S",
-          "available": 49
+          "available": 45
         },
         {
           "size": "M",
           "sku": "S6-SW-606-BL000-36N-M",
-          "available": 31
+          "available": 28
         },
         {
           "size": "L",
           "sku": "S6-SW-606-BL000-36N-L",
-          "available": 15
+          "available": 12
         },
         {
           "size": "XL",
           "sku": "S6-SW-606-BL000-36N-XL",
-          "available": 14
+          "available": 12
         }
       ]
     },
@@ -9328,12 +9460,12 @@
       "compare_at": 128,
       "current_price": 59.99,
       "unit_cost": 27.85,
-      "total_available": 11,
+      "total_available": 10,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-767-PK1113-42S-XS",
-          "available": 8
+          "available": 7
         },
         {
           "size": "S",
@@ -9372,7 +9504,7 @@
       "compare_at": 88,
       "current_price": 59.99,
       "unit_cost": 31,
-      "total_available": 4,
+      "total_available": 3,
       "sizes": [
         {
           "size": "XS",
@@ -9397,7 +9529,7 @@
         {
           "size": "XL",
           "sku": "S6-DK-601-BL000-37L-XL",
-          "available": 2
+          "available": 1
         }
       ]
     },
@@ -9460,12 +9592,12 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 31,
-      "total_available": 9,
+      "total_available": 8,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-658-BL000-42L-XS",
-          "available": 9
+          "available": 8
         },
         {
           "size": "S",
@@ -9548,7 +9680,7 @@
       "compare_at": 98,
       "current_price": 98,
       "unit_cost": 31.5,
-      "total_available": 699,
+      "total_available": 698,
       "sizes": [
         {
           "size": "XS",
@@ -9558,7 +9690,7 @@
         {
           "size": "S",
           "sku": "F4-DK-375-BK000-50L-S",
-          "available": 244
+          "available": 243
         },
         {
           "size": "M",
@@ -9592,7 +9724,7 @@
       "compare_at": 98,
       "current_price": 98,
       "unit_cost": 31.5,
-      "total_available": 42,
+      "total_available": 41,
       "sizes": [
         {
           "size": "XS",
@@ -9602,7 +9734,7 @@
         {
           "size": "S",
           "sku": "S6-DK-375-KH000-50L-S",
-          "available": 5
+          "available": 4
         },
         {
           "size": "M",
@@ -9680,7 +9812,7 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 31.5,
-      "total_available": 125,
+      "total_available": 124,
       "sizes": [
         {
           "size": "XS",
@@ -9695,7 +9827,7 @@
         {
           "size": "M",
           "sku": "S6-DK-375-BL000-50L-M",
-          "available": 19
+          "available": 18
         },
         {
           "size": "L",
@@ -9944,7 +10076,7 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 26.85,
-      "total_available": 147,
+      "total_available": 146,
       "sizes": [
         {
           "size": "XS",
@@ -9959,7 +10091,7 @@
         {
           "size": "M",
           "sku": "F5-TK-552-BL000-00L-M",
-          "available": 21
+          "available": 20
         },
         {
           "size": "L",
@@ -9988,7 +10120,7 @@
       "compare_at": 68,
       "current_price": 49.99,
       "unit_cost": 25.85,
-      "total_available": 4,
+      "total_available": 3,
       "sizes": [
         {
           "size": "XS",
@@ -10013,7 +10145,7 @@
         {
           "size": "XL",
           "sku": "S6-TK-661-GY000-00S-XL",
-          "available": 1
+          "available": 0
         }
       ]
     },
@@ -10032,12 +10164,12 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 16.8,
-      "total_available": 88,
+      "total_available": 82,
       "sizes": [
         {
           "size": "XS",
           "sku": "F4-SK-377-BK000-35N-XS",
-          "available": 43
+          "available": 40
         },
         {
           "size": "S",
@@ -10052,7 +10184,7 @@
         {
           "size": "L",
           "sku": "F4-SK-377-BK000-35N-L",
-          "available": 3
+          "available": 0
         },
         {
           "size": "XL",
@@ -10164,7 +10296,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 15,
-      "total_available": 159,
+      "total_available": 157,
       "sizes": [
         {
           "size": "XS",
@@ -10174,7 +10306,7 @@
         {
           "size": "S",
           "sku": "F5-SK-377-BL000-35N-S",
-          "available": 28
+          "available": 27
         },
         {
           "size": "M",
@@ -10184,7 +10316,7 @@
         {
           "size": "L",
           "sku": "F5-SK-377-BL000-35N-L",
-          "available": 17
+          "available": 16
         },
         {
           "size": "XL",
@@ -10252,32 +10384,32 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 15,
-      "total_available": 143,
+      "total_available": 133,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-SK-377-RD000-35N-XS",
-          "available": 53
+          "available": 50
         },
         {
           "size": "S",
           "sku": "S5-SK-377-RD000-35N-S",
-          "available": 39
+          "available": 36
         },
         {
           "size": "M",
           "sku": "S5-SK-377-RD000-35N-M",
-          "available": 26
+          "available": 24
         },
         {
           "size": "L",
           "sku": "S5-SK-377-RD000-35N-L",
-          "available": 12
+          "available": 11
         },
         {
           "size": "XL",
           "sku": "S5-SK-377-RD000-35N-XL",
-          "available": 13
+          "available": 12
         }
       ]
     },
@@ -10340,7 +10472,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 15.3,
-      "total_available": 90,
+      "total_available": 89,
       "sizes": [
         {
           "size": "XS",
@@ -10350,7 +10482,7 @@
         {
           "size": "S",
           "sku": "F5-SK-549-BL000-23N-S",
-          "available": 20
+          "available": 19
         },
         {
           "size": "M",
@@ -10428,7 +10560,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 15.3,
-      "total_available": 127,
+      "total_available": 126,
       "sizes": [
         {
           "size": "XS",
@@ -10443,7 +10575,7 @@
         {
           "size": "M",
           "sku": "F5-SK-550-BL000-26N-M",
-          "available": 25
+          "available": 24
         },
         {
           "size": "L",
@@ -10604,12 +10736,12 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 27,
-      "total_available": 213,
+      "total_available": 212,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-TK-376-BL000-00L-XS",
-          "available": 65
+          "available": 64
         },
         {
           "size": "S",
@@ -10736,32 +10868,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": null,
-      "total_available": 100,
+      "total_available": 91,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SK-773-BK1116-39N-XS",
-          "available": 30
+          "available": 27
         },
         {
           "size": "S",
           "sku": "S6-SK-773-BK1116-39N-S",
-          "available": 30
+          "available": 28
         },
         {
           "size": "M",
           "sku": "S6-SK-773-BK1116-39N-M",
-          "available": 20
+          "available": 18
         },
         {
           "size": "L",
           "sku": "S6-SK-773-BK1116-39N-L",
-          "available": 10
+          "available": 9
         },
         {
           "size": "XL",
           "sku": "S6-SK-773-BK1116-39N-XL",
-          "available": 10
+          "available": 9
         }
       ]
     },
@@ -10868,12 +11000,12 @@
       "compare_at": 68,
       "current_price": 34.99,
       "unit_cost": 24.85,
-      "total_available": 24,
+      "total_available": 23,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-743-WH1108-36N-XS",
-          "available": 9
+          "available": 8
         },
         {
           "size": "S",
@@ -10912,32 +11044,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 21.85,
-      "total_available": 91,
+      "total_available": 81,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SK-569-BK1100-36N-XS",
-          "available": 28
+          "available": 26
         },
         {
           "size": "S",
           "sku": "S6-SK-569-BK1100-36N-S",
-          "available": 27
+          "available": 24
         },
         {
           "size": "M",
           "sku": "S6-SK-569-BK1100-36N-M",
-          "available": 18
+          "available": 16
         },
         {
           "size": "L",
           "sku": "S6-SK-569-BK1100-36N-L",
-          "available": 9
+          "available": 8
         },
         {
           "size": "XL",
           "sku": "S6-SK-569-BK1100-36N-XL",
-          "available": 9
+          "available": 7
         }
       ]
     },
@@ -11044,7 +11176,7 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 25.85,
-      "total_available": 21,
+      "total_available": 20,
       "sizes": [
         {
           "size": "XS",
@@ -11054,7 +11186,7 @@
         {
           "size": "S",
           "sku": "S6-SW-738-BL000-36N-S",
-          "available": 4
+          "available": 3
         },
         {
           "size": "M",
@@ -11088,32 +11220,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 23.85,
-      "total_available": 117,
+      "total_available": 102,
       "sizes": [
         {
           "size": "XS",
           "sku": "03012-XS",
-          "available": 35
+          "available": 33
         },
         {
           "size": "S",
           "sku": "03012-S",
-          "available": 33
+          "available": 27
         },
         {
           "size": "M",
           "sku": "03012-M",
-          "available": 25
+          "available": 20
         },
         {
           "size": "L",
           "sku": "03012-L",
-          "available": 11
+          "available": 10
         },
         {
           "size": "XL",
           "sku": "03012-XL",
-          "available": 13
+          "available": 12
         }
       ]
     },
@@ -11220,7 +11352,7 @@
       "compare_at": 68,
       "current_price": 24.99,
       "unit_cost": 13.9,
-      "total_available": 3,
+      "total_available": 2,
       "sizes": [
         {
           "size": "XS",
@@ -11235,7 +11367,7 @@
         {
           "size": "M",
           "sku": "S6-SW-187-LP000-20N-M",
-          "available": 1
+          "available": 0
         },
         {
           "size": "L",
@@ -11264,12 +11396,12 @@
       "compare_at": 68,
       "current_price": 34.99,
       "unit_cost": 15.3,
-      "total_available": 19,
+      "total_available": 18,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-SW-186-KH000-23N-XS",
-          "available": 3
+          "available": 2
         },
         {
           "size": "S",
@@ -11308,7 +11440,7 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 15.85,
-      "total_available": 25,
+      "total_available": 24,
       "sizes": [
         {
           "size": "XS",
@@ -11318,7 +11450,7 @@
         {
           "size": "S",
           "sku": "S6-TK-637-BK000-00L-S",
-          "available": 12
+          "available": 11
         },
         {
           "size": "M",
@@ -11352,7 +11484,7 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 15.85,
-      "total_available": 15,
+      "total_available": 14,
       "sizes": [
         {
           "size": "XS",
@@ -11362,7 +11494,7 @@
         {
           "size": "S",
           "sku": "S6-TK-637-BL000-00L-S",
-          "available": 2
+          "available": 1
         },
         {
           "size": "M",
@@ -11396,32 +11528,32 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 15.85,
-      "total_available": 60,
+      "total_available": 50,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-637-BL000-00L-XS",
-          "available": 15
+          "available": 12
         },
         {
           "size": "S",
           "sku": "S6-TK-637-BL000-00L-S",
-          "available": 20
+          "available": 17
         },
         {
           "size": "M",
           "sku": "S6-TK-637-BL000-00L-M",
-          "available": 14
+          "available": 12
         },
         {
           "size": "L",
           "sku": "S6-TK-637-BL000-00L-L",
-          "available": 4
+          "available": 3
         },
         {
           "size": "XL",
           "sku": "S6-TK-637-BL000-00L-XL",
-          "available": 7
+          "available": 6
         }
       ]
     },
@@ -11440,7 +11572,7 @@
       "compare_at": 68,
       "current_price": 24.99,
       "unit_cost": 24.5,
-      "total_available": 7,
+      "total_available": 5,
       "sizes": [
         {
           "size": "XXS",
@@ -11455,7 +11587,7 @@
         {
           "size": "S",
           "sku": "S6-SW-407-YL938-33N-S",
-          "available": 3
+          "available": 1
         },
         {
           "size": "M",
@@ -11621,12 +11753,12 @@
       "compare_at": 48,
       "current_price": 48,
       "unit_cost": 12.75,
-      "total_available": 72,
+      "total_available": 71,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-679-BL000-00L-XS",
-          "available": 24
+          "available": 23
         },
         {
           "size": "S",
@@ -11753,32 +11885,32 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 32.85,
-      "total_available": 56,
+      "total_available": 48,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-TK-149-BG000-00L-XS",
-          "available": 19
+          "available": 17
         },
         {
           "size": "S",
           "sku": "S5-TK-149-BG000-00L-S",
-          "available": 15
+          "available": 13
         },
         {
           "size": "M",
           "sku": "S5-TK-149-BG000-00L-M",
-          "available": 12
+          "available": 10
         },
         {
           "size": "L",
           "sku": "S5-TK-149-BG000-00L-L",
-          "available": 5
+          "available": 4
         },
         {
           "size": "XL",
           "sku": "S5-TK-149-BG000-00L-XL",
-          "available": 5
+          "available": 4
         }
       ]
     },
@@ -11797,12 +11929,12 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 27.85,
-      "total_available": -2,
+      "total_available": -3,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-TK-149-BK000-00L-XS",
-          "available": 2
+          "available": 1
         },
         {
           "size": "S",
@@ -11841,12 +11973,12 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 27.85,
-      "total_available": 20,
+      "total_available": 19,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-TK-149-BL000-00L-XS",
-          "available": 19
+          "available": 18
         },
         {
           "size": "S",
@@ -11885,12 +12017,12 @@
       "compare_at": 68,
       "current_price": 34.99,
       "unit_cost": 27.85,
-      "total_available": 2,
+      "total_available": 3,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-TK-149-OW000-00L-XS",
-          "available": 0
+          "available": 1
         },
         {
           "size": "S",
@@ -11973,7 +12105,7 @@
       "compare_at": 68,
       "current_price": 34.99,
       "unit_cost": 27.85,
-      "total_available": 13,
+      "total_available": 12,
       "sizes": [
         {
           "size": "XS",
@@ -11988,7 +12120,7 @@
         {
           "size": "M",
           "sku": "S5-TK-149-LB000-00L-M",
-          "available": 0
+          "available": -1
         },
         {
           "size": "L",
@@ -12017,7 +12149,7 @@
       "compare_at": 68,
       "current_price": 34.99,
       "unit_cost": 27.85,
-      "total_available": 18,
+      "total_available": 17,
       "sizes": [
         {
           "size": "XS",
@@ -12027,7 +12159,7 @@
         {
           "size": "S",
           "sku": "S5-TK-149-FH000-00L-S",
-          "available": 4
+          "available": 3
         },
         {
           "size": "M",
@@ -12105,22 +12237,22 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 27.85,
-      "total_available": 73,
+      "total_available": 69,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-149-PK000-00L-XS",
-          "available": 25
+          "available": 24
         },
         {
           "size": "S",
           "sku": "S6-TK-149-PK000-00L-S",
-          "available": 23
+          "available": 21
         },
         {
           "size": "M",
           "sku": "S6-TK-149-PK000-00L-M",
-          "available": 6
+          "available": 5
         },
         {
           "size": "L",
@@ -12325,12 +12457,12 @@
       "compare_at": 98,
       "current_price": 98,
       "unit_cost": 27.85,
-      "total_available": 47,
+      "total_available": 45,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-481-BL000-53L-XS",
-          "available": 33
+          "available": 32
         },
         {
           "size": "S",
@@ -12340,7 +12472,7 @@
         {
           "size": "M",
           "sku": "S6-DW-481-BL000-53L-M",
-          "available": 4
+          "available": 3
         },
         {
           "size": "L",
@@ -12369,12 +12501,12 @@
       "compare_at": 98,
       "current_price": 98,
       "unit_cost": 27.85,
-      "total_available": 66,
+      "total_available": 65,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-481-GY000-53L-XS",
-          "available": 31
+          "available": 30
         },
         {
           "size": "S",
@@ -12443,6 +12575,50 @@
       ]
     },
     {
+      "product_id": "7630265712737",
+      "gid": "gid://shopify/Product/7630265712737",
+      "handle": "priya-top-beige",
+      "title": "Priya Top (Beige)",
+      "color": "Beige",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Priya Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/priya-top-beige-top-yakira-bella-2261438.jpg?v=1786392070",
+      "msrp": 58,
+      "compare_at": 58,
+      "current_price": 58,
+      "unit_cost": null,
+      "total_available": 69,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03106-XS",
+          "available": 23
+        },
+        {
+          "size": "S",
+          "sku": "03106-S",
+          "available": 20
+        },
+        {
+          "size": "M",
+          "sku": "03106-M",
+          "available": 14
+        },
+        {
+          "size": "L",
+          "sku": "03106-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "03106-XL",
+          "available": 6
+        }
+      ]
+    },
+    {
       "product_id": "7630267482209",
       "gid": "gid://shopify/Product/7630267482209",
       "handle": "priya-top-rust",
@@ -12457,12 +12633,12 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 24.85,
-      "total_available": 55,
+      "total_available": 53,
       "sizes": [
         {
           "size": "XS",
           "sku": "03072-XS",
-          "available": 16
+          "available": 15
         },
         {
           "size": "S",
@@ -12482,7 +12658,7 @@
         {
           "size": "XL",
           "sku": "03072-XL",
-          "available": 6
+          "available": 5
         }
       ]
     },
@@ -12501,17 +12677,17 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 24.85,
-      "total_available": 83,
+      "total_available": 80,
       "sizes": [
         {
           "size": "XS",
           "sku": "03073-XS",
-          "available": 22
+          "available": 21
         },
         {
           "size": "S",
           "sku": "03073-S",
-          "available": 26
+          "available": 25
         },
         {
           "size": "M",
@@ -12526,7 +12702,7 @@
         {
           "size": "XL",
           "sku": "03073-XL",
-          "available": 8
+          "available": 7
         }
       ]
     },
@@ -12545,7 +12721,7 @@
       "compare_at": 38,
       "current_price": 14.99,
       "unit_cost": 8.75,
-      "total_available": 27,
+      "total_available": 26,
       "sizes": [
         {
           "size": "XS",
@@ -12555,7 +12731,7 @@
         {
           "size": "S",
           "sku": "F5-TK-572-BR000-00L-S",
-          "available": 9
+          "available": 8
         },
         {
           "size": "M",
@@ -12633,7 +12809,7 @@
       "compare_at": 44,
       "current_price": 24.99,
       "unit_cost": 7.43,
-      "total_available": 11,
+      "total_available": 10,
       "sizes": [
         {
           "size": "XS",
@@ -12643,7 +12819,7 @@
         {
           "size": "S",
           "sku": "S6-TK-664-BL000-00L-S",
-          "available": 5
+          "available": 4
         },
         {
           "size": "M",
@@ -12721,7 +12897,7 @@
       "compare_at": 44,
       "current_price": 24.99,
       "unit_cost": 7.43,
-      "total_available": 24,
+      "total_available": 23,
       "sizes": [
         {
           "size": "XS",
@@ -12731,7 +12907,7 @@
         {
           "size": "S",
           "sku": "S6-TK-664-GR000-00L-S",
-          "available": 6
+          "available": 5
         },
         {
           "size": "M",
@@ -12765,12 +12941,12 @@
       "compare_at": 44,
       "current_price": 24.99,
       "unit_cost": 7.43,
-      "total_available": 30,
+      "total_available": 29,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-664-LP000-00L-XS",
-          "available": 18
+          "available": 17
         },
         {
           "size": "S",
@@ -12795,50 +12971,6 @@
       ]
     },
     {
-      "product_id": "7526814318689",
-      "gid": "gid://shopify/Product/7526814318689",
-      "handle": "rena-top-pink-blush",
-      "title": "Rena Top (Pink Blush)",
-      "color": "Pink Blush",
-      "type": "Top",
-      "class": "Fashion",
-      "style_name": "Rena Top",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/rena-top-pink-blush-top-yakira-bella-9806471.jpg?v=1777498453",
-      "msrp": 44,
-      "compare_at": 44,
-      "current_price": 24.99,
-      "unit_cost": 8.23,
-      "total_available": 9,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "S6-TK-664-YL000-00L-XS",
-          "available": 6
-        },
-        {
-          "size": "S",
-          "sku": "S6-TK-664-YL000-00L-S",
-          "available": 3
-        },
-        {
-          "size": "M",
-          "sku": "S6-TK-664-YL000-00L-M",
-          "available": 0
-        },
-        {
-          "size": "L",
-          "sku": "S6-TK-664-YL000-00L-L",
-          "available": 0
-        },
-        {
-          "size": "XL",
-          "sku": "S6-TK-664-YL000-00L-XL",
-          "available": 0
-        }
-      ]
-    },
-    {
       "product_id": "7492767645793",
       "gid": "gid://shopify/Product/7492767645793",
       "handle": "rena-top-pink",
@@ -12853,17 +12985,17 @@
       "compare_at": 44,
       "current_price": 24.99,
       "unit_cost": 7.43,
-      "total_available": 21,
+      "total_available": 19,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-664-PK000-00L-XS",
-          "available": 10
+          "available": 9
         },
         {
           "size": "S",
           "sku": "S6-TK-664-PK000-00L-S",
-          "available": 8
+          "available": 7
         },
         {
           "size": "M",
@@ -12897,32 +13029,32 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 22.35,
-      "total_available": 103,
+      "total_available": 90,
       "sizes": [
         {
           "size": "XS",
           "sku": "03071-XS",
-          "available": 32
+          "available": 30
         },
         {
           "size": "S",
           "sku": "03071-S",
-          "available": 31
+          "available": 26
         },
         {
           "size": "M",
           "sku": "03071-M",
-          "available": 20
+          "available": 16
         },
         {
           "size": "L",
           "sku": "03071-L",
-          "available": 10
+          "available": 9
         },
         {
           "size": "XL",
           "sku": "03071-XL",
-          "available": 10
+          "available": 9
         }
       ]
     },
@@ -12941,7 +13073,7 @@
       "compare_at": 34,
       "current_price": 34,
       "unit_cost": 8.5,
-      "total_available": 14,
+      "total_available": 13,
       "sizes": [
         {
           "size": "XS",
@@ -12956,7 +13088,7 @@
         {
           "size": "M",
           "sku": "S5-TK-277-BK000-00L-M",
-          "available": 2
+          "available": 1
         },
         {
           "size": "L",
@@ -13073,12 +13205,12 @@
       "compare_at": 38,
       "current_price": 19.99,
       "unit_cost": 9.25,
-      "total_available": 5,
+      "total_available": 4,
       "sizes": [
         {
           "size": "XS",
           "sku": "S4-TK-250-BK000-00Q-XS",
-          "available": 6
+          "available": 5
         },
         {
           "size": "S",
@@ -13381,7 +13513,7 @@
       "compare_at": 138,
       "current_price": 49.99,
       "unit_cost": 28.85,
-      "total_available": 126,
+      "total_available": 124,
       "sizes": [
         {
           "size": "XS",
@@ -13396,7 +13528,7 @@
         {
           "size": "M",
           "sku": "S6-DW-304-BL1055-53S-M",
-          "available": 22
+          "available": 21
         },
         {
           "size": "L",
@@ -13406,7 +13538,7 @@
         {
           "size": "XL",
           "sku": "S6-DW-304-BL1055-53S-XL",
-          "available": 12
+          "available": 11
         }
       ]
     },
@@ -13513,22 +13645,22 @@
       "compare_at": 128,
       "current_price": 128,
       "unit_cost": 39.85,
-      "total_available": 58,
+      "total_available": 53,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-765-BG1118-53L-XS",
-          "available": 16
+          "available": 14
         },
         {
           "size": "S",
           "sku": "S6-DW-765-BG1118-53L-S",
-          "available": 19
+          "available": 17
         },
         {
           "size": "M",
           "sku": "S6-DW-765-BG1118-53L-M",
-          "available": 12
+          "available": 11
         },
         {
           "size": "L",
@@ -13631,6 +13763,50 @@
       ]
     },
     {
+      "product_id": "7572691026017",
+      "gid": "gid://shopify/Product/7572691026017",
+      "handle": "sierra-dress-butter-yellow",
+      "title": "Sierra Dress (Butter Yellow)",
+      "color": "Butter Yellow",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Sierra Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/sierra-dress-butter-yellow-dress-yakira-bella-7935409.png?v=1780459271",
+      "msrp": 148,
+      "compare_at": 148,
+      "current_price": 74.99,
+      "unit_cost": 38.85,
+      "total_available": 1,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-DW-779-YL000-51S-XS",
+          "available": 0
+        },
+        {
+          "size": "S",
+          "sku": "S6-DW-779-YL000-51S-S",
+          "available": 1
+        },
+        {
+          "size": "M",
+          "sku": "S6-DW-779-YL000-51S-M",
+          "available": 0
+        },
+        {
+          "size": "L",
+          "sku": "S6-DW-779-YL000-51S-L",
+          "available": 0
+        },
+        {
+          "size": "XL",
+          "sku": "S6-DW-779-YL000-51S-XL",
+          "available": 0
+        }
+      ]
+    },
+    {
       "product_id": "7492660494433",
       "gid": "gid://shopify/Product/7492660494433",
       "handle": "sonia-top-light-blue",
@@ -13645,7 +13821,7 @@
       "compare_at": 48,
       "current_price": 24.99,
       "unit_cost": 16.85,
-      "total_available": 38,
+      "total_available": 37,
       "sizes": [
         {
           "size": "XS",
@@ -13660,7 +13836,7 @@
         {
           "size": "M",
           "sku": "S6-TK-672-LB000-00S-M",
-          "available": 1
+          "available": 0
         },
         {
           "size": "L",
@@ -13782,7 +13958,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 15.8,
-      "total_available": 325,
+      "total_available": 320,
       "sizes": [
         {
           "size": "XXS",
@@ -13797,17 +13973,17 @@
         {
           "size": "S",
           "sku": "S4-SK-055-BK000-20N-S",
-          "available": 74
+          "available": 72
         },
         {
           "size": "M",
           "sku": "S4-SK-055-BK000-20N-M",
-          "available": 105
+          "available": 104
         },
         {
           "size": "L",
           "sku": "S4-SK-055-BK000-20N-L",
-          "available": 61
+          "available": 59
         },
         {
           "size": "XL",
@@ -13831,7 +14007,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 15.8,
-      "total_available": 314,
+      "total_available": 299,
       "sizes": [
         {
           "size": "XXS",
@@ -13841,27 +14017,27 @@
         {
           "size": "XS",
           "sku": "S4-SK-056-BK000-23N-XS",
-          "available": 73
+          "available": 69
         },
         {
           "size": "S",
           "sku": "S4-SK-056-BK000-23N-S",
-          "available": 105
+          "available": 101
         },
         {
           "size": "M",
           "sku": "S4-SK-056-BK000-23N-M",
-          "available": 75
+          "available": 71
         },
         {
           "size": "L",
           "sku": "S4-SK-056-BK000-23N-L",
-          "available": 30
+          "available": 28
         },
         {
           "size": "XL",
           "sku": "S4-SK-056-BK000-23N-XL",
-          "available": 21
+          "available": 20
         }
       ]
     },
@@ -13880,7 +14056,7 @@
       "compare_at": 58,
       "current_price": 58,
       "unit_cost": 15.8,
-      "total_available": 127,
+      "total_available": 118,
       "sizes": [
         {
           "size": "XXS",
@@ -13890,12 +14066,12 @@
         {
           "size": "XS",
           "sku": "S4-SK-100-BK000-25N-XS",
-          "available": 37
+          "available": 34
         },
         {
           "size": "S",
           "sku": "S4-SK-100-BK000-25N-S",
-          "available": 39
+          "available": 35
         },
         {
           "size": "M",
@@ -13905,12 +14081,12 @@
         {
           "size": "L",
           "sku": "S4-SK-100-BK000-25N-L",
-          "available": 19
+          "available": 18
         },
         {
           "size": "XL",
           "sku": "S4-SK-100-BK000-25N-XL",
-          "available": 9
+          "available": 8
         }
       ]
     },
@@ -14022,17 +14198,17 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 25.85,
-      "total_available": 56,
+      "total_available": 54,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-638-GR000-37L-XS",
-          "available": 13
+          "available": 12
         },
         {
           "size": "S",
           "sku": "S6-DK-638-GR000-37L-S",
-          "available": 16
+          "available": 15
         },
         {
           "size": "M",
@@ -14208,32 +14384,32 @@
       "compare_at": 88,
       "current_price": 88,
       "unit_cost": 28.85,
-      "total_available": 105,
+      "total_available": 94,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-783-KH000-00S-XS",
-          "available": 26
+          "available": 22
         },
         {
           "size": "S",
           "sku": "S6-TK-783-KH000-00S-S",
-          "available": 27
+          "available": 24
         },
         {
           "size": "M",
           "sku": "S6-TK-783-KH000-00S-M",
-          "available": 22
+          "available": 20
         },
         {
           "size": "L",
           "sku": "S6-TK-783-KH000-00S-L",
-          "available": 15
+          "available": 14
         },
         {
           "size": "XL",
           "sku": "S6-TK-783-KH000-00S-XL",
-          "available": 15
+          "available": 14
         }
       ]
     },
@@ -14340,32 +14516,32 @@
       "compare_at": 78,
       "current_price": 78,
       "unit_cost": 27.35,
-      "total_available": 84,
+      "total_available": 76,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-555-GR000-00L-XS",
-          "available": 32
+          "available": 30
         },
         {
           "size": "S",
           "sku": "S6-TK-555-GR000-00L-S",
-          "available": 26
+          "available": 24
         },
         {
           "size": "M",
           "sku": "S6-TK-555-GR000-00L-M",
-          "available": 11
+          "available": 9
         },
         {
           "size": "L",
           "sku": "S6-TK-555-GR000-00L-L",
-          "available": 5
+          "available": 4
         },
         {
           "size": "XL",
           "sku": "S6-TK-555-GR000-00L-XL",
-          "available": 10
+          "available": 9
         }
       ]
     },
@@ -14384,32 +14560,32 @@
       "compare_at": 44,
       "current_price": 44,
       "unit_cost": 6.57,
-      "total_available": 101,
+      "total_available": 87,
       "sizes": [
         {
           "size": "XS",
           "sku": "03095-XS",
-          "available": 29
+          "available": 27
         },
         {
           "size": "S",
           "sku": "03095-S",
-          "available": 30
+          "available": 25
         },
         {
           "size": "M",
           "sku": "03095-M",
-          "available": 22
+          "available": 19
         },
         {
           "size": "L",
           "sku": "03095-L",
-          "available": 10
+          "available": 7
         },
         {
           "size": "XL",
           "sku": "03095-XL",
-          "available": 10
+          "available": 9
         }
       ]
     },
@@ -14428,7 +14604,7 @@
       "compare_at": 44,
       "current_price": 24.99,
       "unit_cost": 6.49,
-      "total_available": 8,
+      "total_available": 6,
       "sizes": [
         {
           "size": "XS",
@@ -14443,7 +14619,7 @@
         {
           "size": "M",
           "sku": "S6-TK-662-YL000-00L-M",
-          "available": 1
+          "available": 0
         },
         {
           "size": "L",
@@ -14453,7 +14629,7 @@
         {
           "size": "XL",
           "sku": "S6-TK-662-YL000-00L-XL",
-          "available": 4
+          "available": 3
         }
       ]
     },
@@ -14516,12 +14692,12 @@
       "compare_at": 44,
       "current_price": 44,
       "unit_cost": 6.49,
-      "total_available": 64,
+      "total_available": 63,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-662-BL000-00L-XS",
-          "available": 35
+          "available": 34
         },
         {
           "size": "S",
@@ -14604,27 +14780,27 @@
       "compare_at": 44,
       "current_price": 44,
       "unit_cost": 6.49,
-      "total_available": 79,
+      "total_available": 72,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-662-TL000-00L-XS",
-          "available": 31
+          "available": 29
         },
         {
           "size": "S",
           "sku": "S6-TK-662-TL000-00L-S",
-          "available": 28
+          "available": 26
         },
         {
           "size": "M",
           "sku": "S6-TK-662-TL000-00L-M",
-          "available": 12
+          "available": 10
         },
         {
           "size": "L",
           "sku": "S6-TK-662-TL000-00L-XL",
-          "available": 5
+          "available": 4
         },
         {
           "size": "XL",
@@ -14692,32 +14868,32 @@
       "compare_at": null,
       "current_price": 128,
       "unit_cost": 29.85,
-      "total_available": 123,
+      "total_available": 109,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-533-OW1140-53L-XS",
-          "available": 39
+          "available": 35
         },
         {
           "size": "S",
           "sku": "S6-DW-533-OW1140-53L-S",
-          "available": 40
+          "available": 36
         },
         {
           "size": "M",
           "sku": "S6-DW-533-OW1140-53L-M",
-          "available": 24
+          "available": 21
         },
         {
           "size": "L",
           "sku": "S6-DW-533-OW1140-53L-L",
-          "available": 15
+          "available": 13
         },
         {
           "size": "XL",
           "sku": "S6-DW-533-OW1140-53L-XL",
-          "available": 5
+          "available": 4
         }
       ]
     },
@@ -15028,7 +15204,7 @@
       "compare_at": 88,
       "current_price": 24.99,
       "unit_cost": 26.5,
-      "total_available": 28,
+      "total_available": 27,
       "sizes": [
         {
           "size": "XS",
@@ -15038,7 +15214,7 @@
         {
           "size": "S",
           "sku": "S6-SW-052-PL1031-20N-S",
-          "available": 9
+          "available": 8
         },
         {
           "size": "M",
@@ -15116,17 +15292,17 @@
       "compare_at": 88,
       "current_price": 59.99,
       "unit_cost": 26.5,
-      "total_available": 38,
+      "total_available": 36,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-053-PL1031-23N-XS",
-          "available": 9
+          "available": 8
         },
         {
           "size": "S",
           "sku": "S6-DW-053-PL1031-23N-S",
-          "available": 8
+          "available": 7
         },
         {
           "size": "M",
