@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-15T10:19:12.124Z",
+  "generated_at": "2026-08-16T10:19:23.445Z",
   "offering": "offall",
   "offer": "INSEASON",
   "currency": "USD",
@@ -28,7 +28,7 @@
   },
   "note": "In-season Off Price + all online-published marked-down styles (non-core, >=10 Bogota+Warehouse). Dress $15 / Skirt $10 / Top $5.",
   "counts": {
-    "products": 142
+    "products": 141
   },
   "products": [
     {
@@ -181,7 +181,7 @@
       "compare_at": 168,
       "current_price": 99.99,
       "unit_cost": 47.85,
-      "total_available": 59,
+      "total_available": 58,
       "sizes": [
         {
           "size": "XS",
@@ -206,7 +206,7 @@
         {
           "size": "XL",
           "sku": "S6-DW-720-PK000-37L-XL",
-          "available": 3
+          "available": 2
         }
       ],
       "off_price": 15,
@@ -253,52 +253,6 @@
           "size": "XL",
           "sku": "S6-TK-650-BG000-00L-XL",
           "available": 6
-        }
-      ],
-      "off_price": 15,
-      "list_wholesale": null
-    },
-    {
-      "product_id": "7540957806689",
-      "gid": "gid://shopify/Product/7540957806689",
-      "handle": "amy-dress-white-blue",
-      "title": "Amy Dress (White Blue)",
-      "color": "White Blue",
-      "type": "Dress",
-      "class": "Fashion",
-      "style_name": "Amy Dress",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/amy-dress-white-blue-dress-yakira-bella-8128120.jpg?v=1779830176",
-      "msrp": 108,
-      "compare_at": 108,
-      "current_price": 44.99,
-      "unit_cost": 28.85,
-      "total_available": 20,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "S6-DW-745-WH1000-49Q-XS",
-          "available": 6
-        },
-        {
-          "size": "S",
-          "sku": "S6-DW-745-WH1000-49Q-S",
-          "available": 11
-        },
-        {
-          "size": "M",
-          "sku": "S6-DW-745-WH1000-49Q-M",
-          "available": 2
-        },
-        {
-          "size": "L",
-          "sku": "S6-DW-745-WH1000-49Q-L",
-          "available": 1
-        },
-        {
-          "size": "XL",
-          "sku": "S6-DW-745-WH1000-49Q-XL",
-          "available": 0
         }
       ],
       "off_price": 15,
@@ -1254,12 +1208,12 @@
       "compare_at": 78,
       "current_price": 19.99,
       "unit_cost": 21.85,
-      "total_available": 60,
+      "total_available": 59,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-462-BL1098-51S-XS",
-          "available": 22
+          "available": 21
         },
         {
           "size": "S",
@@ -2086,12 +2040,12 @@
       "compare_at": 98,
       "current_price": 14.99,
       "unit_cost": 24.85,
-      "total_available": 14,
+      "total_available": 13,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SW-441-BK728-36N-XS",
-          "available": 11
+          "available": 10
         },
         {
           "size": "S",
@@ -4264,7 +4218,7 @@
       "compare_at": 88,
       "current_price": 24.99,
       "unit_cost": 27.85,
-      "total_available": 19,
+      "total_available": 18,
       "sizes": [
         {
           "size": "XS",
@@ -4274,7 +4228,7 @@
         {
           "size": "S",
           "sku": "F5-TK-563-BK000-00L-S",
-          "available": 5
+          "available": 4
         },
         {
           "size": "M",
