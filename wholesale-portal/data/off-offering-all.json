@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-08-28T21:04:28.663Z",
+  "generated_at": "2026-08-29T14:55:09.945Z",
   "offering": "offall",
   "offer": "INSEASON",
   "currency": "USD",
@@ -28,7 +28,7 @@
   },
   "note": "In-season Off Price + all online-published marked-down styles (non-core, >=10 Bogota+Warehouse). Dress $15 / Skirt $10 / Top $5.",
   "counts": {
-    "products": 138
+    "products": 137
   },
   "products": [
     {
@@ -136,12 +136,12 @@
       "compare_at": 128,
       "current_price": 79.99,
       "unit_cost": 27.85,
-      "total_available": 40,
+      "total_available": 39,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-003-BK859-53S-XS",
-          "available": 26
+          "available": 25
         },
         {
           "size": "S",
@@ -1881,52 +1881,6 @@
         }
       ],
       "off_price": 10
-    },
-    {
-      "product_id": "7345020567649",
-      "gid": "gid://shopify/Product/7345020567649",
-      "handle": "josephine-skirt-black-flower",
-      "title": "Josephine Skirt (Black Flower)",
-      "color": "Black Flower",
-      "type": "Skirt",
-      "class": "Banger",
-      "style_name": "Josephine Skirt",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/josephine-skirt-black-flower-skirt-yakira-bella-2356006.jpg?v=1756302518",
-      "msrp": 98,
-      "compare_at": 98,
-      "current_price": 14.99,
-      "unit_cost": 24.85,
-      "total_available": 10,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "F5-SW-441-BK728-36N-XS",
-          "available": 10
-        },
-        {
-          "size": "S",
-          "sku": "F5-SW-441-BK728-36N-S",
-          "available": 0
-        },
-        {
-          "size": "M",
-          "sku": "F5-SW-441-BK728-36N-M",
-          "available": 0
-        },
-        {
-          "size": "L",
-          "sku": "F5-SW-441-BK728-36N-L",
-          "available": 0
-        },
-        {
-          "size": "XL",
-          "sku": "F5-SW-441-BK728-36N-XL",
-          "available": 0
-        }
-      ],
-      "off_price": 10,
-      "list_wholesale": null
     },
     {
       "product_id": "7334353043553",
