@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-17T14:39:59.577Z",
+  "generated_at": "2026-09-18T14:04:53.690Z",
   "offering": "off",
   "offer": "INSEASON",
   "currency": "USD",
@@ -91,17 +91,17 @@
       "compare_at": 138,
       "current_price": 99.99,
       "unit_cost": 27.85,
-      "total_available": 8,
+      "total_available": 13,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-003-BL960-53S-XS",
-          "available": 6
+          "available": 8
         },
         {
           "size": "S",
           "sku": "S6-DW-003-BL960-53S-S",
-          "available": 3
+          "available": 6
         },
         {
           "size": "M",
@@ -141,7 +141,7 @@
         {
           "size": "XS",
           "sku": "S6-DW-003-BK859-53S-XS",
-          "available": 11
+          "available": 10
         },
         {
           "size": "S",
@@ -151,7 +151,7 @@
         {
           "size": "M",
           "sku": "S6-DW-003-BK859-53S-M",
-          "available": 0
+          "available": 1
         },
         {
           "size": "L",
@@ -656,7 +656,7 @@
       "compare_at": 58,
       "current_price": 14.99,
       "unit_cost": 14.8,
-      "total_available": 0,
+      "total_available": 1,
       "sizes": [
         {
           "size": "XS",
@@ -666,7 +666,7 @@
         {
           "size": "S",
           "sku": "F4-SK-309-BR000-32N-S",
-          "available": 0
+          "available": 1
         },
         {
           "size": "M",
@@ -701,7 +701,7 @@
       "compare_at": 58,
       "current_price": 9.99,
       "unit_cost": 15.54,
-      "total_available": -6,
+      "total_available": -1,
       "sizes": [
         {
           "size": "XS",
@@ -711,17 +711,17 @@
         {
           "size": "S",
           "sku": "F4-TS-254-OW000-00L-S",
-          "available": 0
+          "available": -1
         },
         {
           "size": "M",
           "sku": "F4-TS-254-OW000-00L-M",
-          "available": -3
+          "available": 0
         },
         {
           "size": "L",
           "sku": "F4-TS-254-OW000-00L-L",
-          "available": -3
+          "available": 0
         },
         {
           "size": "XL",
@@ -746,7 +746,7 @@
       "compare_at": 58,
       "current_price": 9.99,
       "unit_cost": 15.54,
-      "total_available": 21,
+      "total_available": 20,
       "sizes": [
         {
           "size": "XS",
@@ -756,7 +756,7 @@
         {
           "size": "S",
           "sku": "F4-TS-254-BK000-00L-S",
-          "available": 2
+          "available": 1
         },
         {
           "size": "M",
@@ -791,7 +791,7 @@
       "compare_at": 58,
       "current_price": 9.99,
       "unit_cost": 15.54,
-      "total_available": 67,
+      "total_available": 65,
       "sizes": [
         {
           "size": "XS",
@@ -801,7 +801,7 @@
         {
           "size": "S",
           "sku": "F4-TS-254-BL000-00L-S",
-          "available": 21
+          "available": 19
         },
         {
           "size": "M",
@@ -971,7 +971,7 @@
       "compare_at": 88,
       "current_price": 24.99,
       "unit_cost": 27.25,
-      "total_available": 24,
+      "total_available": 23,
       "sizes": [
         {
           "size": "XS",
@@ -981,7 +981,7 @@
         {
           "size": "S",
           "sku": "F5-TK-291-GR000-00L-S",
-          "available": 6
+          "available": 5
         },
         {
           "size": "M",
@@ -1436,7 +1436,7 @@
       "compare_at": 48,
       "current_price": 9.99,
       "unit_cost": 11.47,
-      "total_available": 2,
+      "total_available": 1,
       "sizes": [
         {
           "size": "S",
@@ -1451,7 +1451,7 @@
         {
           "size": "L",
           "sku": "F5-TK-582-BR000-00L-L",
-          "available": 2
+          "available": 1
         }
       ],
       "off_price": 5
@@ -1500,8 +1500,8 @@
       "type": "Top",
       "class": null,
       "style_name": null,
-      "status": "DRAFT",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/endure-half-zip-black-top-yakira-bella-337120.png?v=1748544355",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/endure-half-zip-black-top-yakira-bella-1412771.png?v=1789719669",
       "msrp": 78,
       "compare_at": 78,
       "current_price": 34.99,
@@ -1821,12 +1821,12 @@
       "compare_at": 88,
       "current_price": 49.99,
       "unit_cost": 27.85,
-      "total_available": 3,
+      "total_available": 2,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-759-BL1124-00L-XS",
-          "available": 2
+          "available": 1
         },
         {
           "size": "S",
@@ -2586,7 +2586,7 @@
       "compare_at": 88,
       "current_price": 39.99,
       "unit_cost": 23.85,
-      "total_available": 25,
+      "total_available": 22,
       "sizes": [
         {
           "size": "XS",
@@ -2596,7 +2596,7 @@
         {
           "size": "S",
           "sku": "F5-SW-449-BL837-36N-S",
-          "available": 7
+          "available": 4
         },
         {
           "size": "M",
@@ -2721,12 +2721,12 @@
       "compare_at": 148,
       "current_price": 49.99,
       "unit_cost": 28.85,
-      "total_available": 1,
+      "total_available": 2,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-DW-080-BK779-53L-XS",
-          "available": 1
+          "available": 2
         },
         {
           "size": "S",
@@ -4166,17 +4166,17 @@
       "compare_at": 138,
       "current_price": 49.99,
       "unit_cost": 28.85,
-      "total_available": 71,
+      "total_available": 68,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-304-BL1055-53S-XS",
-          "available": 29
+          "available": 28
         },
         {
           "size": "S",
           "sku": "S6-DW-304-BL1055-53S-S",
-          "available": 19
+          "available": 18
         },
         {
           "size": "M",
@@ -4191,7 +4191,7 @@
         {
           "size": "XL",
           "sku": "S6-DW-304-BL1055-53S-XL",
-          "available": 3
+          "available": 2
         }
       ],
       "off_price": 15
