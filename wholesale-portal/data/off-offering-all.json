@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-21T16:11:07.613Z",
+  "generated_at": "2026-09-22T14:19:46.604Z",
   "offering": "offall",
   "offer": "INSEASON",
   "currency": "USD",
@@ -28,7 +28,7 @@
   },
   "note": "In-season Off Price + all online-published marked-down styles (non-core, >=10 Bogota+Warehouse). Dress $15 / Skirt $10 / Top $5.",
   "counts": {
-    "products": 146
+    "products": 145
   },
   "products": [
     {
@@ -1448,7 +1448,7 @@
       "compare_at": 78,
       "current_price": 19.99,
       "unit_cost": 21.85,
-      "total_available": 42,
+      "total_available": 41,
       "sizes": [
         {
           "size": "XS",
@@ -1458,7 +1458,7 @@
         {
           "size": "S",
           "sku": "S6-DW-462-BL1098-51S-S",
-          "available": 13
+          "available": 12
         },
         {
           "size": "M",
@@ -1810,7 +1810,7 @@
       "compare_at": 128,
       "current_price": 49.99,
       "unit_cost": 28.85,
-      "total_available": 135,
+      "total_available": 134,
       "sizes": [
         {
           "size": "XS",
@@ -1825,7 +1825,7 @@
         {
           "size": "M",
           "sku": "S6-DW-533-PL1054-53L-M",
-          "available": 25
+          "available": 24
         },
         {
           "size": "L",
@@ -2732,7 +2732,7 @@
       "compare_at": 88,
       "current_price": 39.99,
       "unit_cost": 23.85,
-      "total_available": 19,
+      "total_available": 18,
       "sizes": [
         {
           "size": "XS",
@@ -2747,7 +2747,7 @@
         {
           "size": "M",
           "sku": "F5-SW-449-BL837-36N-M",
-          "available": 3
+          "available": 2
         },
         {
           "size": "L",
@@ -4140,17 +4140,17 @@
       "compare_at": 78,
       "current_price": 39.99,
       "unit_cost": 27.35,
-      "total_available": 53,
+      "total_available": 51,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-611-LP000-00L-XS",
-          "available": 17
+          "available": 16
         },
         {
           "size": "S",
           "sku": "S6-TK-611-LP000-00L-S",
-          "available": 16
+          "available": 15
         },
         {
           "size": "M",
@@ -4546,12 +4546,12 @@
       "compare_at": 88,
       "current_price": 24.99,
       "unit_cost": 27.25,
-      "total_available": 22,
+      "total_available": 21,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-TK-291-GR000-00L-XS",
-          "available": 9
+          "available": 8
         },
         {
           "size": "S",
@@ -4636,12 +4636,12 @@
       "compare_at": 88,
       "current_price": 12.99,
       "unit_cost": 27,
-      "total_available": 36,
+      "total_available": 35,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-TS-579-BK000-00L-XS",
-          "available": 20
+          "available": 19
         },
         {
           "size": "S",
@@ -4726,12 +4726,12 @@
       "compare_at": 88,
       "current_price": 14.99,
       "unit_cost": 27,
-      "total_available": 11,
+      "total_available": 10,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-TS-579-WH000-00L-XS",
-          "available": 11
+          "available": 10
         },
         {
           "size": "S",
@@ -6004,7 +6004,7 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 21.85,
-      "total_available": 71,
+      "total_available": 70,
       "sizes": [
         {
           "size": "XS",
@@ -6019,7 +6019,7 @@
         {
           "size": "M",
           "sku": "F5-TK-586-BL000-00L-M",
-          "available": 17
+          "available": 16
         },
         {
           "size": "L",
@@ -6437,52 +6437,6 @@
           "size": "XL",
           "sku": "S6-TK-664-LP000-00L-XL",
           "available": 2
-        }
-      ],
-      "off_price": 5,
-      "list_wholesale": null
-    },
-    {
-      "product_id": "7492767645793",
-      "gid": "gid://shopify/Product/7492767645793",
-      "handle": "rena-top-pink",
-      "title": "Rena Top (Pink)",
-      "color": "Pink",
-      "type": "Top",
-      "class": "Fashion",
-      "style_name": "Rena Top",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A8262.jpg?v=1771604685",
-      "msrp": 44,
-      "compare_at": 44,
-      "current_price": 24.99,
-      "unit_cost": 7.43,
-      "total_available": 11,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "S6-TK-664-PK000-00L-XS",
-          "available": 7
-        },
-        {
-          "size": "S",
-          "sku": "S6-TK-664-PK000-00L-S",
-          "available": 3
-        },
-        {
-          "size": "M",
-          "sku": "S6-TK-664-PK000-00L-M",
-          "available": 0
-        },
-        {
-          "size": "L",
-          "sku": "S6-TK-664-PK000-00L-L",
-          "available": 0
-        },
-        {
-          "size": "XL",
-          "sku": "S6-TK-664-PK000-00L-XL",
-          "available": 1
         }
       ],
       "off_price": 5,
