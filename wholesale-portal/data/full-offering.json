@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-26T14:03:44.793Z",
+  "generated_at": "2026-09-27T14:58:37.642Z",
   "offering": "full",
   "offer": "INSEASON",
   "currency": "USD",
@@ -22,8 +22,8 @@
     "gid://shopify/Location/33027424353"
   ],
   "counts": {
-    "discovered": 693,
-    "products": 693,
+    "discovered": 692,
+    "products": 692,
     "dropped_no_inventory": 0,
     "dropped_no_variants": 0,
     "dropped_no_msrp": 0
@@ -11730,7 +11730,7 @@
       "compare_at": 128,
       "current_price": 128,
       "unit_cost": 26.85,
-      "total_available": 5,
+      "total_available": 4,
       "sizes": [
         {
           "size": "XS",
@@ -11745,7 +11745,7 @@
         {
           "size": "M",
           "sku": "03048-54-M",
-          "available": 2
+          "available": 1
         },
         {
           "size": "L",
@@ -20575,50 +20575,6 @@
       ]
     },
     {
-      "product_id": "7492659904609",
-      "gid": "gid://shopify/Product/7492659904609",
-      "handle": "mina-half-zip-dress-42-ivory-heather",
-      "title": "Mina Half Zip Dress 42\" (Ivory Heather)",
-      "color": "Ivory Heather",
-      "type": "Dress",
-      "class": "Core",
-      "style_name": "Mina Half Zip Dress 42\"",
-      "status": "ACTIVE",
-      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/mina-half-zip-dress-42-ivory-heather-dress-yakira-bella-5422294.jpg?v=1773814095",
-      "msrp": 88,
-      "compare_at": 88,
-      "current_price": 88,
-      "unit_cost": 29.5,
-      "total_available": 1,
-      "sizes": [
-        {
-          "size": "XS",
-          "sku": "S6-DK-660-OW000-42L-XS",
-          "available": 0
-        },
-        {
-          "size": "S",
-          "sku": "S6-DK-660-OW000-42L-S",
-          "available": 1
-        },
-        {
-          "size": "M",
-          "sku": "S6-DK-660-OW000-42L-M",
-          "available": 0
-        },
-        {
-          "size": "L",
-          "sku": "S6-DK-660-OW000-42L-L",
-          "available": 0
-        },
-        {
-          "size": "XL",
-          "sku": "S6-DK-660-OW000-42L-XL",
-          "available": 0
-        }
-      ]
-    },
-    {
       "product_id": "7472776216673",
       "gid": "gid://shopify/Product/7472776216673",
       "handle": "mina-half-zip-top-baby-blue",
@@ -28769,7 +28725,7 @@
       "compare_at": 118,
       "current_price": 118,
       "unit_cost": 37.85,
-      "total_available": 44,
+      "total_available": 43,
       "sizes": [
         {
           "size": "XS",
@@ -28779,7 +28735,7 @@
         {
           "size": "S",
           "sku": "03289-S",
-          "available": 17
+          "available": 16
         },
         {
           "size": "M",
