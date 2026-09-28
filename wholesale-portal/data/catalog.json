@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-27T14:58:30.628Z",
+  "generated_at": "2026-09-28T17:56:52.200Z",
   "offer": "F26",
   "currency": "USD",
   "size_order": [
@@ -36,9 +36,9 @@
   },
   "counts": {
     "full": 164,
-    "off": 68,
+    "off": 69,
     "preorder": 10,
-    "total": 242
+    "total": 243
   },
   "products": [
     {
@@ -1621,7 +1621,7 @@
       "compare_at": 138,
       "wholesale_price": 69,
       "list_wholesale": 69,
-      "total_available": 82,
+      "total_available": 81,
       "sizes": [
         {
           "size": "XXS",
@@ -1636,7 +1636,7 @@
         {
           "size": "S",
           "sku": "S5-DW-093-BL000-50S-S",
-          "available": 28
+          "available": 27
         },
         {
           "size": "M",
@@ -1671,7 +1671,7 @@
       "compare_at": 48,
       "wholesale_price": 24,
       "list_wholesale": 24,
-      "total_available": 59,
+      "total_available": 58,
       "sizes": [
         {
           "size": "XS",
@@ -1691,7 +1691,7 @@
         {
           "size": "L",
           "sku": "S5-SK-536-BK000-33N-L",
-          "available": 7
+          "available": 6
         },
         {
           "size": "XL",
@@ -1716,12 +1716,12 @@
       "compare_at": 54,
       "wholesale_price": 27,
       "list_wholesale": 27,
-      "total_available": 37,
+      "total_available": 36,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SK-581-BK000-36N-XS",
-          "available": 14
+          "available": 13
         },
         {
           "size": "S",
@@ -1941,7 +1941,7 @@
       "compare_at": 118,
       "wholesale_price": 59,
       "list_wholesale": 59,
-      "total_available": 38,
+      "total_available": 37,
       "sizes": [
         {
           "size": "XS",
@@ -1961,7 +1961,7 @@
         {
           "size": "L",
           "sku": "S6-DK-702-BK967-54L-L",
-          "available": 10
+          "available": 9
         },
         {
           "size": "XL",
@@ -2256,7 +2256,7 @@
       "compare_at": 88,
       "wholesale_price": 25,
       "list_wholesale": 44,
-      "total_available": 21,
+      "total_available": 20,
       "sizes": [
         {
           "size": "XS",
@@ -2276,7 +2276,7 @@
         {
           "size": "L",
           "sku": "F5-TK-291-GR000-00L-L",
-          "available": 4
+          "available": 3
         },
         {
           "size": "XL",
@@ -2534,6 +2534,56 @@
           "size": "XL",
           "sku": "F4-SW-107-BR000-33N-XL",
           "available": 5
+        }
+      ]
+    },
+    {
+      "product_id": "7331319808097",
+      "gid": "gid://shopify/Product/7331319808097",
+      "handle": "dakota-skirt-olive-green",
+      "title": "Dakota Skirt (Olive Green)",
+      "color": "Olive Green",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": "Dakota Skirt",
+      "tier": "off",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/dakota-skirt-olive-green-skirt-yakira-bella-9878364.jpg?v=1755848445",
+      "retail_price": 88,
+      "compare_at": 88,
+      "wholesale_price": 88,
+      "list_wholesale": 44,
+      "total_available": 37,
+      "sizes": [
+        {
+          "size": "XXS",
+          "sku": "S5-SW-107-GR83-33N-XXS",
+          "available": 2
+        },
+        {
+          "size": "XS",
+          "sku": "S5-SW-107-GR683-33N-XS",
+          "available": 14
+        },
+        {
+          "size": "S",
+          "sku": "S5-SW-107-GR683-33N-S",
+          "available": 4
+        },
+        {
+          "size": "M",
+          "sku": "S5-SW-107-GR683-33N-M",
+          "available": 12
+        },
+        {
+          "size": "L",
+          "sku": "S5-SW-107-GR683-33N-L",
+          "available": 3
+        },
+        {
+          "size": "XL",
+          "sku": "S5-SW-107-GR683-33N-XL",
+          "available": 2
         }
       ]
     },
@@ -3838,12 +3888,12 @@
       "compare_at": 98,
       "wholesale_price": 35,
       "list_wholesale": 49,
-      "total_available": 14,
+      "total_available": 15,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SW-441-PK712-36N-XS",
-          "available": 11
+          "available": 12
         },
         {
           "size": "S",
@@ -3928,7 +3978,7 @@
       "compare_at": 148,
       "wholesale_price": 74,
       "list_wholesale": 74,
-      "total_available": 65,
+      "total_available": 66,
       "sizes": [
         {
           "size": "XS",
@@ -3943,7 +3993,7 @@
         {
           "size": "M",
           "sku": "S6-DK-595-BK1129-54L-M",
-          "available": 13
+          "available": 14
         },
         {
           "size": "L",
@@ -3973,7 +4023,7 @@
       "compare_at": 128,
       "wholesale_price": 50,
       "list_wholesale": 64,
-      "total_available": 17,
+      "total_available": 16,
       "sizes": [
         {
           "size": "XS",
@@ -3993,7 +4043,7 @@
         {
           "size": "L",
           "sku": "S6-DK-595-BL856-54L-L",
-          "available": 5
+          "available": 4
         },
         {
           "size": "XL",
@@ -4018,12 +4068,12 @@
       "compare_at": 98,
       "wholesale_price": 25,
       "list_wholesale": 49,
-      "total_available": -1,
+      "total_available": 0,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-546-BG979-36N-XS",
-          "available": -1
+          "available": 0
         },
         {
           "size": "S",
@@ -4063,7 +4113,7 @@
       "compare_at": 88,
       "wholesale_price": 44,
       "list_wholesale": 44,
-      "total_available": 28,
+      "total_available": 30,
       "sizes": [
         {
           "size": "XS",
@@ -4073,12 +4123,12 @@
         {
           "size": "S",
           "sku": "S6-SW-546-BK975-36N-S",
-          "available": 16
+          "available": 17
         },
         {
           "size": "M",
           "sku": "S6-SW-546-BK975-36N-M",
-          "available": 0
+          "available": 1
         },
         {
           "size": "L",
@@ -4153,12 +4203,12 @@
       "compare_at": 98,
       "wholesale_price": 15,
       "list_wholesale": 49,
-      "total_available": 38,
+      "total_available": 37,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SW-546-BR694-36N-XS",
-          "available": 19
+          "available": 18
         },
         {
           "size": "S",
@@ -4513,7 +4563,7 @@
       "compare_at": 88,
       "wholesale_price": 40,
       "list_wholesale": 44,
-      "total_available": 11,
+      "total_available": 10,
       "sizes": [
         {
           "size": "XS",
@@ -4533,7 +4583,7 @@
         {
           "size": "L",
           "sku": "F5-SW-449-BL837-36N-L",
-          "available": 1
+          "available": 0
         },
         {
           "size": "XL",
@@ -6611,7 +6661,7 @@
       "compare_at": 98,
       "wholesale_price": 49,
       "list_wholesale": 49,
-      "total_available": 595,
+      "total_available": 593,
       "sizes": [
         {
           "size": "XS",
@@ -6626,12 +6676,12 @@
         {
           "size": "M",
           "sku": "F4-DK-375-BK000-50L-M",
-          "available": 112
+          "available": 111
         },
         {
           "size": "L",
           "sku": "F4-DK-375-BK000-50L-L",
-          "available": 37
+          "available": 36
         },
         {
           "size": "XL",
@@ -6656,7 +6706,7 @@
       "compare_at": 98,
       "wholesale_price": 49,
       "list_wholesale": 49,
-      "total_available": 26,
+      "total_available": 25,
       "sizes": [
         {
           "size": "XS",
@@ -6676,7 +6726,7 @@
         {
           "size": "L",
           "sku": "S6-DK-375-KH000-50L-L",
-          "available": 15
+          "available": 14
         },
         {
           "size": "XL",
@@ -6746,12 +6796,12 @@
       "compare_at": 88,
       "wholesale_price": 44,
       "list_wholesale": 44,
-      "total_available": 80,
+      "total_available": 79,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-375-BL000-50L-XS",
-          "available": 41
+          "available": 40
         },
         {
           "size": "S",
@@ -6836,12 +6886,12 @@
       "compare_at": 98,
       "wholesale_price": 49,
       "list_wholesale": 49,
-      "total_available": 163,
+      "total_available": 162,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-375-GR000-50L-XS",
-          "available": 76
+          "available": 75
         },
         {
           "size": "S",
@@ -6971,7 +7021,7 @@
       "compare_at": 78,
       "wholesale_price": 39,
       "list_wholesale": 39,
-      "total_available": 106,
+      "total_available": 105,
       "sizes": [
         {
           "size": "XS",
@@ -6986,7 +7036,7 @@
         {
           "size": "M",
           "sku": "F5-TK-552-BL000-00L-M",
-          "available": 9
+          "available": 8
         },
         {
           "size": "L",
@@ -7556,12 +7606,12 @@
       "compare_at": 88,
       "wholesale_price": 44,
       "list_wholesale": 44,
-      "total_available": 69,
+      "total_available": 67,
       "sizes": [
         {
           "size": "XS",
           "sku": "F4-TK-376-BK000-00L-XS",
-          "available": 18
+          "available": 17
         },
         {
           "size": "S",
@@ -7571,12 +7621,12 @@
         {
           "size": "M",
           "sku": "F4-TK-376-BK000-00L-M",
-          "available": 30
+          "available": 31
         },
         {
           "size": "L",
           "sku": "F4-TK-376-BK000-00L-L",
-          "available": 7
+          "available": 5
         },
         {
           "size": "XL",
@@ -8051,7 +8101,7 @@
       "compare_at": 68,
       "wholesale_price": 68,
       "list_wholesale": 34,
-      "total_available": 70,
+      "total_available": 68,
       "sizes": [
         {
           "size": "XS",
@@ -8076,7 +8126,7 @@
         {
           "size": "XL",
           "sku": "F5-TK-586-BL000-00L-XL",
-          "available": 9
+          "available": 7
         }
       ]
     },
@@ -9907,17 +9957,17 @@
       "compare_at": 64,
       "wholesale_price": 32,
       "list_wholesale": 32,
-      "total_available": 24,
+      "total_available": 25,
       "sizes": [
         {
           "size": "XXS",
           "sku": "S4-SK-326-BK000-29N-XXS",
-          "available": 3
+          "available": 2
         },
         {
           "size": "XS",
           "sku": "S4-SK-326-BK000-29N-XS",
-          "available": 2
+          "available": 4
         },
         {
           "size": "S",
@@ -10632,12 +10682,12 @@
       "compare_at": null,
       "wholesale_price": 59,
       "list_wholesale": 59,
-      "total_available": 55,
+      "total_available": 54,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-533-OW1140-53L-XS",
-          "available": 23
+          "available": 22
         },
         {
           "size": "S",
@@ -10782,12 +10832,12 @@
         {
           "size": "M",
           "sku": "S6-SW-382-BL000-36N-M",
-          "available": 8
+          "available": 7
         },
         {
           "size": "L",
           "sku": "S6-SW-382-BL000-36N-L",
-          "available": 0
+          "available": 1
         },
         {
           "size": "XL",

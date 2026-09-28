@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-27T14:58:49.668Z",
+  "generated_at": "2026-09-28T17:57:09.547Z",
   "offering": "offall",
   "offer": "INSEASON",
   "currency": "USD",
@@ -28,7 +28,7 @@
   },
   "note": "In-season Off Price + all online-published marked-down styles (non-core, >=10 Bogota+Warehouse). Dress $15 / Skirt $10 / Top $5.",
   "counts": {
-    "products": 144
+    "products": 146
   },
   "products": [
     {
@@ -570,7 +570,7 @@
       "compare_at": 138,
       "current_price": 99.99,
       "unit_cost": 27.85,
-      "total_available": 82,
+      "total_available": 81,
       "sizes": [
         {
           "size": "XXS",
@@ -585,7 +585,7 @@
         {
           "size": "S",
           "sku": "S5-DW-093-BL000-50S-S",
-          "available": 28
+          "available": 27
         },
         {
           "size": "M",
@@ -808,7 +808,7 @@
       "compare_at": 148,
       "current_price": 99.99,
       "unit_cost": 27.85,
-      "total_available": 65,
+      "total_available": 66,
       "sizes": [
         {
           "size": "XS",
@@ -823,7 +823,7 @@
         {
           "size": "M",
           "sku": "S6-DK-595-BK1129-54L-M",
-          "available": 13
+          "available": 14
         },
         {
           "size": "L",
@@ -854,7 +854,7 @@
       "compare_at": 128,
       "current_price": 49.99,
       "unit_cost": 27.85,
-      "total_available": 17,
+      "total_available": 16,
       "sizes": [
         {
           "size": "XS",
@@ -874,7 +874,7 @@
         {
           "size": "L",
           "sku": "S6-DK-595-BL856-54L-L",
-          "available": 5
+          "available": 4
         },
         {
           "size": "XL",
@@ -1759,7 +1759,7 @@
       "compare_at": 128,
       "current_price": 49.99,
       "unit_cost": 28.85,
-      "total_available": 124,
+      "total_available": 122,
       "sizes": [
         {
           "size": "XS",
@@ -1769,7 +1769,7 @@
         {
           "size": "S",
           "sku": "S6-DW-533-PL1054-53L-S",
-          "available": 41
+          "available": 40
         },
         {
           "size": "M",
@@ -1784,7 +1784,7 @@
         {
           "size": "XL",
           "sku": "S6-DW-533-PL1054-53L-XL",
-          "available": 11
+          "available": 10
         }
       ],
       "off_price": 15,
@@ -2128,7 +2128,7 @@
       "type": "Skirt",
       "class": null,
       "style_name": null,
-      "status": "DRAFT",
+      "status": "ACTIVE",
       "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/dakota-skirt-olive-green-skirt-yakira-bella-9878364.jpg?v=1755848445",
       "msrp": 88,
       "compare_at": 88,
@@ -2371,12 +2371,12 @@
       "compare_at": 98,
       "current_price": 34.99,
       "unit_cost": 24.5,
-      "total_available": 14,
+      "total_available": 15,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SW-441-PK712-36N-XS",
-          "available": 11
+          "available": 12
         },
         {
           "size": "S",
@@ -2461,12 +2461,12 @@
       "compare_at": 98,
       "current_price": 24.99,
       "unit_cost": 23.85,
-      "total_available": -1,
+      "total_available": 0,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-546-BG979-36N-XS",
-          "available": -1
+          "available": 0
         },
         {
           "size": "S",
@@ -2596,12 +2596,12 @@
       "compare_at": 98,
       "current_price": 14.99,
       "unit_cost": 23.85,
-      "total_available": 38,
+      "total_available": 37,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SW-546-BR694-36N-XS",
-          "available": 19
+          "available": 18
         },
         {
           "size": "S",
@@ -2732,7 +2732,7 @@
       "compare_at": 88,
       "current_price": 39.99,
       "unit_cost": 23.85,
-      "total_available": 11,
+      "total_available": 10,
       "sizes": [
         {
           "size": "XS",
@@ -2752,7 +2752,7 @@
         {
           "size": "L",
           "sku": "F5-SW-449-BL837-36N-L",
-          "available": 1
+          "available": 0
         },
         {
           "size": "XL",
@@ -2777,7 +2777,7 @@
       "compare_at": 78,
       "current_price": 34.99,
       "unit_cost": 23.85,
-      "total_available": 21,
+      "total_available": 18,
       "sizes": [
         {
           "size": "XS",
@@ -2787,7 +2787,7 @@
         {
           "size": "S",
           "sku": "S6-SW-477-GR840-35N-S",
-          "available": 12
+          "available": 9
         },
         {
           "size": "M",
@@ -3817,6 +3817,98 @@
       "off_price": 10
     },
     {
+      "product_id": "7307384258657",
+      "gid": "gid://shopify/Product/7307384258657",
+      "handle": "zena-skirt-blue-flower",
+      "title": "Zena Skirt 23\" (Blue Flower)",
+      "color": "Blue Flower",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": null,
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/zena-skirt-blue-flower-skirt-yakira-bella-696897.jpg?v=1748961781",
+      "msrp": 88,
+      "compare_at": 88,
+      "current_price": 34.99,
+      "unit_cost": 25.5,
+      "total_available": 12,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S5-SW-053-BL641-23N-XS",
+          "available": 1
+        },
+        {
+          "size": "S",
+          "sku": "S5-SW-053-BL641-23N-S",
+          "available": 2
+        },
+        {
+          "size": "M",
+          "sku": "S5-SW-053-BL641-23N-M",
+          "available": 4
+        },
+        {
+          "size": "L",
+          "sku": "S5-SW-053-BL641-23N-L",
+          "available": 1
+        },
+        {
+          "size": "XL",
+          "sku": "S5-SW-053-BL641-23N-XL",
+          "available": 4
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7492663705697",
+      "gid": "gid://shopify/Product/7492663705697",
+      "handle": "zena-skirt-23-mint-purple",
+      "title": "Zena Skirt 23\" (Mint/Purple)",
+      "color": "Mint/Purple",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Zena Skirt 23\"",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/zena-skirt-23-mintpurple-skirt-yakira-bella-3299978.jpg?v=1776299660",
+      "msrp": 88,
+      "compare_at": 88,
+      "current_price": 59.99,
+      "unit_cost": 26.5,
+      "total_available": 35,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-DW-053-PL1031-23N-XS",
+          "available": 8
+        },
+        {
+          "size": "S",
+          "sku": "S6-DW-053-PL1031-23N-S",
+          "available": 7
+        },
+        {
+          "size": "M",
+          "sku": "S6-DW-053-PL1031-23N-M",
+          "available": 8
+        },
+        {
+          "size": "L",
+          "sku": "S6-DW-053-PL1031-23N-L",
+          "available": 4
+        },
+        {
+          "size": "XL",
+          "sku": "S6-DW-053-PL1031-23N-XL",
+          "available": 8
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
       "product_id": "7274416963681",
       "gid": "gid://shopify/Product/7274416963681",
       "handle": "3-4-sleeve-knit-cardigan-fuchsia",
@@ -4048,7 +4140,7 @@
       "compare_at": 78,
       "current_price": 39.99,
       "unit_cost": 27.35,
-      "total_available": 51,
+      "total_available": 50,
       "sizes": [
         {
           "size": "XS",
@@ -4068,7 +4160,7 @@
         {
           "size": "L",
           "sku": "S6-TK-611-LP000-00L-L",
-          "available": 14
+          "available": 13
         },
         {
           "size": "XL",
@@ -4454,7 +4546,7 @@
       "compare_at": 88,
       "current_price": 24.99,
       "unit_cost": 27.25,
-      "total_available": 21,
+      "total_available": 20,
       "sizes": [
         {
           "size": "XS",
@@ -4474,7 +4566,7 @@
         {
           "size": "L",
           "sku": "F5-TK-291-GR000-00L-L",
-          "available": 4
+          "available": 3
         },
         {
           "size": "XL",
@@ -5552,7 +5644,7 @@
       "compare_at": 78,
       "current_price": 14.99,
       "unit_cost": 23.85,
-      "total_available": 18,
+      "total_available": 17,
       "sizes": [
         {
           "size": "XS",
@@ -5577,7 +5669,7 @@
         {
           "size": "XL",
           "sku": "S5-TK-508-BK000-00L-XL",
-          "available": 2
+          "available": 1
         }
       ],
       "off_price": 5,
@@ -5958,7 +6050,7 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 21.85,
-      "total_available": 70,
+      "total_available": 68,
       "sizes": [
         {
           "size": "XS",
@@ -5983,7 +6075,7 @@
         {
           "size": "XL",
           "sku": "F5-TK-586-BL000-00L-XL",
-          "available": 9
+          "available": 7
         }
       ],
       "off_price": 5
