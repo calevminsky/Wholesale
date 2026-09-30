@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-09-29T16:19:25.381Z",
+  "generated_at": "2026-09-30T16:14:42.184Z",
   "offering": "offall",
   "offer": "INSEASON",
   "currency": "USD",
@@ -28,7 +28,7 @@
   },
   "note": "In-season Off Price + all online-published marked-down styles (non-core, >=10 Bogota+Warehouse). Dress $15 / Skirt $10 / Top $5.",
   "counts": {
-    "products": 147
+    "products": 149
   },
   "products": [
     {
@@ -137,12 +137,12 @@
       "compare_at": 138,
       "current_price": 99.99,
       "unit_cost": 27.85,
-      "total_available": 10,
+      "total_available": 9,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-003-BL960-53S-XS",
-          "available": 6
+          "available": 5
         },
         {
           "size": "S",
@@ -2596,7 +2596,7 @@
       "compare_at": 98,
       "current_price": 14.99,
       "unit_cost": 23.85,
-      "total_available": 35,
+      "total_available": 34,
       "sizes": [
         {
           "size": "XS",
@@ -2616,7 +2616,7 @@
         {
           "size": "L",
           "sku": "F5-SW-546-BR694-36N-L",
-          "available": 2
+          "available": 1
         },
         {
           "size": "XL",
@@ -3150,17 +3150,17 @@
       "compare_at": 78,
       "current_price": 49.99,
       "unit_cost": 25.85,
-      "total_available": 70,
+      "total_available": 74,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-608-BL000-36N-XS",
-          "available": 23
+          "available": 24
         },
         {
           "size": "S",
           "sku": "S6-SW-608-BL000-36N-S",
-          "available": 22
+          "available": 24
         },
         {
           "size": "M",
@@ -3170,7 +3170,7 @@
         {
           "size": "L",
           "sku": "S6-SW-608-BL000-36N-L",
-          "available": 5
+          "available": 6
         },
         {
           "size": "XL",
@@ -3358,6 +3358,57 @@
           "size": "XL",
           "sku": "S6-SW-726-GR000-33N-XL",
           "available": 9
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7217716822113",
+      "gid": "gid://shopify/Product/7217716822113",
+      "handle": "masie-skirt-black",
+      "title": "Masie Skirt (Black)",
+      "color": "Black",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": null,
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/masie-skirt-black-skirt-yakira-bella-674900.jpg?v=1733412261",
+      "msrp": 88,
+      "compare_at": 88,
+      "current_price": 24.99,
+      "unit_cost": 26.85,
+      "total_available": 52,
+      "sizes": [
+        {
+          "size": "XXS",
+          "sku": "F4-SS-358-BK000-31N-XXS",
+          "available": 6
+        },
+        {
+          "size": "XS",
+          "sku": "F4-SS-358-BK000-31N-XS",
+          "available": 23
+        },
+        {
+          "size": "S",
+          "sku": "F4-SS-358-BK000-31N-S",
+          "available": 12
+        },
+        {
+          "size": "M",
+          "sku": "F4-SS-358-BK000-31N-M",
+          "available": 9
+        },
+        {
+          "size": "L",
+          "sku": "F4-SS-358-BK000-31N-L",
+          "available": 2
+        },
+        {
+          "size": "XL",
+          "sku": "F4-SS-358-BK000-31N-XL",
+          "available": 0
         }
       ],
       "off_price": 10,
@@ -3831,12 +3882,12 @@
       "compare_at": 88,
       "current_price": 34.99,
       "unit_cost": 25.5,
-      "total_available": 12,
+      "total_available": 11,
       "sizes": [
         {
           "size": "XS",
           "sku": "S5-SW-053-BL641-23N-XS",
-          "available": 1
+          "available": 0
         },
         {
           "size": "S",
@@ -4321,17 +4372,17 @@
       "compare_at": 58,
       "current_price": 9.99,
       "unit_cost": 15.54,
-      "total_available": 17,
+      "total_available": 34,
       "sizes": [
         {
           "size": "XS",
           "sku": "F4-TS-254-BK000-00L-XS",
-          "available": 16
+          "available": 31
         },
         {
           "size": "S",
           "sku": "F4-TS-254-BK000-00L-S",
-          "available": 0
+          "available": 2
         },
         {
           "size": "M",
@@ -4591,22 +4642,22 @@
       "compare_at": 88,
       "current_price": 24.99,
       "unit_cost": 27.85,
-      "total_available": 7,
+      "total_available": 9,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-TK-563-BK000-00L-XS",
-          "available": 7
+          "available": 6
         },
         {
           "size": "S",
           "sku": "F5-TK-563-BK000-00L-S",
-          "available": 0
+          "available": 1
         },
         {
           "size": "M",
           "sku": "F5-TK-563-BK000-00L-M",
-          "available": 0
+          "available": 1
         },
         {
           "size": "L",
@@ -4616,10 +4667,56 @@
         {
           "size": "XL",
           "sku": "F5-TK-563-BK000-00L-XL",
-          "available": 0
+          "available": 1
         }
       ],
       "off_price": 5
+    },
+    {
+      "product_id": "7276370362465",
+      "gid": "gid://shopify/Product/7276370362465",
+      "handle": "daria-top-white",
+      "title": "Daria Top (White)",
+      "color": "White",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": null,
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/daria-top-white-top-yakira-bella-137377.jpg?v=1743107737",
+      "msrp": 78,
+      "compare_at": 78,
+      "current_price": 19.99,
+      "unit_cost": 29.85,
+      "total_available": 11,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S5-TW-410-WH000-00Q-XS",
+          "available": 0
+        },
+        {
+          "size": "S",
+          "sku": "S5-TW-410-WH000-00Q-S",
+          "available": 1
+        },
+        {
+          "size": "M",
+          "sku": "S5-TW-410-WH000-00Q-M",
+          "available": 10
+        },
+        {
+          "size": "L",
+          "sku": "S5-TW-410-WH000-00Q-L",
+          "available": 0
+        },
+        {
+          "size": "XL",
+          "sku": "S5-TW-410-BK000-00Q-XL",
+          "available": 0
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
     },
     {
       "product_id": "7372194873441",
@@ -4726,12 +4823,12 @@
       "compare_at": 88,
       "current_price": 14.99,
       "unit_cost": 27,
-      "total_available": 10,
+      "total_available": 9,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-TS-579-WH000-00L-XS",
-          "available": 10
+          "available": 9
         },
         {
           "size": "S",
@@ -4816,7 +4913,7 @@
       "compare_at": 48,
       "current_price": 9.99,
       "unit_cost": 11.47,
-      "total_available": 0,
+      "total_available": 1,
       "sizes": [
         {
           "size": "S",
@@ -4831,7 +4928,7 @@
         {
           "size": "L",
           "sku": "F5-TK-582-BR000-00L-L",
-          "available": 0
+          "available": 1
         }
       ],
       "off_price": 5
@@ -4886,7 +4983,7 @@
       "compare_at": 48,
       "current_price": 19.99,
       "unit_cost": 11.47,
-      "total_available": 15,
+      "total_available": 16,
       "sizes": [
         {
           "size": "S",
@@ -4896,7 +4993,7 @@
         {
           "size": "M",
           "sku": "F5-TK-582-GR000-00L-M",
-          "available": 0
+          "available": 1
         },
         {
           "size": "L",
@@ -6096,12 +6193,12 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 21.85,
-      "total_available": 68,
+      "total_available": 67,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-TK-586-BL000-00L-XS",
-          "available": 20
+          "available": 19
         },
         {
           "size": "S",
