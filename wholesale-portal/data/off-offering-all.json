@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-01T16:52:14.831Z",
+  "generated_at": "2026-10-02T16:05:12.195Z",
   "offering": "offall",
   "offer": "INSEASON",
   "currency": "USD",
@@ -28,9 +28,55 @@
   },
   "note": "In-season Off Price + all online-published marked-down styles (non-core, >=10 Bogota+Warehouse). Dress $15 / Skirt $10 / Top $5.",
   "counts": {
-    "products": 149
+    "products": 178
   },
   "products": [
+    {
+      "product_id": "7621803868257",
+      "gid": "gid://shopify/Product/7621803868257",
+      "handle": "alia-dress-burgudy-multi",
+      "title": "Alia Dress (Burgundy Multi)",
+      "color": "Burgundy Multi",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": "Alia Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alia-dress-burgundy-multi-dress-yakira-bella-8825185.jpg?v=1786144093",
+      "msrp": 118,
+      "compare_at": 118,
+      "current_price": 76.99,
+      "unit_cost": 27.85,
+      "total_available": 48,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03131-53-XS",
+          "available": 14
+        },
+        {
+          "size": "S",
+          "sku": "03131-53-S",
+          "available": 12
+        },
+        {
+          "size": "M",
+          "sku": "03131-53-M",
+          "available": 8
+        },
+        {
+          "size": "L",
+          "sku": "03131-53-L",
+          "available": 7
+        },
+        {
+          "size": "XL",
+          "sku": "03131-53-XL",
+          "available": 7
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
+    },
     {
       "product_id": "7518541119585",
       "gid": "gid://shopify/Product/7518541119585",
@@ -46,7 +92,7 @@
       "compare_at": 118,
       "current_price": 79.99,
       "unit_cost": 27.85,
-      "total_available": 39,
+      "total_available": 38,
       "sizes": [
         {
           "size": "XS",
@@ -66,12 +112,58 @@
         {
           "size": "L",
           "sku": "S6-DK-623-BL1128-53L-L",
-          "available": 1
+          "available": 0
         },
         {
           "size": "XL",
           "sku": "S6-DK-623-BL1128-53L-XL",
           "available": 5
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7621803376737",
+      "gid": "gid://shopify/Product/7621803376737",
+      "handle": "alia-dress-rose-pink",
+      "title": "Alia Dress (Rose Pink)",
+      "color": "Rose Pink",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": "Alia Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/alia-dress-rose-pink-dress-yakira-bella-6046569.jpg?v=1786144092",
+      "msrp": 118,
+      "compare_at": 118,
+      "current_price": 76.99,
+      "unit_cost": 27.85,
+      "total_available": 61,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03205-53-XS",
+          "available": 17
+        },
+        {
+          "size": "S",
+          "sku": "03205-53-S",
+          "available": 18
+        },
+        {
+          "size": "M",
+          "sku": "03205-53-M",
+          "available": 15
+        },
+        {
+          "size": "L",
+          "sku": "03205-53-L",
+          "available": 5
+        },
+        {
+          "size": "XL",
+          "sku": "03205-53-XL",
+          "available": 6
         }
       ],
       "off_price": 15,
@@ -137,7 +229,7 @@
       "compare_at": 138,
       "current_price": 99.99,
       "unit_cost": 27.85,
-      "total_available": 10,
+      "total_available": 9,
       "sizes": [
         {
           "size": "XS",
@@ -147,7 +239,7 @@
         {
           "size": "S",
           "sku": "S6-DW-003-BL960-53S-S",
-          "available": 6
+          "available": 5
         },
         {
           "size": "M",
@@ -259,6 +351,52 @@
       "list_wholesale": null
     },
     {
+      "product_id": "7610325991521",
+      "gid": "gid://shopify/Product/7610325991521",
+      "handle": "amari-dress-rose-pink",
+      "title": "Amari Dress (Rose Pink)",
+      "color": "Rose Pink",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Amari Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/amari-dress-rose-pink-dress-yakira-bella-7845120.jpg?v=1786144098",
+      "msrp": 108,
+      "compare_at": 108,
+      "current_price": 69.99,
+      "unit_cost": 25.5,
+      "total_available": 52,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03017-54-XS",
+          "available": 17
+        },
+        {
+          "size": "S",
+          "sku": "03017-54-S",
+          "available": 16
+        },
+        {
+          "size": "M",
+          "sku": "03017-54-M",
+          "available": 11
+        },
+        {
+          "size": "L",
+          "sku": "03017-54-L",
+          "available": 3
+        },
+        {
+          "size": "XL",
+          "sku": "03017-54-XL",
+          "available": 5
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
+    },
+    {
       "product_id": "7481436504161",
       "gid": "gid://shopify/Product/7481436504161",
       "handle": "audrey-dress-long-sleeve-light-blue-pattern",
@@ -328,7 +466,7 @@
         {
           "size": "XS",
           "sku": "S6-DW-093-BL1096-502Q-XS",
-          "available": 25
+          "available": 24
         },
         {
           "size": "S",
@@ -343,7 +481,7 @@
         {
           "size": "L",
           "sku": "S6-DW-093-BL1096-502Q-L",
-          "available": 12
+          "available": 13
         },
         {
           "size": "XL",
@@ -570,7 +708,7 @@
       "compare_at": 138,
       "current_price": 99.99,
       "unit_cost": 27.85,
-      "total_available": 81,
+      "total_available": 80,
       "sizes": [
         {
           "size": "XXS",
@@ -600,7 +738,7 @@
         {
           "size": "XL",
           "sku": "S5-DW-093-BL000-50S-XL",
-          "available": 10
+          "available": 9
         }
       ],
       "off_price": 15,
@@ -703,6 +841,52 @@
       "off_price": 15
     },
     {
+      "product_id": "7639898259553",
+      "gid": "gid://shopify/Product/7639898259553",
+      "handle": "brandy-dress-navy",
+      "title": "Brandy Dress (Navy)",
+      "color": "Navy",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Brandy Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/brandy-dress-navy-dress-yakira-bella-6887576.jpg?v=1787897294",
+      "msrp": 128,
+      "compare_at": 128,
+      "current_price": 89.99,
+      "unit_cost": 27.85,
+      "total_available": 101,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03137-53-XS",
+          "available": 31
+        },
+        {
+          "size": "S",
+          "sku": "03137-53-S",
+          "available": 32
+        },
+        {
+          "size": "M",
+          "sku": "03137-53-M",
+          "available": 23
+        },
+        {
+          "size": "L",
+          "sku": "03137-53-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "03137-53-XL",
+          "available": 9
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
+    },
+    {
       "product_id": "7492661968993",
       "gid": "gid://shopify/Product/7492661968993",
       "handle": "gianna-dress-blue-stripe",
@@ -762,32 +946,32 @@
       "compare_at": 108,
       "current_price": 69.99,
       "unit_cost": 28.85,
-      "total_available": 37,
+      "total_available": 25,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-749-PK000-55L-XS",
-          "available": 19
+          "available": 14
         },
         {
           "size": "S",
           "sku": "S6-DW-749-PK000-55L-S",
-          "available": 9
+          "available": 7
         },
         {
           "size": "M",
           "sku": "S6-DW-749-PK000-55L-M",
-          "available": 3
+          "available": 1
         },
         {
           "size": "L",
           "sku": "S6-DW-749-PK000-55L-L",
-          "available": 5
+          "available": 3
         },
         {
           "size": "XL",
           "sku": "S6-DW-749-PK000-55L-XL",
-          "available": 1
+          "available": 0
         }
       ],
       "off_price": 15,
@@ -854,7 +1038,7 @@
       "compare_at": 128,
       "current_price": 49.99,
       "unit_cost": 27.85,
-      "total_available": 16,
+      "total_available": 15,
       "sizes": [
         {
           "size": "XS",
@@ -874,7 +1058,7 @@
         {
           "size": "L",
           "sku": "S6-DK-595-BL856-54L-L",
-          "available": 4
+          "available": 3
         },
         {
           "size": "XL",
@@ -883,6 +1067,144 @@
         }
       ],
       "off_price": 15
+    },
+    {
+      "product_id": "7638936518753",
+      "gid": "gid://shopify/Product/7638936518753",
+      "handle": "juliana-dress-purple-ground",
+      "title": "Juliana Dress (Purple Ground)",
+      "color": "Purple Ground",
+      "type": "Dress",
+      "class": "Banger",
+      "style_name": "Juliana Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/juliana-dress-purple-ground-dress-yakira-bella-8255505.jpg?v=1787137691",
+      "msrp": 128,
+      "compare_at": 128,
+      "current_price": 89.99,
+      "unit_cost": 27.85,
+      "total_available": 59,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03093-54-XS",
+          "available": 20
+        },
+        {
+          "size": "S",
+          "sku": "03093-54-S",
+          "available": 17
+        },
+        {
+          "size": "M",
+          "sku": "03093-54-M",
+          "available": 11
+        },
+        {
+          "size": "L",
+          "sku": "03093-54-L",
+          "available": 5
+        },
+        {
+          "size": "XL",
+          "sku": "03093-54-XL",
+          "available": 6
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7621744722017",
+      "gid": "gid://shopify/Product/7621744722017",
+      "handle": "kiera-dress-brown-plaid",
+      "title": "Kiera Dress (Brown Plaid)",
+      "color": "Brown Plaid",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Kiera Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kiera-dress-brown-plaid-dress-yakira-bella-6967611.jpg?v=1786392071",
+      "msrp": 128,
+      "compare_at": 128,
+      "current_price": 89.99,
+      "unit_cost": 25.37,
+      "total_available": 93,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03036-XS",
+          "available": 29
+        },
+        {
+          "size": "S",
+          "sku": "03036-S",
+          "available": 29
+        },
+        {
+          "size": "M",
+          "sku": "03036-M",
+          "available": 18
+        },
+        {
+          "size": "L",
+          "sku": "03036-L",
+          "available": 9
+        },
+        {
+          "size": "XL",
+          "sku": "03036-XL",
+          "available": 8
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7572646166625",
+      "gid": "gid://shopify/Product/7572646166625",
+      "handle": "lennon-dress-pink",
+      "title": "Lennon Dress (Pink)",
+      "color": "Pink",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Lennon Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lennon-dress-pink-dress-yakira-bella-8432041.jpg?v=1786144103",
+      "msrp": 118,
+      "compare_at": 118,
+      "current_price": 76.99,
+      "unit_cost": 28.85,
+      "total_available": 68,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-DW-779-PK1123-53L-XS",
+          "available": 23
+        },
+        {
+          "size": "S",
+          "sku": "S6-DW-779-PK1123-53L-S",
+          "available": 23
+        },
+        {
+          "size": "M",
+          "sku": "S6-DW-779-PK1123-53L-M",
+          "available": 14
+        },
+        {
+          "size": "L",
+          "sku": "S6-DW-779-PK1123-53L-L",
+          "available": 4
+        },
+        {
+          "size": "XL",
+          "sku": "S6-DW-779-PK1123-53L-XL",
+          "available": 4
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
     },
     {
       "product_id": "7483449933921",
@@ -1261,12 +1583,12 @@
       "compare_at": 148,
       "current_price": 99.99,
       "unit_cost": 27.35,
-      "total_available": 69,
+      "total_available": 70,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DK-593-BK945-54L-XS",
-          "available": 20
+          "available": 21
         },
         {
           "size": "S",
@@ -1475,6 +1797,98 @@
       "list_wholesale": null
     },
     {
+      "product_id": "7623102693473",
+      "gid": "gid://shopify/Product/7623102693473",
+      "handle": "regina-dress-burgundy",
+      "title": "Regina Dress (Burgundy)",
+      "color": "Burgundy",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Regina Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/regina-dress-burgundy-dress-yakira-bella-6907019.jpg?v=1786557977",
+      "msrp": 108,
+      "compare_at": 108,
+      "current_price": 69.99,
+      "unit_cost": 24.35,
+      "total_available": 92,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03129-54-XS",
+          "available": 26
+        },
+        {
+          "size": "S",
+          "sku": "03129-54-S",
+          "available": 30
+        },
+        {
+          "size": "M",
+          "sku": "03129-54-M",
+          "available": 17
+        },
+        {
+          "size": "L",
+          "sku": "03129-54-L",
+          "available": 8
+        },
+        {
+          "size": "XL",
+          "sku": "03129-54-XL",
+          "available": 11
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7623102857313",
+      "gid": "gid://shopify/Product/7623102857313",
+      "handle": "regina-dress-navy",
+      "title": "Regina Dress (Navy)",
+      "color": "Navy",
+      "type": "Dress",
+      "class": "Fashion",
+      "style_name": "Regina Dress",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/regina-dress-navy-dress-yakira-bella-3528649.jpg?v=1786557977",
+      "msrp": 108,
+      "compare_at": 108,
+      "current_price": 69.99,
+      "unit_cost": 24.35,
+      "total_available": 89,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03140-54-XS",
+          "available": 26
+        },
+        {
+          "size": "S",
+          "sku": "03140-54-S",
+          "available": 31
+        },
+        {
+          "size": "M",
+          "sku": "03140-54-M",
+          "available": 15
+        },
+        {
+          "size": "L",
+          "sku": "03140-54-L",
+          "available": 8
+        },
+        {
+          "size": "XL",
+          "sku": "03140-54-XL",
+          "available": 9
+        }
+      ],
+      "off_price": 15,
+      "list_wholesale": null
+    },
+    {
       "product_id": "7245760168033",
       "gid": "gid://shopify/Product/7245760168033",
       "handle": "reyna-dress-black",
@@ -1534,7 +1948,7 @@
       "compare_at": 138,
       "current_price": 49.99,
       "unit_cost": 28.85,
-      "total_available": 58,
+      "total_available": 57,
       "sizes": [
         {
           "size": "XS",
@@ -1544,7 +1958,7 @@
         {
           "size": "S",
           "sku": "S6-DW-304-BL1055-53S-S",
-          "available": 13
+          "available": 12
         },
         {
           "size": "M",
@@ -1759,7 +2173,7 @@
       "compare_at": 128,
       "current_price": 49.99,
       "unit_cost": 28.85,
-      "total_available": 120,
+      "total_available": 118,
       "sizes": [
         {
           "size": "XS",
@@ -1774,12 +2188,12 @@
         {
           "size": "M",
           "sku": "S6-DW-533-PL1054-53L-M",
-          "available": 21
+          "available": 20
         },
         {
           "size": "L",
           "sku": "S6-DW-533-PL1054-53L-L",
-          "available": 11
+          "available": 10
         },
         {
           "size": "XL",
@@ -1883,6 +2297,190 @@
       "list_wholesale": null
     },
     {
+      "product_id": "7630055276641",
+      "gid": "gid://shopify/Product/7630055276641",
+      "handle": "ania-skirt-burgundy",
+      "title": "Ania Skirt (Burgundy)",
+      "color": "Burgundy",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Ania Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/ania-skirt-burgundy-skirt-yakira-bella-7335144.jpg?v=1787054771",
+      "msrp": 68,
+      "compare_at": 68,
+      "current_price": 47.99,
+      "unit_cost": 15.8,
+      "total_available": 81,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03119-36-XS",
+          "available": 23
+        },
+        {
+          "size": "S",
+          "sku": "03119-36-S",
+          "available": 26
+        },
+        {
+          "size": "M",
+          "sku": "03119-36-M",
+          "available": 17
+        },
+        {
+          "size": "L",
+          "sku": "03119-36-L",
+          "available": 7
+        },
+        {
+          "size": "XL",
+          "sku": "03119-36-XL",
+          "available": 8
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7633591795809",
+      "gid": "gid://shopify/Product/7633591795809",
+      "handle": "arden-skirt-black-1",
+      "title": "Arden Skirt (Black)",
+      "color": "Black",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Arden Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/2-1.jpg?v=1788198982",
+      "msrp": 98,
+      "compare_at": 98,
+      "current_price": 68.99,
+      "unit_cost": 24.95,
+      "total_available": 73,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03335-41-XS",
+          "available": 23
+        },
+        {
+          "size": "S",
+          "sku": "03335-41-S",
+          "available": 22
+        },
+        {
+          "size": "M",
+          "sku": "03335-41-M",
+          "available": 14
+        },
+        {
+          "size": "L",
+          "sku": "03335-41-L",
+          "available": 7
+        },
+        {
+          "size": "XL",
+          "sku": "03335-41-XL",
+          "available": 7
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7593298591841",
+      "gid": "gid://shopify/Product/7593298591841",
+      "handle": "brenna-skirt-black",
+      "title": "Brenna Skirt (Black)",
+      "color": "Black",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Brenna Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/brenna-skirt-black-skirt-yakira-bella-3274922.jpg?v=1786144108",
+      "msrp": 78,
+      "compare_at": 78,
+      "current_price": 54.99,
+      "unit_cost": 16,
+      "total_available": 109,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03016-36-XS",
+          "available": 37
+        },
+        {
+          "size": "S",
+          "sku": "03016-36-S",
+          "available": 35
+        },
+        {
+          "size": "M",
+          "sku": "03016-36-M",
+          "available": 22
+        },
+        {
+          "size": "L",
+          "sku": "03016-36-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "03016-36-XL",
+          "available": 9
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7627189682273",
+      "gid": "gid://shopify/Product/7627189682273",
+      "handle": "bria-skirt-burgundy-pattern",
+      "title": "Bria Skirt (Burgundy Pattern)",
+      "color": "Burgundy Pattern",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": "Bria Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/bria-skirt-burgundy-pattern-skirt-yakira-bella-9110221.jpg?v=1786723288",
+      "msrp": 88,
+      "compare_at": 88,
+      "current_price": 56.99,
+      "unit_cost": 21.85,
+      "total_available": 93,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03133-36-XS",
+          "available": 28
+        },
+        {
+          "size": "S",
+          "sku": "03133-36-S",
+          "available": 30
+        },
+        {
+          "size": "M",
+          "sku": "03133-36-M",
+          "available": 20
+        },
+        {
+          "size": "L",
+          "sku": "03133-36-L",
+          "available": 8
+        },
+        {
+          "size": "XL",
+          "sku": "03133-36-XL",
+          "available": 7
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
       "product_id": "7453224730721",
       "gid": "gid://shopify/Product/7453224730721",
       "handle": "bria-skirt-coral-pink",
@@ -1923,6 +2521,52 @@
           "size": "XL",
           "sku": "S6-SW-426-PK000-36N-XL",
           "available": 1
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7581348397153",
+      "gid": "gid://shopify/Product/7581348397153",
+      "handle": "bria-skirt-navy-brown",
+      "title": "Bria Skirt (Navy Brown)",
+      "color": "Navy Brown",
+      "type": "Skirt",
+      "class": "Banger",
+      "style_name": "Bria Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/bria-skirt-navy-brown-skirt-yakira-bella-9448843.jpg?v=1787054780",
+      "msrp": 78,
+      "compare_at": 78,
+      "current_price": 54.99,
+      "unit_cost": 26.85,
+      "total_available": 176,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-SW-426-BL1142-36N-XS",
+          "available": 60
+        },
+        {
+          "size": "S",
+          "sku": "S6-SW-426-BL1142-36N-S",
+          "available": 60
+        },
+        {
+          "size": "M",
+          "sku": "S6-SW-426-BL1142-36N-M",
+          "available": 34
+        },
+        {
+          "size": "L",
+          "sku": "S6-SW-426-BL1142-36N-L",
+          "available": 13
+        },
+        {
+          "size": "XL",
+          "sku": "S6-SW-426-BL1142-36N-XL",
+          "available": 9
         }
       ],
       "off_price": 10,
@@ -2305,6 +2949,190 @@
         {
           "size": "XL",
           "sku": "S6-SW-614-BL903-36N-XL",
+          "available": 2
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7634596462689",
+      "gid": "gid://shopify/Product/7634596462689",
+      "handle": "frieda-skirt-khaki",
+      "title": "Frieda Skirt (Khaki)",
+      "color": "Khaki",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Frieda Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/frieda-skirt-khaki-skirt-yakira-bella-2368790.jpg?v=1786723286",
+      "msrp": 88,
+      "compare_at": 88,
+      "current_price": 56.99,
+      "unit_cost": 24.85,
+      "total_available": 63,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03108-XS",
+          "available": 18
+        },
+        {
+          "size": "S",
+          "sku": "03108-S",
+          "available": 21
+        },
+        {
+          "size": "M",
+          "sku": "03108-M",
+          "available": 10
+        },
+        {
+          "size": "L",
+          "sku": "03108-L",
+          "available": 8
+        },
+        {
+          "size": "XL",
+          "sku": "03108-XL",
+          "available": 6
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7630075232353",
+      "gid": "gid://shopify/Product/7630075232353",
+      "handle": "glenda-skirt-black",
+      "title": "Glenda Skirt (Black)",
+      "color": "Black",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Glenda Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/glenda-skirt-black-skirt-yakira-bella-4920180.jpg?v=1787054722",
+      "msrp": 88,
+      "compare_at": 88,
+      "current_price": 56.99,
+      "unit_cost": 16.8,
+      "total_available": 71,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03121-36-XS",
+          "available": 23
+        },
+        {
+          "size": "S",
+          "sku": "03121-36-S",
+          "available": 24
+        },
+        {
+          "size": "M",
+          "sku": "03121-36-M",
+          "available": 14
+        },
+        {
+          "size": "L",
+          "sku": "03121-36-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "03121-36-XL",
+          "available": 4
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7618353266785",
+      "gid": "gid://shopify/Product/7618353266785",
+      "handle": "hera-skirt-grey",
+      "title": "Hera Skirt (Grey)",
+      "color": "Grey",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Hera Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/hera-skirt-grey-skirt-yakira-bella-5372946.jpg?v=1786144093",
+      "msrp": 68,
+      "compare_at": 68,
+      "current_price": 47.99,
+      "unit_cost": 20.85,
+      "total_available": 59,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03077-XS",
+          "available": 18
+        },
+        {
+          "size": "S",
+          "sku": "03077-S",
+          "available": 12
+        },
+        {
+          "size": "M",
+          "sku": "03077-M",
+          "available": 15
+        },
+        {
+          "size": "L",
+          "sku": "03077-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "03077-XL",
+          "available": 8
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7492661772385",
+      "gid": "gid://shopify/Product/7492661772385",
+      "handle": "iris-skirt-blue",
+      "title": "Iris Skirt (Blue)",
+      "color": "Blue",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Iris Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/iris-skirt-blue-skirt-yakira-bella-4312867.jpg?v=1775802253",
+      "msrp": 68,
+      "compare_at": 68,
+      "current_price": 47.99,
+      "unit_cost": 25.85,
+      "total_available": 114,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-SK-685-BL000-35N-XS",
+          "available": 42
+        },
+        {
+          "size": "S",
+          "sku": "S6-SK-685-BL000-35N-S",
+          "available": 36
+        },
+        {
+          "size": "M",
+          "sku": "S6-SK-685-BL000-35N-M",
+          "available": 22
+        },
+        {
+          "size": "L",
+          "sku": "S6-SK-685-BL000-35N-L",
+          "available": 12
+        },
+        {
+          "size": "XL",
+          "sku": "S6-SK-685-BL000-35N-XL",
           "available": 2
         }
       ],
@@ -2868,12 +3696,12 @@
       "compare_at": 88,
       "current_price": 59.99,
       "unit_cost": 21.85,
-      "total_available": 27,
+      "total_available": 26,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-SW-539-BL943-36N-XS",
-          "available": 23
+          "available": 22
         },
         {
           "size": "S",
@@ -3610,7 +4438,7 @@
       "compare_at": 68,
       "current_price": 39.99,
       "unit_cost": 22.85,
-      "total_available": 62,
+      "total_available": 61,
       "sizes": [
         {
           "size": "XS",
@@ -3620,7 +4448,7 @@
         {
           "size": "S",
           "sku": "S6-SW-746-BL000-36N-S",
-          "available": 21
+          "available": 20
         },
         {
           "size": "M",
@@ -3635,6 +4463,52 @@
         {
           "size": "XL",
           "sku": "S6-SW-746-BL000-36N-XL",
+          "available": 4
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7612683845729",
+      "gid": "gid://shopify/Product/7612683845729",
+      "handle": "sari-skirt-light-pink",
+      "title": "Sari Skirt (Light Pink)",
+      "color": "Light Pink",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Sari Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/sari-skirt-light-pink-skirt-yakira-bella-3116090.jpg?v=1787054777",
+      "msrp": 78,
+      "compare_at": 78,
+      "current_price": 54.99,
+      "unit_cost": 23.85,
+      "total_available": 61,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03060-XS",
+          "available": 19
+        },
+        {
+          "size": "S",
+          "sku": "03060-S",
+          "available": 21
+        },
+        {
+          "size": "M",
+          "sku": "03060-M",
+          "available": 12
+        },
+        {
+          "size": "L",
+          "sku": "03060-L",
+          "available": 5
+        },
+        {
+          "size": "XL",
+          "sku": "03060-XL",
           "available": 4
         }
       ],
@@ -3747,17 +4621,17 @@
       "compare_at": 98,
       "current_price": 24.99,
       "unit_cost": 21.95,
-      "total_available": 31,
+      "total_available": 28,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SW-103-BR726-36N-XS",
-          "available": 13
+          "available": 12
         },
         {
           "size": "S",
           "sku": "F5-SW-103-BR726-36N-S",
-          "available": 10
+          "available": 9
         },
         {
           "size": "M",
@@ -3767,7 +4641,7 @@
         {
           "size": "L",
           "sku": "F5-SW-103-BR726-36N-L",
-          "available": 2
+          "available": 1
         },
         {
           "size": "XL",
@@ -3866,6 +4740,52 @@
         }
       ],
       "off_price": 10
+    },
+    {
+      "product_id": "7621793087585",
+      "gid": "gid://shopify/Product/7621793087585",
+      "handle": "trina-skirt-camel",
+      "title": "Trina Skirt (Camel)",
+      "color": "Camel",
+      "type": "Skirt",
+      "class": "Fashion",
+      "style_name": "Trina Skirt",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/trina-skirt-camel-skirt-yakira-bella-6341993.jpg?v=1787979851",
+      "msrp": 98,
+      "compare_at": 98,
+      "current_price": 68.99,
+      "unit_cost": 30.48,
+      "total_available": 127,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03024-XS",
+          "available": 42
+        },
+        {
+          "size": "S",
+          "sku": "03024-S",
+          "available": 42
+        },
+        {
+          "size": "M",
+          "sku": "03024-M",
+          "available": 21
+        },
+        {
+          "size": "L",
+          "sku": "03024-L",
+          "available": 11
+        },
+        {
+          "size": "XL",
+          "sku": "03024-XL",
+          "available": 11
+        }
+      ],
+      "off_price": 10,
+      "list_wholesale": null
     },
     {
       "product_id": "7307384258657",
@@ -3974,7 +4894,7 @@
       "compare_at": 42,
       "current_price": 19.99,
       "unit_cost": 7.5,
-      "total_available": 23,
+      "total_available": 22,
       "sizes": [
         {
           "size": "S",
@@ -3994,7 +4914,7 @@
         {
           "size": "XL",
           "sku": "S5-TK-522-PK000-00Q-XL",
-          "available": 14
+          "available": 13
         }
       ],
       "off_price": 5,
@@ -4175,6 +5095,52 @@
         }
       ],
       "off_price": 5
+    },
+    {
+      "product_id": "7639897112673",
+      "gid": "gid://shopify/Product/7639897112673",
+      "handle": "ardis-top-brown",
+      "title": "Ardis Top (Brown)",
+      "color": "Brown",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Ardis Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/ardis-top-brown-top-yakira-bella-5277245.jpg?v=1788227831",
+      "msrp": 78,
+      "compare_at": 78,
+      "current_price": 54.99,
+      "unit_cost": 21.85,
+      "total_available": 79,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03258-XS",
+          "available": 22
+        },
+        {
+          "size": "S",
+          "sku": "03258-S",
+          "available": 23
+        },
+        {
+          "size": "M",
+          "sku": "03258-M",
+          "available": 16
+        },
+        {
+          "size": "L",
+          "sku": "03258-L",
+          "available": 9
+        },
+        {
+          "size": "XL",
+          "sku": "03258-XL",
+          "available": 9
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
     },
     {
       "product_id": "7452909207649",
@@ -5546,6 +6512,52 @@
       "off_price": 5
     },
     {
+      "product_id": "7630073921633",
+      "gid": "gid://shopify/Product/7630073921633",
+      "handle": "glenda-top-black",
+      "title": "Glenda Top (Black)",
+      "color": "Black",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Glenda Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/glenda-top-black-top-yakira-bella-4715044.jpg?v=1787054723",
+      "msrp": 88,
+      "compare_at": 88,
+      "current_price": 56.99,
+      "unit_cost": 19.9,
+      "total_available": 72,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03114-XS",
+          "available": 22
+        },
+        {
+          "size": "S",
+          "sku": "03114-S",
+          "available": 20
+        },
+        {
+          "size": "M",
+          "sku": "03114-M",
+          "available": 19
+        },
+        {
+          "size": "L",
+          "sku": "03114-L",
+          "available": 8
+        },
+        {
+          "size": "XL",
+          "sku": "03114-XL",
+          "available": 3
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
+    },
+    {
       "product_id": "7121865637985",
       "gid": "gid://shopify/Product/7121865637985",
       "handle": "jess-top-black",
@@ -5682,6 +6694,144 @@
       "list_wholesale": null
     },
     {
+      "product_id": "7593291939937",
+      "gid": "gid://shopify/Product/7593291939937",
+      "handle": "kate-top-brown",
+      "title": "Kate Top (Brown)",
+      "color": "Brown",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Kate Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kate-top-brown-top-yakira-bella-8001904.jpg?v=1786144103",
+      "msrp": 54,
+      "compare_at": 54,
+      "current_price": 34.99,
+      "unit_cost": 17,
+      "total_available": 46,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03042-XS",
+          "available": 14
+        },
+        {
+          "size": "S",
+          "sku": "03042-S",
+          "available": 14
+        },
+        {
+          "size": "M",
+          "sku": "03042-M",
+          "available": 7
+        },
+        {
+          "size": "L",
+          "sku": "03042-L",
+          "available": 5
+        },
+        {
+          "size": "XL",
+          "sku": "03042-XL",
+          "available": 6
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7593291808865",
+      "gid": "gid://shopify/Product/7593291808865",
+      "handle": "kate-top-light-mocha",
+      "title": "Kate Top (Light Mocha)",
+      "color": "Light Mocha",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Kate Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/kate-top-light-mocha-top-yakira-bella-3691624.jpg?v=1787054776",
+      "msrp": 54,
+      "compare_at": 54,
+      "current_price": 34.99,
+      "unit_cost": 17,
+      "total_available": 51,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03041-XS",
+          "available": 16
+        },
+        {
+          "size": "S",
+          "sku": "03041-S",
+          "available": 13
+        },
+        {
+          "size": "M",
+          "sku": "03041-M",
+          "available": 12
+        },
+        {
+          "size": "L",
+          "sku": "03041-L",
+          "available": 5
+        },
+        {
+          "size": "XL",
+          "sku": "03041-XL",
+          "available": 5
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7644017098849",
+      "gid": "gid://shopify/Product/7644017098849",
+      "handle": "komi-top-burgundy",
+      "title": "Komi Top (Burgundy)",
+      "color": "Burgundy",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "KOMI TOP",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/komi-top-burgundy-top-yakira-bella-3567378.jpg?v=1788227832",
+      "msrp": 78,
+      "compare_at": 78,
+      "current_price": 54.99,
+      "unit_cost": 27.85,
+      "total_available": 68,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03331-XS",
+          "available": 22
+        },
+        {
+          "size": "S",
+          "sku": "03331-S",
+          "available": 22
+        },
+        {
+          "size": "M",
+          "sku": "03331-M",
+          "available": 13
+        },
+        {
+          "size": "L",
+          "sku": "03331-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "03331-XL",
+          "available": 5
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
+    },
+    {
       "product_id": "7466718462049",
       "gid": "gid://shopify/Product/7466718462049",
       "handle": "kora-top-blue",
@@ -5767,6 +6917,52 @@
           "size": "XL",
           "sku": "S5-TK-508-BK000-00L-XL",
           "available": 1
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7492660330593",
+      "gid": "gid://shopify/Product/7492660330593",
+      "handle": "lumi-top-navy",
+      "title": "Lumi Top (Navy)",
+      "color": "Navy",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Lumi Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/lumi-top-navy-top-yakira-bella-1870481.jpg?v=1773404537",
+      "msrp": 54,
+      "compare_at": 54,
+      "current_price": 34.99,
+      "unit_cost": 17.25,
+      "total_available": 150,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-TK-675-BL000-00L-XS",
+          "available": 48
+        },
+        {
+          "size": "S",
+          "sku": "S6-TK-675-BL000-00L-S",
+          "available": 45
+        },
+        {
+          "size": "M",
+          "sku": "S6-TK-675-BL000-00L-M",
+          "available": 30
+        },
+        {
+          "size": "L",
+          "sku": "S6-TK-675-BL000-00L-L",
+          "available": 13
+        },
+        {
+          "size": "XL",
+          "sku": "S6-TK-675-BL000-00L-XL",
+          "available": 14
         }
       ],
       "off_price": 5,
@@ -6193,7 +7389,7 @@
       "compare_at": 68,
       "current_price": 68,
       "unit_cost": 21.85,
-      "total_available": 67,
+      "total_available": 66,
       "sizes": [
         {
           "size": "XS",
@@ -6203,7 +7399,7 @@
         {
           "size": "S",
           "sku": "F5-TK-586-BL000-00L-S",
-          "available": 18
+          "available": 17
         },
         {
           "size": "M",
@@ -6267,6 +7463,52 @@
         }
       ],
       "off_price": 5
+    },
+    {
+      "product_id": "7492683464801",
+      "gid": "gid://shopify/Product/7492683464801",
+      "handle": "olly-top-coral-copy",
+      "title": "Olly Top (Slate Green)",
+      "color": "Slate Green",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Olly Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A9417.jpg?v=1772829574",
+      "msrp": 48,
+      "compare_at": 48,
+      "current_price": 30.99,
+      "unit_cost": 12.75,
+      "total_available": 52,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-TK-679-GR000-00L-XS",
+          "available": 19
+        },
+        {
+          "size": "S",
+          "sku": "S6-TK-679-GR000-00L-S",
+          "available": 15
+        },
+        {
+          "size": "M",
+          "sku": "S6-TK-679-GR000-00L-M",
+          "available": 10
+        },
+        {
+          "size": "L",
+          "sku": "S6-TK-679-GR000-00L-L",
+          "available": 4
+        },
+        {
+          "size": "XL",
+          "sku": "S6-TK-679-GR000-00L-XL",
+          "available": 4
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
     },
     {
       "product_id": "7108212686945",
@@ -6508,12 +7750,12 @@
       "compare_at": 44,
       "current_price": 24.99,
       "unit_cost": 7.43,
-      "total_available": 11,
+      "total_available": 9,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-TK-664-PL000-00L-L",
-          "available": 12
+          "available": 10
         },
         {
           "size": "S",
@@ -6626,6 +7868,52 @@
           "size": "XL",
           "sku": "S6-TK-664-LP000-00L-XL",
           "available": 2
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
+    },
+    {
+      "product_id": "7612683681889",
+      "gid": "gid://shopify/Product/7612683681889",
+      "handle": "sari-top-light-pink",
+      "title": "Sari Top (Light Pink)",
+      "color": "Light Pink",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Sari Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/sari-top-light-pink-top-yakira-bella-9912152.jpg?v=1787054779",
+      "msrp": 88,
+      "compare_at": 88,
+      "current_price": 56.99,
+      "unit_cost": 24.25,
+      "total_available": 58,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "03059-XS",
+          "available": 16
+        },
+        {
+          "size": "S",
+          "sku": "03059-S",
+          "available": 20
+        },
+        {
+          "size": "M",
+          "sku": "03059-M",
+          "available": 10
+        },
+        {
+          "size": "L",
+          "sku": "03059-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "03059-XL",
+          "available": 6
         }
       ],
       "off_price": 5,
@@ -6766,6 +8054,52 @@
         }
       ],
       "off_price": 5
+    },
+    {
+      "product_id": "7492659445857",
+      "gid": "gid://shopify/Product/7492659445857",
+      "handle": "tina-top-teal-green1",
+      "title": "Tina Top (Teal Green)",
+      "color": "Teal Green",
+      "type": "Top",
+      "class": "Fashion",
+      "style_name": "Tina Top",
+      "status": "ACTIVE",
+      "image": "https://cdn.shopify.com/s/files/1/0079/3998/1409/files/CT5A7632.jpg?v=1773166123",
+      "msrp": 44,
+      "compare_at": 44,
+      "current_price": 28.99,
+      "unit_cost": 6.49,
+      "total_available": 84,
+      "sizes": [
+        {
+          "size": "XS",
+          "sku": "S6-TK-662-GR000-00L-XS",
+          "available": 28
+        },
+        {
+          "size": "S",
+          "sku": "S6-TK-662-GR000-00L-S",
+          "available": 28
+        },
+        {
+          "size": "M",
+          "sku": "S6-TK-662-GR000-00L-M",
+          "available": 15
+        },
+        {
+          "size": "L",
+          "sku": "S6-TK-662-GR000-00L-L",
+          "available": 6
+        },
+        {
+          "size": "XL",
+          "sku": "S6-TK-662-GR000-00L-XL",
+          "available": 7
+        }
+      ],
+      "off_price": 5,
+      "list_wholesale": null
     },
     {
       "product_id": "7492662427745",
