@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-10-02T16:05:10.956Z",
+  "generated_at": "2026-10-03T14:33:26.070Z",
   "offering": "off",
   "offer": "INSEASON",
   "currency": "USD",
@@ -136,12 +136,12 @@
       "compare_at": 128,
       "current_price": 79.99,
       "unit_cost": 27.85,
-      "total_available": 6,
+      "total_available": 5,
       "sizes": [
         {
           "size": "XS",
           "sku": "S6-DW-003-BK859-53S-XS",
-          "available": 4
+          "available": 3
         },
         {
           "size": "S",
@@ -2451,7 +2451,7 @@
       "compare_at": 98,
       "current_price": 14.99,
       "unit_cost": 23.85,
-      "total_available": 33,
+      "total_available": 31,
       "sizes": [
         {
           "size": "XS",
@@ -2461,7 +2461,7 @@
         {
           "size": "S",
           "sku": "F5-SW-546-BR694-36N-S",
-          "available": 7
+          "available": 5
         },
         {
           "size": "M",
@@ -2586,12 +2586,12 @@
       "compare_at": 88,
       "current_price": 39.99,
       "unit_cost": 23.85,
-      "total_available": 5,
+      "total_available": 4,
       "sizes": [
         {
           "size": "XS",
           "sku": "F5-SW-449-BL837-36N-XS",
-          "available": 5
+          "available": 4
         },
         {
           "size": "S",
@@ -3401,7 +3401,7 @@
       "compare_at": 98,
       "current_price": 24.99,
       "unit_cost": 27.85,
-      "total_available": 0,
+      "total_available": 1,
       "sizes": [
         {
           "size": "XS",
@@ -3411,7 +3411,7 @@
         {
           "size": "S",
           "sku": "F5-DW-438-ML764-53L-S",
-          "available": 0
+          "available": 1
         },
         {
           "size": "M",
@@ -3446,7 +3446,7 @@
       "compare_at": 78,
       "current_price": 14.99,
       "unit_cost": 23.85,
-      "total_available": 27,
+      "total_available": 15,
       "sizes": [
         {
           "size": "XS",
@@ -3456,7 +3456,7 @@
         {
           "size": "S",
           "sku": "S5-SW-387-BG601-33N-S",
-          "available": 8
+          "available": 4
         },
         {
           "size": "M",
@@ -3466,12 +3466,12 @@
         {
           "size": "L",
           "sku": "S5-SW-387-BG601-33N-L",
-          "available": 5
+          "available": 1
         },
         {
           "size": "XL",
           "sku": "S5-SW-387-BG601-33N-XL",
-          "available": 3
+          "available": -1
         }
       ],
       "off_price": 10
@@ -4486,12 +4486,12 @@
         {
           "size": "XS",
           "sku": "F5-SS-562-GR000-36N-XS",
-          "available": 16
+          "available": 15
         },
         {
           "size": "S",
           "sku": "F5-SS-562-GR000-36N-S",
-          "available": 14
+          "available": 15
         },
         {
           "size": "M",
